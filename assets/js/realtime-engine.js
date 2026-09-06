@@ -73,52 +73,60 @@
       // Periodic fleet speed and GPS jitter
       setInterval(() => {
         this.state.fleetStatus.forEach(bus => {
-          bus.speed = Math.max(0, +(bus.speed + (Math.random() * 4 - 2)).toFixed(1));
-          bus.lat += (Math.random() - 0.5) * 0.0004;
-          bus.lng += (Math.random() - 0.5) * 0.0004;
+          bus.speed = Math.max(8, +(bus.speed + (Math.random() * 4 - 2)).toFixed(1));
+          bus.lat += (Math.random() - 0.5) * 0.0003;
+          bus.lng += (Math.random() - 0.5) * 0.0003;
           bus.lastSync = Date.now();
         });
-        this.state.kmCoveredToday = +(this.state.kmCoveredToday + 0.08).toFixed(1);
+        this.state.kmCoveredToday = +(this.state.kmCoveredToday + 0.12).toFixed(1);
         this.emit('fleet:update', this.state.fleetStatus);
-      }, 3000);
+      }, 2500);
 
-      // Periodic live detection generator
+      // Multi-Bus Real-Time Road & Surroundings Detections Pool
       const mockPool = [
-        { type: 'HAZARD', category: 'Pothole', title: 'Pothole cluster (depth ~45mm)', location: 'Old Airport Rd km 5.1', severity: 3, bus: '335E (Front Cam)' },
-        { type: 'INCIDENT', category: 'Signal Jump', title: 'Red light jump detected', location: 'Trinity Circle', severity: 4, bus: '42B (Front Cam)', plate: 'KA 03 MN ' + Math.floor(1000 + Math.random() * 9000) },
-        { type: 'TRAFFIC', category: 'Lane Blockage', title: 'Stalled vehicle blocking right lane', location: 'Koramangala 100ft Rd', severity: 3, bus: '52 (Side Cam)' },
-        { type: 'SAFETY', category: 'Unmarked Speedbreaker', title: 'Unmarked speedbreaker high impact', location: 'HAL 2nd Stage', severity: 2, bus: '17A (Front Cam)' }
+        { type: 'HAZARD', category: 'Pothole', title: 'Road Pothole Cluster (depth 45mm)', location: 'MG Road km 3.2', severity: 3, busId: 'KA-05-AB-1147', route: '42B', cam: 'Front Cam' },
+        { type: 'INCIDENT', category: 'Tailgating OCR', title: 'Tailgating Vehicle (2.1m separation)', location: 'Indiranagar 100ft Rd', severity: 4, busId: 'KA-03-CJ-8820', route: '17A', cam: 'Rear OCR', plate: 'KA 03 MN ' + Math.floor(1000 + Math.random() * 9000) },
+        { type: 'HAZARD', category: 'Waterlogging', title: 'Waterlogging Zone (depth 12cm)', location: 'Shivajinagar Bus Station', severity: 3, busId: 'KA-01-FL-3390', route: '9C', cam: 'Front Cam' },
+        { type: 'TRAFFIC', category: 'Double Parking', title: 'Illegal double parking blocking bus lane', location: 'Koramangala 80ft Rd', severity: 3, busId: 'KA-41-BQ-0512', route: '52', cam: 'Side Cam', plate: 'KA 51 Z ' + Math.floor(1000 + Math.random() * 9000) },
+        { type: 'SAFETY', category: 'Crowded Stop', title: 'Platform density spike (42 waiting passengers)', location: 'Lalbagh West Gate', severity: 2, busId: 'KA-09-DP-6119', route: '335E', cam: 'Side Cam' },
+        { type: 'INCIDENT', category: 'Signal Jump', title: 'Motorcycle red light cut-across', location: 'Trinity Circle', severity: 4, busId: 'KA-05-AB-1147', route: '42B', cam: 'Front Cam', plate: 'MH 02 EE ' + Math.floor(1000 + Math.random() * 9000) },
+        { type: 'SAFETY', category: 'Pedestrian Crossing', title: 'School crosswalk pedestrian alert', location: 'Old Airport Rd', severity: 2, busId: 'KA-03-CJ-8820', route: '17A', cam: 'Front Cam' },
+        { type: 'HAZARD', category: 'Missing Signage', title: 'Damaged route marker signage', location: 'Outer Ring Rd Jn. 12', severity: 2, busId: 'KA-09-DP-6119', route: '335E', cam: 'Side Cam' }
       ];
 
       setInterval(() => {
-        if (Math.random() > 0.4) {
-          const tmpl = mockPool[Math.floor(Math.random() * mockPool.length)];
-          const newDet = {
-            id: 'DET-' + Math.floor(1000 + Math.random() * 9000),
-            time: this._formatTime(0),
-            type: tmpl.type,
-            category: tmpl.category,
-            title: tmpl.title,
-            location: tmpl.location,
-            severity: tmpl.severity,
-            bus: tmpl.bus,
-            plate: tmpl.plate,
-            conf: +(88 + Math.random() * 11).toFixed(1),
-            status: 'Active'
-          };
+        const tmpl = mockPool[Math.floor(Math.random() * mockPool.length)];
+        const newDet = {
+          id: 'DET-' + Math.floor(1000 + Math.random() * 9000),
+          time: this._formatTime(0),
+          type: tmpl.type,
+          category: tmpl.category,
+          title: tmpl.title,
+          location: tmpl.location,
+          severity: tmpl.severity,
+          busId: tmpl.busId,
+          route: tmpl.route,
+          bus: `Bus ${tmpl.route} (${tmpl.cam})`,
+          plate: tmpl.plate || null,
+          conf: +(91 + Math.random() * 8).toFixed(1),
+          status: 'Active'
+        };
 
-          this.state.recentDetections.unshift(newDet);
-          if (this.state.recentDetections.length > 25) {
-            this.state.recentDetections.pop();
-          }
-
-          if (tmpl.type === 'HAZARD') this.state.hazardsToday++;
-          if (tmpl.type === 'INCIDENT') this.state.incidentsToday++;
-
-          this.emit('detection:new', newDet);
-          this.emit('detections:list', this.state.recentDetections);
+        this.state.recentDetections.unshift(newDet);
+        if (this.state.recentDetections.length > 30) {
+          this.state.recentDetections.pop();
         }
-      }, 7000);
+
+        if (tmpl.type === 'HAZARD') this.state.hazardsToday++;
+        if (tmpl.type === 'INCIDENT') this.state.incidentsToday++;
+
+        this.emit('detection:new', newDet);
+        this.emit('detections:list', this.state.recentDetections);
+      }, 5000);
+    }
+
+    getBus(busId) {
+      return this.state.fleetStatus.find(b => b.id === busId) || this.state.fleetStatus[0];
     }
 
     acknowledgeDetection(detId) {
@@ -141,6 +149,35 @@
         return true;
       }
       return false;
+    }
+
+    addDetection(det) {
+      const newDet = {
+        id: det.id || 'DET-' + Math.floor(1000 + Math.random() * 9000),
+        time: det.time || this._formatTime(0),
+        type: det.type || 'HAZARD',
+        category: det.category || 'Road Anomaly',
+        title: det.title || 'Detected Hazard',
+        location: det.location || 'Fleet Route 42B GPS',
+        severity: det.severity || 3,
+        bus: det.bus || 'Live AI Dashcam',
+        plate: det.plate || null,
+        conf: det.conf || +(90 + Math.random() * 9).toFixed(1),
+        status: 'Active',
+        snapshot: det.snapshot || null
+      };
+
+      this.state.recentDetections.unshift(newDet);
+      if (this.state.recentDetections.length > 30) {
+        this.state.recentDetections.pop();
+      }
+
+      if (newDet.type === 'HAZARD') this.state.hazardsToday++;
+      if (newDet.type === 'INCIDENT') this.state.incidentsToday++;
+
+      this.emit('detection:new', newDet);
+      this.emit('detections:list', this.state.recentDetections);
+      return newDet;
     }
 
     getState() {
