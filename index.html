@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THRINETHRA — AI-Powered Mobile Urban Intelligence Platform</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-900:#0A0E13;
+    --bg-800:#0F151C;
+    --bg-700:#141C25;
+    --line:#212B36;
+    --line-soft:#1A222C;
+    --text-hi:#EAEFF3;
+    --text-mid:#9AA7B4;
+    --text-low:#5E6B78;
+    --alert:#FF7A45;
+    --alert-dim:#4A2E20;
+    --live:#34D399;
+    --live-dim:#173229;
+    --route:#4FA3D1;
+    --danger:#FF5470;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-900);
+    color:var(--text-hi);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{ font-family:'Space Grotesk',sans-serif; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; text-decoration:none; }
+  img,svg{ display:block; max-width:100%; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+  @media (max-width:640px){ .wrap{ padding:0 20px; } }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,14,19,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 0;
+  }
+  .logo{ display:flex; align-items:center; gap:10px; }
+  .logo-mark{ width:22px; height:22px; flex-shrink:0; }
+  .logo-word{ font-size:1.18rem; font-weight:700; letter-spacing:0.02em; }
+  .logo-word .dot{ color:var(--alert); }
+
+  /* ---------- THRINETHRA WORDMARK (Torii-style gate letter) ---------- */
+  .wordmark{
+    display:inline-flex; align-items:baseline;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:1.62rem;
+    letter-spacing:0.01em;
+    color:#fff;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .wordmark .gate-i{
+    position:relative;
+    display:inline-flex;
+    align-items:flex-end;
+    justify-content:center;
+    width:0.46em;
+    height:1em;
+    margin:0 0.01em;
+    transform:translateY(0.02em);
+  }
+  .wordmark .gate-frame{
+    position:absolute;
+    left:0.03em; right:0.03em; top:0.02em;
+    height:0.66em;
+    border:0.09em solid var(--alert);
+    border-bottom:none;
+    border-radius:0.05em 0.05em 0 0;
+  }
+  .wordmark .gate-stem{
+    position:relative;
+    width:0.09em;
+    height:0.74em;
+    background:#fff;
+    border-radius:0.03em;
+    z-index:2;
+  }
+  .wordmark .gate-star{
+    position:absolute;
+    top:-0.2em; right:-0.14em;
+    width:0.34em; height:0.34em;
+    z-index:3;
+  }
+  @media (max-width:640px){ .wordmark{ font-size:1.32rem; } }
+  .nav-links{ display:flex; gap:30px; font-size:0.92rem; color:var(--text-mid); }
+  .nav-links a:hover{ color:var(--text-hi); }
+  .nav-cta{
+    display:flex; gap:10px; align-items:center;
+  }
+  .btn{
+    padding:10px 18px; border-radius:7px; font-size:0.88rem; font-weight:600;
+    border:1px solid var(--line); white-space:nowrap;
+  }
+  .btn-ghost{ color:var(--text-mid); }
+  .btn-ghost:hover{ color:var(--text-hi); border-color:#33404D; }
+  .btn-solid{ background:var(--alert); color:#191008; border-color:var(--alert); }
+  .btn-solid:hover{ background:#ff8b5c; }
+  .hamburger{
+    display:flex; flex-direction:column; gap:5px; justify-content:center;
+    width:30px; height:24px; flex-shrink:0; background:none; border:none; cursor:pointer; padding:0;
+  }
+  .hamburger span{ display:block; width:100%; height:2.5px; background:#fff; border-radius:2px; transition:transform .25s ease, opacity .25s ease; transform-origin:center; }
+  .hamburger.open span:nth-child(1){ transform:translateY(7.5px) rotate(45deg); }
+  .hamburger.open span:nth-child(2){ opacity:0; }
+  .hamburger.open span:nth-child(3){ transform:translateY(-7.5px) rotate(-45deg); }
+
+  .mobile-menu{
+    max-height:0; overflow:hidden;
+    background:rgba(10,14,19,0.97); backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent;
+    transition:max-height .32s ease, border-color .32s ease;
+  }
+  .mobile-menu.open{ max-height:420px; border-color:var(--line-soft); }
+  .mm-inner{ display:flex; flex-direction:column; gap:2px; padding:6px 24px 22px; }
+  .nav-cmd-link{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+  .cmd-badge{ font-size:0.72rem; padding:2px 6px; border-radius:6px; display:inline-flex; align-items:center; }
+  .cmd-badge.locked{ background:rgba(255,122,69,0.14); color:var(--alert); border:1px solid rgba(255,122,69,0.3); }
+  .cmd-badge.unlocked{ background:rgba(52,211,153,0.14); color:var(--live); border:1px solid rgba(52,211,153,0.3); }
+
+  .user-nav-chip{
+    display:flex; align-items:center; gap:9px; padding:4px 10px 4px 5px;
+    background:var(--bg-800); border:1px solid var(--line); border-radius:999px;
+  }
+  .user-nav-avatar{ width:26px; height:26px; border-radius:50%; object-fit:cover; border:1px solid var(--alert); }
+  .user-nav-name{ font-size:0.82rem; font-weight:600; color:var(--text-hi); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .btn-logout-mini{ background:none; border:none; color:var(--text-low); font-size:0.76rem; cursor:pointer; padding:2px 4px; }
+  .btn-logout-mini:hover{ color:var(--danger); }
+
+  .mobile-user-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line-soft); }
+  .mobile-user-info{ display:flex; align-items:center; gap:10px; }
+
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:76px 0 40px;
+    overflow:hidden;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .hero-grid-bg{
+    position:absolute; inset:0; z-index:0; opacity:0.5;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+  .hero-inner{ position:relative; z-index:1; }
+
+  /* ---------- CIRCULAR BRAND EMBLEM ---------- */
+  .emblem-badge{
+    position:relative;
+    border-radius:50%;
+    overflow:hidden;
+    flex-shrink:0;
+    border:1px solid var(--line);
+    box-shadow:0 0 0 5px var(--bg-900), 0 0 44px rgba(255,122,69,0.18);
+  }
+  .emblem-badge img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .emblem-badge::after{
+    content:"";
+    position:absolute; inset:0; border-radius:50%;
+    border:1px solid var(--alert); opacity:0.4;
+  }
+  .emblem-hero{
+    position:absolute; top:0; right:24px;
+    width:84px; height:84px;
+    animation:emblemFloat 6s ease-in-out infinite;
+  }
+  @keyframes emblemFloat{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-10px); }
+  }
+  @media (max-width:760px){ .emblem-hero{ position:static; width:64px; height:64px; margin-bottom:22px; } }
+  @media (prefers-reduced-motion:reduce){ .emblem-hero{ animation:none; } }
+  .eyebrow-row{
+    display:flex; align-items:center; gap:10px;
+    font-size:0.82rem; color:var(--text-mid); margin-bottom:26px;
+  }
+  .pulse-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--live);
+    box-shadow:0 0 0 0 rgba(52,211,153,0.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(52,211,153,0.55); }
+    70%{ box-shadow:0 0 0 8px rgba(52,211,153,0); }
+    100%{ box-shadow:0 0 0 0 rgba(52,211,153,0); }
+  }
+  /* ---------- 3D DYNAMIC HERO TITLE ---------- */
+  .title-float{
+    animation:titleFloat 7s ease-in-out infinite;
+  }
+  @keyframes titleFloat{
+    0%,100%{ transform:translateY(0) rotateZ(0deg); }
+    50%{ transform:translateY(-7px) rotateZ(-0.35deg); }
+  }
+  .title-tilt{
+    perspective:1000px;
+    transform-style:preserve-3d;
+    transition:transform 0.25s ease-out;
+    will-change:transform;
+  }
+  .word-stack{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    line-height:0.9;
+    letter-spacing:-0.02em;
+    transform-style:preserve-3d;
+  }
+  .word-line{
+    display:flex;
+    align-items:baseline;
+    gap:0.28em;
+    flex-wrap:wrap;
+  }
+  .word-line span{
+    display:inline-block;
+    transform-style:preserve-3d;
+    opacity:0;
+    animation:wordRise 0.9s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .word-line.line-1 span:nth-child(1){ animation-delay:0.05s; }
+  .word-line.line-1 span:nth-child(2){ animation-delay:0.18s; }
+  .word-line.line-2 span:nth-child(1){ animation-delay:0.3s; }
+  .word-line.line-2 span:nth-child(2){ animation-delay:0.42s; }
+  .word-line.line-2 span:nth-child(3){ animation-delay:0.56s; }
+  @keyframes wordRise{
+    0%{ opacity:0; transform:translateY(38px) translateZ(-120px) rotateX(35deg); }
+    100%{ opacity:1; transform:translateY(0) translateZ(0) rotateX(0deg); }
+  }
+  .w-outline{
+    -webkit-text-stroke:2px var(--alert);
+    color:transparent;
+    font-size:3.1rem;
+  }
+  .w-solid{
+    color:var(--text-hi);
+    font-size:3.1rem;
+    text-shadow:0 10px 26px rgba(0,0,0,0.55);
+  }
+  .w-accent{
+    color:var(--alert);
+    font-size:3.1rem;
+    text-shadow:0 0 30px rgba(255,122,69,0.35);
+  }
+  .brand-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Grotesk',sans-serif; font-weight:600;
+    font-size:0.85rem; letter-spacing:0.06em;
+    color:var(--text-mid);
+    border:1px solid var(--line); border-radius:999px;
+    padding:8px 16px 8px 10px;
+    margin-left:6px;
+    transform:translateZ(30px);
+    background:var(--bg-800);
+  }
+  .brand-chip svg{ width:16px; height:16px; flex-shrink:0; }
+  @media (max-width:760px){
+    .w-outline,.w-solid,.w-accent{ font-size:2.05rem; }
+    .brand-chip{ font-size:0.68rem; padding:6px 12px 6px 8px; margin-left:0; margin-top:8px; }
+  }
+  @media (max-width:420px){
+    .w-outline,.w-solid,.w-accent{ font-size:1.62rem; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .title-float{ animation:none; }
+    .word-line span{ animation:none; opacity:1; }
+    .title-tilt{ transition:none; transform:none !important; }
+  }
+
+  /* ---------- SCROLL-DRIVEN MOVEMENT ---------- */
+  .hero-inner{ will-change:transform, opacity; }
+  .reveal{
+    opacity:0;
+    transform:translateY(34px);
+    transition:opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .reveal-stagger.in-view .cap-item,
+  .reveal-stagger.in-view .arch-col,
+  .reveal-stagger.in-view .pipe-step,
+  .reveal-stagger.in-view .stat-cell{
+    opacity:1; transform:translateY(0) translateX(0);
+  }
+  .reveal-stagger .cap-item,
+  .reveal-stagger .arch-col,
+  .reveal-stagger .pipe-step,
+  .reveal-stagger .stat-cell{
+    opacity:0; transform:translateY(20px);
+    transition:opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal-stagger .cap-item:nth-child(1),.reveal-stagger .arch-col:nth-child(1),.reveal-stagger .pipe-step:nth-child(1),.reveal-stagger .stat-cell:nth-child(1){ transition-delay:0.02s; }
+  .reveal-stagger .cap-item:nth-child(2),.reveal-stagger .arch-col:nth-child(2),.reveal-stagger .pipe-step:nth-child(2),.reveal-stagger .stat-cell:nth-child(2){ transition-delay:0.1s; }
+  .reveal-stagger .cap-item:nth-child(3),.reveal-stagger .arch-col:nth-child(3),.reveal-stagger .pipe-step:nth-child(3),.reveal-stagger .stat-cell:nth-child(3){ transition-delay:0.18s; }
+  .reveal-stagger .cap-item:nth-child(4),.reveal-stagger .pipe-step:nth-child(4){ transition-delay:0.26s; }
+  .reveal-stagger .pipe-step:nth-child(5){ transition-delay:0.34s; }
+  @media (prefers-reduced-motion:reduce){
+    .reveal,.reveal-stagger .cap-item,.reveal-stagger .arch-col,.reveal-stagger .pipe-step,.reveal-stagger .stat-cell{
+      opacity:1 !important; transform:none !important; transition:none !important;
+    }
+  }
+  .hero-sub{
+    margin-top:26px; max-width:520px;
+    color:var(--text-mid); font-size:1.02rem;
+  }
+  .hero-actions{ display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+  .btn-lg{ padding:13px 22px; border-radius:8px; font-size:0.95rem; }
+
+  .hero-panel{
+    margin-top:52px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:var(--bg-800);
+    overflow:hidden;
+  }
+  .panel-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; border-bottom:1px solid var(--line-soft);
+    font-size:0.78rem; color:var(--text-low);
+  }
+  .panel-bar .route-id{ color:var(--text-mid); }
+  .feed-body{
+    display:grid; grid-template-columns:1.3fr 1fr;
+  }
+  @media (max-width:760px){ .feed-body{ grid-template-columns:1fr; } }
+  .feed-map{ position:relative; padding:18px; border-right:1px solid var(--line-soft); }
+  @media (max-width:760px){ .feed-map{ border-right:none; border-bottom:1px solid var(--line-soft); } }
+  .feed-log{ padding:16px 18px; }
+  .log-title{ font-size:0.72rem; letter-spacing:0.04em; color:var(--text-low); margin-bottom:12px; }
+  .log-line{
+    display:flex; gap:10px; align-items:baseline;
+    font-size:0.78rem; padding:7px 0; border-bottom:1px solid var(--line-soft);
+  }
+  .log-line:last-child{ border-bottom:none; }
+  .log-t{ color:var(--text-low); flex-shrink:0; }
+  .log-tag{
+    flex-shrink:0; font-size:0.68rem; padding:2px 6px; border-radius:4px;
+    font-weight:600;
+  }
+  .tag-hazard{ background:var(--alert-dim); color:var(--alert); }
+  .tag-live{ background:var(--live-dim); color:var(--live); }
+  .tag-danger{ background:#3A1622; color:var(--danger); }
+  .log-desc{ color:var(--text-mid); }
+
+  /* ---------- SECTION HEAD ---------- */
+  .section{ padding:72px 0; border-bottom:1px solid var(--line-soft); }
+  .sec-head{ max-width:600px; margin-bottom:44px; }
+  .sec-kicker{ color:var(--alert); font-size:0.84rem; font-weight:600; margin-bottom:12px; }
+  .sec-h{ font-size:1.9rem; font-weight:600; letter-spacing:-0.01em; }
+  .sec-p{ color:var(--text-mid); margin-top:14px; font-size:1rem; max-width:560px; }
+
+  /* ---------- PROBLEM STATS ---------- */
+  .stat-row{
+    display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+  }
+  @media (max-width:700px){ .stat-row{ grid-template-columns:1fr; } }
+  .stat-cell{ padding:28px 26px; border-right:1px solid var(--line); }
+  .stat-cell:last-child{ border-right:none; }
+  @media (max-width:700px){ .stat-cell{ border-right:none; border-bottom:1px solid var(--line); } .stat-cell:last-child{border-bottom:none;} }
+  .stat-num{ font-family:'Space Grotesk',sans-serif; font-size:2.1rem; font-weight:700; }
+  .stat-label{ color:var(--text-mid); font-size:0.88rem; margin-top:6px; }
+
+  /* ---------- ARCHITECTURE ---------- */
+  .arch-flow{ display:flex; align-items:stretch; gap:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  @media (max-width:760px){ .arch-flow{ flex-direction:column; } }
+  .arch-col{ flex:1; padding:30px 26px; }
+  .arch-col + .arch-col{ border-left:1px solid var(--line); }
+  @media (max-width:760px){ .arch-col + .arch-col{ border-left:none; border-top:1px solid var(--line); } }
+  .arch-col.mid{ background:var(--bg-800); }
+  .arch-tag{ font-size:0.72rem; color:var(--text-low); letter-spacing:0.03em; margin-bottom:8px;}
+  .arch-title{ font-size:1.1rem; font-weight:600; margin-bottom:12px; }
+  .arch-list{ list-style:none; }
+  .arch-list li{
+    font-size:0.88rem; color:var(--text-mid); padding:8px 0 8px 18px; position:relative;
+    border-top:1px solid var(--line-soft);
+  }
+  .arch-list li:first-child{ border-top:none; }
+  .arch-list li::before{ content:"—"; position:absolute; left:0; color:var(--text-low); }
+
+  /* ---------- CAPABILITIES ---------- */
+  .cap-list{ display:flex; flex-direction:column; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .cap-item{
+    display:grid; grid-template-columns:64px 1fr auto; gap:20px; align-items:start;
+    padding:26px 26px; border-top:1px solid var(--line);
+    border-left:3px solid transparent;
+  }
+  .cap-item:first-child{ border-top:none; }
+  @media (max-width:700px){ .cap-item{ grid-template-columns:44px 1fr; } .cap-item .cap-ex{ grid-column:1 / -1; margin-top:8px; } }
+  .cap-item.c-hazard{ border-left-color:var(--alert); }
+  .cap-item.c-traffic{ border-left-color:var(--route); }
+  .cap-item.c-safety{ border-left-color:var(--live); }
+  .cap-item.c-incident{ border-left-color:var(--danger); }
+  .cap-idx{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-low); padding-top:4px; }
+  .cap-h{ font-size:1.08rem; font-weight:600; margin-bottom:6px; }
+  .cap-p{ color:var(--text-mid); font-size:0.9rem; max-width:440px; }
+  .cap-ex{
+    font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--text-low);
+    text-align:right; white-space:nowrap; align-self:center;
+  }
+  @media (max-width:700px){ .cap-ex{ text-align:left; } }
+
+  /* ---------- INCIDENT PIPELINE ---------- */
+  .pipeline{ display:flex; overflow-x:auto; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; scrollbar-width:none; -ms-overflow-style:none; }
+  .pipeline::-webkit-scrollbar{ display:none; }
+  .pipe-step{ background:var(--bg-800); flex:1; min-width:170px; padding:22px 18px; }
+  .pipe-num{ font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--alert); margin-bottom:10px; }
+  .pipe-h{ font-size:0.94rem; font-weight:600; margin-bottom:8px; }
+  .pipe-p{ font-size:0.8rem; color:var(--text-mid); }
+  .pipeline-scroll-hint{ font-size:0.76rem; color:var(--text-low); margin-top:10px; display:none; }
+  @media (max-width:760px){ .pipeline-scroll-hint{ display:block; } }
+
+  .alert-card{
+    margin-top:30px; border:1px solid var(--line); border-radius:12px; background:var(--bg-800);
+    padding:22px 24px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  }
+  .alert-card .l{ font-size:0.72rem; color:var(--text-low); margin-bottom:4px; }
+  .alert-card .v{ font-family:'JetBrains Mono',monospace; font-size:0.92rem; color:var(--text-hi); }
+  .alert-card .v.conf{ color:var(--live); }
+
+  /* ---------- DASHBOARD PREVIEW ---------- */
+  .dash-frame{ border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .dash-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 20px; border-bottom:1px solid var(--line-soft); background:var(--bg-800);
+    font-size:0.82rem; color:var(--text-mid);
+  }
+  .legend{ display:flex; gap:16px; font-size:0.76rem; flex-wrap:wrap; }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .legend i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .dash-body{ padding:20px; }
+
+  /* ---------- IMPACT / CTA ---------- */
+  .cta-section{ padding:80px 0; text-align:left; }
+  .cta-box{
+    border:1px solid var(--line); border-radius:16px; padding:48px 40px;
+    background:linear-gradient(160deg, var(--bg-800), var(--bg-900));
+    display:flex; justify-content:space-between; align-items:center; gap:30px; flex-wrap:wrap;
+  }
+  .cta-box h2{ font-size:1.7rem; max-width:440px; font-weight:600; }
+  .cta-box p{ color:var(--text-mid); margin-top:10px; max-width:420px; font-size:0.94rem; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:52px 0 34px; }
+  .foot-top{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:30px; padding-bottom:30px; border-bottom:1px solid var(--line-soft); }
+  .foot-cols{ display:flex; gap:60px; flex-wrap:wrap; }
+  .foot-col h4{ font-size:0.82rem; color:var(--text-low); margin-bottom:12px; font-weight:600; }
+  .foot-col a{ display:block; font-size:0.88rem; color:var(--text-mid); padding:5px 0; }
+  .foot-col a:hover{ color:var(--text-hi); }
+  .foot-bottom{ display:flex; justify-content:space-between; padding-top:24px; font-size:0.82rem; color:var(--text-low); flex-wrap:wrap; gap:10px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <div class="logo">
+      <a class="wordmark" href="index.html">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</a>
+    </div>
+    <div class="nav-links hide-mobile">
+      <a href="#platform">Platform</a>
+      <a href="#capabilities">Detection</a>
+      <a href="#incidents">Incidents</a>
+      <a href="dashboard.html" id="navCommandCenterLink" class="nav-cmd-link">
+        <span>Command Center</span>
+        <span id="navCmdBadge" class="cmd-badge locked">🔒</span>
+      </a>
+    </div>
+    <div class="nav-cta" id="navCtaContainer">
+      <a class="btn btn-ghost hide-mobile" href="register.html">Register</a>
+      <a class="btn btn-solid" href="login.html">Login</a>
+      <button class="hamburger" id="menuBtn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="wrap mm-inner">
+      <a href="#platform">Platform</a>
+      <a href="#capabilities">Detection</a>
+      <a href="#incidents">Incidents</a>
+      <a href="dashboard.html" id="mmCommandCenterLink" class="nav-cmd-link">
+        <span>Command Center</span>
+        <span id="mmCmdBadge" class="cmd-badge locked">🔒</span>
+      </a>
+      <div class="mm-cta" id="mmCtaContainer">
+        <a class="btn btn-ghost" href="register.html">Register</a>
+        <a class="btn btn-solid" href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="wrap hero-inner">
+    <div class="emblem-badge emblem-hero">
+      <img src="logo.png" alt="Thrinethra emblem">
+    </div>
+    <div class="eyebrow-row">
+      <span class="pulse-dot"></span>
+      <span>Every scheduled bus is already a sensor in motion</span>
+    </div>
+    <div class="title-float">
+      <div class="title-tilt" id="titleTilt">
+        <h1 class="word-stack">
+          <div class="word-line line-1">
+            <span class="w-outline">THE</span>
+            <span class="w-solid">CITY'S</span>
+          </div>
+          <div class="word-line line-2">
+            <span class="w-accent">THIRD</span>
+            <span class="w-outline">EYE</span>
+            <span class="brand-chip">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M2 12C4.5 6.5 8 4 12 4C16 4 19.5 6.5 22 12C19.5 17.5 16 20 12 20C8 20 4.5 17.5 2 12Z" stroke="#FF7A45" stroke-width="1.4"/>
+                <circle cx="12" cy="12" r="3.2" fill="#FF7A45"/>
+              </svg>
+              THRINETHRA
+            </span>
+          </div>
+        </h1>
+      </div>
+    </div>
+    <p class="hero-sub">Thrinethra reads the video already running on bus-mounted cameras — front, rear, side and cabin — and turns it into road condition maps, live congestion data and incident evidence, without a single new camera on the street.</p>
+    <div class="hero-actions">
+      <a class="btn btn-solid btn-lg" href="#platform">See how it works</a>
+      <a class="btn btn-ghost btn-lg" href="#capabilities">What it detects</a>
+    </div>
+
+    <div class="hero-panel">
+      <div class="panel-bar">
+        <span>LIVE FEED — <span class="route-id mono" id="heroRouteId">ROUTE 42B · BUS KA-05-AB-1147</span></span>
+        <span class="mono" id="heroSpeedBadge">18.52 KM/H</span>
+      </div>
+      <div class="feed-body">
+        <div class="feed-map">
+          <svg viewBox="0 0 420 300" width="100%" height="100%">
+            <rect width="420" height="300" fill="#0F151C"/>
+            <g stroke="#1E2733" stroke-width="1">
+              <line x1="0" y1="60" x2="420" y2="60"/>
+              <line x1="0" y1="140" x2="420" y2="140"/>
+              <line x1="0" y1="220" x2="420" y2="220"/>
+              <line x1="90" y1="0" x2="90" y2="300"/>
+              <line x1="210" y1="0" x2="210" y2="300"/>
+              <line x1="330" y1="0" x2="330" y2="300"/>
+            </g>
+            <path d="M10 250 L90 250 L90 140 L210 140 L210 60 L330 60 L330 20 L410 20" stroke="#4FA3D1" stroke-width="2.5" fill="none" stroke-dasharray="1 7" stroke-linecap="round"/>
+            <circle id="heroBusPin" cx="210" cy="140" r="6" fill="#0A0E13" stroke="#4FA3D1" stroke-width="2"/>
+            <g>
+              <circle cx="150" cy="180" r="5" fill="#FF7A45"/>
+              <circle cx="150" cy="180" r="10" fill="none" stroke="#FF7A45" stroke-width="1" opacity="0.5"/>
+            </g>
+            <g>
+              <circle cx="270" cy="95" r="5" fill="#FF5470"/>
+              <circle cx="270" cy="95" r="10" fill="none" stroke="#FF5470" stroke-width="1" opacity="0.5"/>
+            </g>
+            <circle cx="330" cy="60" r="5" fill="#34D399"/>
+            <text x="158" y="184" fill="#9AA7B4" font-size="10" font-family="JetBrains Mono">pothole</text>
+            <text x="278" y="99" fill="#9AA7B4" font-size="10" font-family="JetBrains Mono">incident</text>
+            <text x="338" y="64" fill="#9AA7B4" font-size="10" font-family="JetBrains Mono">bus 42B</text>
+          </svg>
+        </div>
+        <div class="feed-log">
+          <div class="log-title mono">LIVE DETECTION STREAM <span class="pulse-dot" style="display:inline-block; margin-left:6px;"></span></div>
+          <div id="heroDetectionList">
+            <!-- Dynamically populated by Realtime Engine -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="problem">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">The gap in the street</div>
+      <h2 class="sec-h">Cities already have eyes on every road. They're just not looking.</h2>
+      <p class="sec-p">Fixed CCTV covers a handful of junctions. Manual inspection covers a handful of streets a month. Citizen complaints arrive late, and only for what someone thought to report. Buses run the rest of the map, every day, for free.</p>
+    </div>
+    <div class="stat-row reveal-stagger">
+      <div class="stat-cell">
+        <div class="stat-num">2,000+</div>
+        <div class="stat-label">bus trips a day, each one covering roads no fixed camera reaches</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">0</div>
+        <div class="stat-label">new street hardware required — the cameras are already mounted</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">&lt;3s</div>
+        <div class="stat-label">from a hazard entering frame to a geotagged alert on the desk</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="platform">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Platform architecture</div>
+      <h2 class="sec-h">Process at the edge. Decide at the center.</h2>
+      <p class="sec-p">Onboard hardware does the heavy vision work on the bus itself, so only compact, meaningful events leave the vehicle — not raw video. That keeps bandwidth low and the central platform fast.</p>
+    </div>
+    <div class="arch-flow reveal-stagger">
+      <div class="arch-col">
+        <div class="arch-tag mono">01 · ONBOARD, PER BUS</div>
+        <div class="arch-title">Edge processing unit</div>
+        <ul class="arch-list">
+          <li>Ingests front, rear, side and cabin camera streams</li>
+          <li>Runs detection, classification and tracking models locally</li>
+          <li>Tags every event with timestamp and GPS</li>
+          <li>Buffers and syncs over available network, no continuous upload</li>
+        </ul>
+      </div>
+      <div class="arch-col mid">
+        <div class="arch-tag mono">02 · IN TRANSIT</div>
+        <div class="arch-title">Event, not footage</div>
+        <ul class="arch-list">
+          <li>Compact structured alert: type, location, confidence, clip</li>
+          <li>Encrypted transmission to command platform</li>
+          <li>Priority queue for safety-critical events</li>
+          <li>Full clips retrievable on demand, not streamed by default</li>
+        </ul>
+      </div>
+      <div class="arch-col">
+        <div class="arch-tag mono">03 · CENTRAL PLATFORM</div>
+        <div class="arch-title">Fleet-wide command center</div>
+        <ul class="arch-list">
+          <li>Aggregates events across the entire fleet in real time</li>
+          <li>Plots everything on a GIS map with congestion heat layers</li>
+          <li>Builds origin–destination and delay analytics</li>
+          <li>Routes incidents to the right authority automatically</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="capabilities">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">What the cameras learn to see</div>
+      <h2 class="sec-h">Four things a moving bus can tell a city</h2>
+      <p class="sec-p">The same footage that once only mattered after an incident now answers questions the city was asking anyway.</p>
+    </div>
+    <div class="cap-list reveal-stagger">
+      <div class="cap-item c-hazard">
+        <div class="cap-idx">01</div>
+        <div>
+          <div class="cap-h">Road & infrastructure condition</div>
+          <div class="cap-p">Potholes, damaged surfaces, missing dividers, faded or absent zebra crossings, missing or damaged signboards, waterlogging — logged with location and severity as the bus simply drives its route.</div>
+        </div>
+        <div class="cap-ex">pothole · sev 3/5 · 12.9716N</div>
+      </div>
+      <div class="cap-item c-traffic">
+        <div class="cap-idx">02</div>
+        <div>
+          <div class="cap-h">Traffic density & bottlenecks</div>
+          <div class="cap-p">Vehicle detection, classification and counting from every pass builds a live picture of congestion, so bottlenecks show up before commuters complain about them.</div>
+        </div>
+        <div class="cap-ex">density 82% · signal 7</div>
+      </div>
+      <div class="cap-item c-safety">
+        <div class="cap-idx">03</div>
+        <div>
+          <div class="cap-h">Pedestrian & vulnerable-user safety</div>
+          <div class="cap-p">Flags situations like school children crossing without a signal or a crossing at an unmarked point — the kind of near-miss no complaint ever gets filed for.</div>
+        </div>
+        <div class="cap-ex">crossing · 6 pedestrians</div>
+      </div>
+      <div class="cap-item c-incident">
+        <div class="cap-idx">04</div>
+        <div>
+          <div class="cap-h">Incident detection & tracking</div>
+          <div class="cap-p">On hit-and-run or rash driving, the system tracks the offending vehicle, reads its plate with a confidence score, and timestamps and geotags the event for the command center.</div>
+        </div>
+        <div class="cap-ex">plate conf. 94.2%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="incidents">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Incident response</div>
+      <h2 class="sec-h">From dashcam frame to actionable alert</h2>
+      <p class="sec-p">A rash-driving or hit-and-run event moves through the same pipeline in seconds, without anyone reviewing footage by hand.</p>
+    </div>
+    <div class="pipeline reveal-stagger">
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 01</div>
+        <div class="pipe-h">Detect</div>
+        <div class="pipe-p">Onboard model flags abnormal driving behaviour or a collision event in the live stream.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 02</div>
+        <div class="pipe-h">Track</div>
+        <div class="pipe-p">The offending vehicle is tracked across frames to hold a stable view of its plate.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 03</div>
+        <div class="pipe-h">Read plate</div>
+        <div class="pipe-p">Registration number is extracted with a confidence score, not a bare guess.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 04</div>
+        <div class="pipe-h">Tag</div>
+        <div class="pipe-p">Timestamp and GPS location are attached automatically at the point of detection.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 05</div>
+        <div class="pipe-h">Alert</div>
+        <div class="pipe-p">A secure alert reaches the central command system for the authority to act on.</div>
+      </div>
+    </div>
+    <div class="pipeline-scroll-hint">Swipe to see the full pipeline →</div>
+
+    <div class="alert-card">
+      <div>
+        <div class="l mono">EVENT</div>
+        <div class="v">Rash overtaking — bus 42B, rear camera</div>
+      </div>
+      <div>
+        <div class="l mono">PLATE (CONFIDENCE)</div>
+        <div class="v conf">KA 05 AB 1147 · 94.2%</div>
+      </div>
+      <div>
+        <div class="l mono">TIMESTAMP</div>
+        <div class="v">2026-09-04 · 14:03:05 IST</div>
+      </div>
+      <div>
+        <div class="l mono">LOCATION</div>
+        <div class="v">12.9716° N, 77.5946° E</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="dashboard">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kicker">Command center</div>
+      <h2 class="sec-h">One map, the whole fleet, every open issue</h2>
+      <p class="sec-p">Transport authorities see the city the way the buses see it — as a live, continuously updating survey rather than a monthly inspection report.</p>
+    </div>
+    <div class="dash-frame reveal">
+      <div class="dash-top">
+        <span>city-wide · 214 active buses · updated 4s ago</span>
+        <div class="legend">
+          <span><i style="background:#FF7A45"></i>Road hazard</span>
+          <span><i style="background:#4FA3D1"></i>Congestion</span>
+          <span><i style="background:#34D399"></i>Safety event</span>
+          <span><i style="background:#FF5470"></i>Incident</span>
+        </div>
+      </div>
+      <div class="dash-body">
+        <svg viewBox="0 0 900 360" width="100%" height="auto">
+          <rect width="900" height="360" fill="#0F151C"/>
+          <g stroke="#1E2733" stroke-width="1">
+            <line x1="0" y1="72" x2="900" y2="72"/>
+            <line x1="0" y1="144" x2="900" y2="144"/>
+            <line x1="0" y1="216" x2="900" y2="216"/>
+            <line x1="0" y1="288" x2="900" y2="288"/>
+            <line x1="150" y1="0" x2="150" y2="360"/>
+            <line x1="330" y1="0" x2="330" y2="360"/>
+            <line x1="510" y1="0" x2="510" y2="360"/>
+            <line x1="690" y1="0" x2="690" y2="360"/>
+          </g>
+          <!-- congestion heat blobs -->
+          <ellipse cx="330" cy="144" rx="70" ry="46" fill="#4FA3D1" opacity="0.18"/>
+          <ellipse cx="600" cy="230" rx="90" ry="55" fill="#4FA3D1" opacity="0.14"/>
+          <ellipse cx="150" cy="288" rx="55" ry="38" fill="#4FA3D1" opacity="0.12"/>
+          <!-- routes -->
+          <path d="M20 320 L150 320 L150 216 L330 216 L330 72 L510 72 L510 144 L690 144 L690 40 L870 40" stroke="#33404D" stroke-width="2" fill="none"/>
+          <path d="M20 60 L200 60 L200 200 L400 200 L400 320 L620 320 L620 250 L860 250" stroke="#242E3A" stroke-width="2" fill="none"/>
+          <!-- markers -->
+          <circle cx="330" cy="216" r="5" fill="#FF7A45"/>
+          <circle cx="510" cy="72" r="5" fill="#FF5470"/>
+          <circle cx="200" cy="200" r="5" fill="#34D399"/>
+          <circle cx="600" cy="230" r="5" fill="#4FA3D1"/>
+          <circle cx="690" cy="144" r="5" fill="#FF7A45"/>
+          <circle cx="150" cy="288" r="5" fill="#4FA3D1"/>
+          <circle cx="400" cy="320" r="5" fill="#34D399"/>
+          <text x="338" y="212" fill="#5E6B78" font-size="10" font-family="JetBrains Mono">JN-14</text>
+          <text x="518" y="68" fill="#5E6B78" font-size="10" font-family="JetBrains Mono">JN-07</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="wrap">
+    <div class="cta-box reveal">
+      <div>
+        <h2>Give your transport authority a live view of the whole city.</h2>
+        <p>Deploy on the buses already running your routes and start seeing road, traffic and safety data from day one.</p>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a class="btn btn-solid btn-lg" href="request-demo.html">Request a demo</a>
+        <a class="btn btn-ghost btn-lg" href="technical-brief.html">Read the technical brief</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="logo">
+        <span class="wordmark">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</span>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>PLATFORM</h4>
+          <a href="#platform">Architecture</a>
+          <a href="#capabilities">Detection modules</a>
+          <a href="dashboard.html">Command center</a>
+        </div>
+        <div class="foot-col">
+          <h4>SOLUTION</h4>
+          <a href="#incidents">Incident pipeline</a>
+          <a href="#problem">Why buses</a>
+        </div>
+        <div class="foot-col">
+          <h4>CONTACT</h4>
+          <a href="mailto:team@thrinethra-urban.ai">team@thrinethra-urban.ai</a>
+          <a href="technical-brief.html">Technical documentation</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet</span>
+      <span>© 2026 Drishti. Built for city transport authorities.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Hamburger nav toggle
+  (function(){
+    var btn = document.getElementById('menuBtn');
+    var menu = document.getElementById('mobileMenu');
+    if(!btn || !menu) return;
+
+    function closeMenu(){
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+    function toggleMenu(){
+      var isOpen = menu.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      toggleMenu();
+    });
+    menu.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', closeMenu);
+    });
+    document.addEventListener('click', function(e){
+      if(!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+    });
+    window.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeMenu();
+    });
+    window.addEventListener('resize', closeMenu);
+  })();
+</script>
+
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/realtime-engine.js"></script>
+
+<script>
+  // Dynamic Authentication Guard & Navigation State
+  (function(){
+    var navCmdBadge = document.getElementById('navCmdBadge');
+    var mmCmdBadge = document.getElementById('mmCmdBadge');
+    var navCommandCenterLink = document.getElementById('navCommandCenterLink');
+    var mmCommandCenterLink = document.getElementById('mmCommandCenterLink');
+    var navCtaContainer = document.getElementById('navCtaContainer');
+    var mmCtaContainer = document.getElementById('mmCtaContainer');
+    var menuBtn = document.getElementById('menuBtn');
+
+    function updateNavForUser(user) {
+      if (user) {
+        // User is authenticated
+        if (navCmdBadge) {
+          navCmdBadge.textContent = '● Live';
+          navCmdBadge.className = 'cmd-badge unlocked';
+        }
+        if (mmCmdBadge) {
+          mmCmdBadge.textContent = '● Live';
+          mmCmdBadge.className = 'cmd-badge unlocked';
+        }
+
+        // Desktop CTA
+        if (navCtaContainer) {
+          navCtaContainer.innerHTML = `
+            <div class="user-nav-chip hide-mobile">
+              <img src="${user.avatar}" class="user-nav-avatar" alt="${user.name}">
+              <span class="user-nav-name">${user.firstName || user.name}</span>
+              <button type="button" id="btnLogoutNav" class="btn-logout-mini" title="Log out">✕</button>
+            </div>
+            <a class="btn btn-solid hide-mobile" href="dashboard.html">Command Center →</a>
+            <button class="hamburger" id="menuBtnDynamic" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+          `;
+          var dynMenuBtn = document.getElementById('menuBtnDynamic');
+          if (dynMenuBtn && menuBtn) {
+            dynMenuBtn.addEventListener('click', function(e){
+              e.stopPropagation();
+              menuBtn.click();
+            });
+          }
+          var btnLogout = document.getElementById('btnLogoutNav');
+          if (btnLogout) {
+            btnLogout.addEventListener('click', function(){
+              window.ThrinethraAuth.logout('index.html');
+            });
+          }
+        }
+
+        // Mobile Menu CTA
+        if (mmCtaContainer) {
+          mmCtaContainer.innerHTML = `
+            <div style="padding:10px 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${user.avatar}" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--alert);" alt="${user.name}">
+                <div>
+                  <div style="font-size:0.9rem; font-weight:600; color:#fff;">${user.name}</div>
+                  <div style="font-size:0.75rem; color:var(--text-mid);">${user.role}</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <a class="btn btn-solid" style="flex:1; text-align:center;" href="dashboard.html">Launch Command Center</a>
+              <button class="btn btn-ghost" id="btnMobileLogout" style="background:none; cursor:pointer;" type="button">Log Out</button>
+            </div>
+          `;
+          var mLogout = document.getElementById('btnMobileLogout');
+          if (mLogout) {
+            mLogout.addEventListener('click', function(){
+              window.ThrinethraAuth.logout('index.html');
+            });
+          }
+        }
+      } else {
+        // User is logged out
+        if (navCmdBadge) {
+          navCmdBadge.textContent = '🔒 Locked';
+          navCmdBadge.className = 'cmd-badge locked';
+        }
+        if (mmCmdBadge) {
+          mmCmdBadge.textContent = '🔒 Locked';
+          mmCmdBadge.className = 'cmd-badge locked';
+        }
+
+        if (navCtaContainer) {
+          navCtaContainer.innerHTML = `
+            <a class="btn btn-ghost hide-mobile" href="register.html">Register</a>
+            <a class="btn btn-solid" href="login.html">Login</a>
+            <button class="hamburger" id="menuBtnDynamic" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+          `;
+          var dynMenuBtn = document.getElementById('menuBtnDynamic');
+          if (dynMenuBtn && menuBtn) {
+            dynMenuBtn.addEventListener('click', function(e){
+              e.stopPropagation();
+              menuBtn.click();
+            });
+          }
+        }
+
+        if (mmCtaContainer) {
+          mmCtaContainer.innerHTML = `
+            <a class="btn btn-ghost" href="register.html">Register</a>
+            <a class="btn btn-solid" href="login.html">Login</a>
+          `;
+        }
+      }
+    }
+
+    // Intercept protected link clicks if not authenticated
+    function handleProtectedNav(e) {
+      if (!window.ThrinethraAuth || !window.ThrinethraAuth.isAuthenticated()) {
+        e.preventDefault();
+        e.stopPropagation();
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu && mobileMenu.classList.contains('open')) {
+          mobileMenu.classList.remove('open');
+          if (menuBtn) menuBtn.classList.remove('open');
+        }
+        window.ThrinethraAuth.showAuthRequiredModal('dashboard.html');
+      }
+    }
+
+    if (navCommandCenterLink) navCommandCenterLink.addEventListener('click', handleProtectedNav);
+    if (mmCommandCenterLink) mmCommandCenterLink.addEventListener('click', handleProtectedNav);
+
+    if (window.ThrinethraAuth) {
+      window.ThrinethraAuth.onAuthStateChanged(updateNavForUser);
+    }
+  })();
+
+  // Dynamic Live Detection Feed (Real-Time Engine Integration)
+  (function(){
+    var heroDetectionList = document.getElementById('heroDetectionList');
+    var heroSpeedBadge = document.getElementById('heroSpeedBadge');
+    var heroRouteId = document.getElementById('heroRouteId');
+    var heroBusPin = document.getElementById('heroBusPin');
+
+    function tagClass(type) {
+      switch(type) {
+        case 'HAZARD': return 'tag-hazard';
+        case 'TRAFFIC': return 'tag-live';
+        case 'INCIDENT': return 'tag-danger';
+        default: return 'tag-live';
+      }
+    }
+
+    function renderFeed(list) {
+      if (!heroDetectionList) return;
+      var top5 = list.slice(0, 5);
+      var html = '';
+      top5.forEach(function(item){
+        html += `
+          <div class="log-line">
+            <span class="log-t mono">${item.time}</span>
+            <span class="log-tag ${tagClass(item.type)}">${item.type}</span>
+            <span class="log-desc">${item.title}, ${item.location} (${item.conf || 95}% conf)</span>
+          </div>
+        `;
+      });
+      heroDetectionList.innerHTML = html;
+    }
+
+    if (window.ThrinethraRealtimeEngine) {
+      var state = window.ThrinethraRealtimeEngine.getState();
+      renderFeed(state.recentDetections);
+
+      window.ThrinethraRealtimeEngine.on('detections:list', function(list){
+        renderFeed(list);
+      });
+
+      window.ThrinethraRealtimeEngine.on('fleet:update', function(fleet){
+        if (fleet && fleet.length > 0) {
+          var bus = fleet[0];
+          if (heroSpeedBadge) heroSpeedBadge.textContent = bus.speed.toFixed(2) + ' KM/H';
+          if (heroRouteId) heroRouteId.textContent = 'ROUTE ' + bus.route + ' · BUS ' + bus.id;
+          if (heroBusPin) {
+            var cx = 210 + (Math.sin(Date.now() / 1500) * 12);
+            heroBusPin.setAttribute('cx', cx.toFixed(1));
+          }
+        }
+      });
+    }
+  })();
+</script>
+
+<script>
+  (function(){
+    var tiltEl = document.getElementById('titleTilt');
+    var floatWrap = tiltEl ? tiltEl.parentElement : null;
+    if(!tiltEl || !floatWrap) return;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion) return;
+
+    var maxTilt = 10;      // deg
+    var current = { x:0, y:0 };
+    var target = { x:0, y:0 };
+    var raf = null;
+
+    function apply(){
+      current.x += (target.x - current.x) * 0.08;
+      current.y += (target.y - current.y) * 0.08;
+      tiltEl.style.transform =
+        'perspective(1000px) rotateX(' + current.x.toFixed(2) + 'deg) rotateY(' + current.y.toFixed(2) + 'deg)';
+      raf = requestAnimationFrame(apply);
+    }
+
+    function onMove(clientX, clientY){
+      var r = floatWrap.getBoundingClientRect();
+      var px = (clientX - r.left) / r.width;   // 0..1
+      var py = (clientY - r.top) / r.height;   // 0..1
+      target.y = (px - 0.5) * (maxTilt * 2);       // left/right -> rotateY
+      target.x = -(py - 0.5) * (maxTilt * 1.4);    // up/down -> rotateX
+    }
+
+    function onLeave(){
+      target.x = 0; target.y = 0;
+    }
+
+    window.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
+    window.addEventListener('mouseleave', onLeave);
+    window.addEventListener('touchmove', function(e){
+      if(e.touches && e.touches[0]) onMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive:true });
+    window.addEventListener('touchend', onLeave);
+
+    apply();
+  })();
+
+  // Scroll-driven parallax on the hero title — moves with the page, not fixed
+  (function(){
+    var heroInner = document.querySelector('.hero-inner');
+    var hero = document.querySelector('.hero');
+    if(!heroInner || !hero) return;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion) return;
+
+    function onScroll(){
+      var rect = hero.getBoundingClientRect();
+      var progress = Math.min(Math.max(-rect.top / (rect.height || 1), 0), 1); // 0 at top, 1 once scrolled past
+      var y = progress * 90;          // drifts up to 90px as you scroll down
+      var fade = 1 - progress * 0.9;  // fades out gently
+      var scale = 1 - progress * 0.06;
+      heroInner.style.transform = 'translateY(' + (-y).toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+      heroInner.style.opacity = fade.toFixed(2);
+    }
+    window.addEventListener('scroll', onScroll, { passive:true });
+    onScroll();
+  })();
+
+  // Reveal-on-scroll for section content — nothing sits static waiting on the page
+  (function(){
+    var targets = document.querySelectorAll('.reveal, .reveal-stagger');
+    if(!targets.length) return;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion){
+      targets.forEach(function(el){ el.classList.add('in-view'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold:0.18, rootMargin:'0px 0px -8% 0px' });
+    targets.forEach(function(el){ io.observe(el); });
+  })();
+</script>
+</body>
+</html>

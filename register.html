@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — THRINETHRA</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-900:#0A0E13;
+    --bg-800:#0F151C;
+    --bg-700:#141C25;
+    --line:#212B36;
+    --line-soft:#1A222C;
+    --text-hi:#EAEFF3;
+    --text-mid:#9AA7B4;
+    --text-low:#5E6B78;
+    --alert:#FF7A45;
+    --alert-dim:#4A2E20;
+    --live:#34D399;
+    --route:#4FA3D1;
+    --danger:#FF5470;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg-900); color:var(--text-hi);
+    font-family:'Inter',sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  a{ color:inherit; text-decoration:none; }
+  img,svg{ display:block; max-width:100%; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; width:100%; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    background:rgba(10,14,19,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+
+  .wordmark{
+    display:inline-flex; align-items:baseline;
+    font-family:'Space Grotesk',sans-serif; font-weight:600;
+    font-size:1.5rem; letter-spacing:0.01em; color:#fff; line-height:1; white-space:nowrap;
+  }
+  .wordmark .gate-i{ position:relative; display:inline-flex; align-items:flex-end; justify-content:center; width:0.46em; height:1em; margin:0 0.01em; transform:translateY(0.02em); }
+  .wordmark .gate-frame{ position:absolute; left:0.03em; right:0.03em; top:0.02em; height:0.66em; border:0.09em solid var(--alert); border-bottom:none; border-radius:0.05em 0.05em 0 0; }
+  .wordmark .gate-stem{ position:relative; width:0.09em; height:0.74em; background:#fff; border-radius:0.03em; z-index:2; }
+  .wordmark .gate-star{ position:absolute; top:-0.2em; right:-0.14em; width:0.34em; height:0.34em; z-index:3; }
+
+  .nav-cta{ display:flex; gap:10px; align-items:center; }
+  .btn{ padding:10px 18px; border-radius:7px; font-size:0.88rem; font-weight:600; border:1px solid var(--line); white-space:nowrap; }
+  .btn-ghost{ color:var(--text-mid); }
+  .btn-ghost:hover{ color:var(--text-hi); border-color:#33404D; }
+  .btn-solid{ background:var(--alert); color:#191008; border-color:var(--alert); }
+  .btn-solid:hover{ background:#ff8b5c; }
+
+  /* ---------- AUTH SHELL ---------- */
+  .auth-shell{
+    flex:1; position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    padding:56px 20px;
+  }
+  .auth-grid-bg{
+    position:absolute; inset:0; z-index:0; opacity:0.5;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+  }
+
+  .emblem-badge{
+    position:relative; border-radius:50%; overflow:hidden; flex-shrink:0;
+    border:1px solid var(--line);
+    box-shadow:0 0 0 5px var(--bg-900), 0 0 46px rgba(255,122,69,0.2);
+    width:84px; height:84px; margin:0 auto 16px;
+    animation:emblemFloat 6s ease-in-out infinite;
+  }
+  .emblem-badge img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .emblem-badge::after{ content:""; position:absolute; inset:0; border-radius:50%; border:1px solid var(--alert); opacity:0.45; }
+  @keyframes emblemFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  @media (prefers-reduced-motion:reduce){ .emblem-badge{ animation:none; } }
+
+  .auth-card{
+    width:100%; max-width:480px; position:relative; z-index:1;
+    background:var(--bg-800); border:1px solid var(--line); border-radius:18px;
+    padding:32px 30px 28px; box-shadow:0 20px 50px rgba(0,0,0,0.5);
+  }
+  .auth-head{ text-align:center; margin-bottom:20px; }
+  .auth-head h1{ font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:600; }
+  .auth-head p{ color:var(--text-mid); font-size:0.86rem; margin-top:6px; }
+
+  .social-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .auth-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px; border-radius:8px;
+    background:var(--bg-900); border:1px solid var(--line);
+    color:var(--text-hi); font-size:0.86rem; font-weight:500; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .auth-btn:hover{ background:var(--bg-700); border-color:var(--alert); }
+  .auth-btn svg{ width:17px; height:17px; flex-shrink:0; }
+
+  .divider-word{
+    text-align:center; font-size:0.72rem; letter-spacing:0.08em; color:var(--text-low);
+    margin:14px 0; position:relative;
+  }
+  .divider-word::before, .divider-word::after{
+    content:''; position:absolute; top:50%; width:34%; height:1px; background:var(--line);
+  }
+  .divider-word::before{ left:0; }
+  .divider-word::after{ right:0; }
+
+  .notice-banner{
+    display:none; padding:10px 14px; border-radius:8px; margin-bottom:14px;
+    font-size:0.84rem; line-height:1.4;
+  }
+  .notice-banner.error{ display:block; background:rgba(255,84,112,0.12); border:1px solid rgba(255,84,112,0.3); color:#FF7A90; }
+  .notice-banner.success{ display:block; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); color:var(--live); }
+
+  .field{ margin-bottom:15px; }
+  .field label{ display:block; font-size:0.8rem; color:var(--text-mid); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:10px 13px; border-radius:8px; border:1px solid var(--line);
+    background:var(--bg-900); color:var(--text-hi); font-size:0.9rem; font-family:'Inter',sans-serif;
+    outline:none; transition:border-color .2s;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--alert); }
+  .field input::placeholder{ color:var(--text-low); }
+  .field .hint{ font-size:0.72rem; color:var(--text-low); margin-top:5px; }
+
+  .form-row-split{ display:flex; gap:12px; }
+  .form-row-split .field{ flex:1; }
+  @media (max-width:440px){
+    .form-row-split{ flex-direction:column; gap:0; }
+    .social-grid{ grid-template-columns:1fr; }
+  }
+
+  .check-row{ display:flex; align-items:flex-start; gap:9px; font-size:0.82rem; color:var(--text-mid); margin-bottom:18px; }
+  .check-row input[type="checkbox"]{ accent-color:var(--alert); width:15px; height:15px; margin-top:2px; flex-shrink:0; cursor:pointer; }
+  .check-row a{ color:var(--alert); }
+  .check-row a:hover{ text-decoration:underline; }
+
+  .btn-block{ width:100%; text-align:center; padding:12px; border-radius:8px; font-size:0.92rem; border:none; cursor:pointer; font-family:'Inter',sans-serif; }
+
+  .switch-row{ text-align:center; font-size:0.86rem; color:var(--text-mid); margin-top:18px; }
+  .switch-row a{ color:var(--alert); font-weight:600; }
+  .switch-row a:hover{ text-decoration:underline; }
+
+  footer{ padding:20px 0; border-top:1px solid var(--line-soft); text-align:center; font-size:0.8rem; color:var(--text-low); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="wordmark" href="index.html">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</a>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="index.html">Back to site</a>
+      <a class="btn btn-solid" href="login.html">Login</a>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-shell">
+  <div class="auth-grid-bg"></div>
+  <div class="auth-card">
+    <div class="emblem-badge">
+      <img src="logo.png" alt="Thrinethra emblem">
+    </div>
+    <div class="auth-head">
+      <h1>Create your Thrinethra account</h1>
+      <p>Set up command center access for your transport authority.</p>
+    </div>
+
+    <div class="social-grid">
+      <button class="auth-btn" type="button" id="regGoogleBtn">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.3 35.9 26.8 37 24 37c-5.2 0-9.6-3.5-11.2-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.2 5.2C40.4 36.5 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        Google
+      </button>
+      <button class="auth-btn" type="button" id="regAppleBtn">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M16.36 1.5c.1 1.05-.32 2.1-.95 2.86-.66.79-1.75 1.4-2.8 1.32-.12-1.02.37-2.08 1-2.79.7-.8 1.85-1.4 2.75-1.39zM20.9 17.2c-.5 1.15-.74 1.66-1.38 2.68-.9 1.42-2.16 3.2-3.73 3.22-1.4.02-1.76-.9-3.66-.9-1.9 0-2.3.88-3.68.92-1.55.05-2.73-1.53-3.63-2.94-1.98-3.05-2.5-6.63-1.1-9.55.98-2.06 2.75-3.36 4.65-3.39 1.42-.03 2.76.96 3.63.96.86 0 2.5-1.19 4.2-1.02.72.03 2.73.29 4.03 2.2-3.65 2-3.05 5.83.67 7.82z"/></svg>
+        Apple ID
+      </button>
+    </div>
+
+    <div class="divider-word">OR REGISTER WITH EMAIL</div>
+
+    <div id="regNotice" class="notice-banner"></div>
+
+    <form id="registerForm">
+      <div class="form-row-split">
+        <div class="field">
+          <label for="fname">First name</label>
+          <input type="text" id="fname" placeholder="Thri" required>
+        </div>
+        <div class="field">
+          <label for="lname">Last name</label>
+          <input type="text" id="lname" placeholder="Nethra" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="org">Transport authority / organisation</label>
+        <input type="text" id="org" placeholder="City Metropolitan Transport Corp." required>
+      </div>
+      <div class="field">
+        <label for="email">Work email</label>
+        <input type="email" id="email" placeholder="you@transportauthority.gov" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required minlength="6">
+        <div class="hint">At least 6 characters.</div>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="terms" required>
+        <label for="terms">I agree to the <a href="legal.html">terms of service</a> and <a href="legal.html">data handling policy</a>.</label>
+      </div>
+      <button class="btn btn-solid btn-block" type="submit" id="submitRegBtn">Create authority account</button>
+    </form>
+
+    <div class="switch-row">Already have an account? <a href="login.html">Log in</a></div>
+  </div>
+</main>
+
+<footer>© 2026 Thrinethra. Built for city transport authorities.</footer>
+
+<script src="assets/js/auth.js"></script>
+<script>
+  (function(){
+    var notice = document.getElementById('regNotice');
+    function showMsg(text, type){
+      if(!notice) return;
+      notice.textContent = text;
+      notice.className = 'notice-banner ' + type;
+    }
+
+    function routeToDashboard(userName){
+      showMsg('Account created for ' + userName + '! Launching Command Center…', 'success');
+      setTimeout(function(){
+        window.location.href = 'dashboard.html';
+      }, 700);
+    }
+
+    // Google register
+    var regGoogleBtn = document.getElementById('regGoogleBtn');
+    if (regGoogleBtn) {
+      regGoogleBtn.addEventListener('click', async function(){
+        try {
+          regGoogleBtn.disabled = true;
+          var user = await window.ThrinethraAuth.loginWithGoogle();
+          routeToDashboard(user.name);
+        } catch(err) {
+          regGoogleBtn.disabled = false;
+          if (err && err.message) showMsg(err.message, 'error');
+        }
+      });
+    }
+
+    // Apple register
+    var regAppleBtn = document.getElementById('regAppleBtn');
+    if (regAppleBtn) {
+      regAppleBtn.addEventListener('click', async function(){
+        try {
+          regAppleBtn.disabled = true;
+          var user = await window.ThrinethraAuth.loginWithApple();
+          routeToDashboard(user.name);
+        } catch(err) {
+          regAppleBtn.disabled = false;
+          if (err && err.message) showMsg(err.message, 'error');
+        }
+      });
+    }
+
+    // Form submit register
+    var form = document.getElementById('registerForm');
+    var submitBtn = document.getElementById('submitRegBtn');
+    if (form) {
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        var fname = document.getElementById('fname').value;
+        var lname = document.getElementById('lname').value;
+        var org = document.getElementById('org').value;
+        var email = document.getElementById('email').value;
+        var pass = document.getElementById('password').value;
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Provisioning access…';
+          }
+          var user = await window.ThrinethraAuth.register({
+            firstName: fname,
+            lastName: lname,
+            org: org,
+            email: email,
+            password: pass
+          });
+          routeToDashboard(user.name);
+        } catch(err) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create authority account';
+          }
+          showMsg(err.message || 'Registration failed.', 'error');
+        }
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>

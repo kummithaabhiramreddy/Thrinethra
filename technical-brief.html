@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical brief — THRINETHRA</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-900:#0A0E13; --bg-800:#0F151C; --line:#212B36; --line-soft:#1A222C;
+    --text-hi:#EAEFF3; --text-mid:#9AA7B4; --text-low:#5E6B78; --alert:#FF7A45; --alert-dim:#4A2E20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--bg-900); color:var(--text-hi); font-family:'Inter',sans-serif; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  a{ color:var(--alert); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  h1,h2,h3{ font-family:'Space Grotesk',sans-serif; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .wrap{ max-width:760px; margin:0 auto; padding:0 24px; }
+
+  nav{ background:rgba(10,14,19,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft); position:sticky; top:0; z-index:10; }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+  .wordmark{ display:inline-flex; align-items:baseline; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.28rem; letter-spacing:0.01em; color:#fff; line-height:1; white-space:nowrap; }
+  .wordmark .gate-i{ position:relative; display:inline-flex; align-items:flex-end; justify-content:center; width:0.46em; height:1em; margin:0 0.01em; transform:translateY(0.02em); }
+  .wordmark .gate-frame{ position:absolute; left:0.03em; right:0.03em; top:0.02em; height:0.66em; border:0.09em solid var(--alert); border-bottom:none; border-radius:0.05em 0.05em 0 0; }
+  .wordmark .gate-stem{ position:relative; width:0.09em; height:0.74em; background:#fff; border-radius:0.03em; z-index:2; }
+  .wordmark .gate-star{ position:absolute; top:-0.2em; right:-0.14em; width:0.34em; height:0.34em; z-index:3; }
+  .btn{ padding:9px 16px; border-radius:7px; font-size:0.86rem; font-weight:600; border:1px solid var(--line); color:var(--text-mid); }
+  .btn:hover{ color:var(--text-hi); text-decoration:none; border-color:#33404D; }
+
+  .doc-head{ padding:52px 0 20px; border-bottom:1px solid var(--line-soft); margin-bottom:34px; }
+  .doc-kicker{ color:var(--alert); font-size:0.84rem; font-weight:600; margin-bottom:10px; }
+  .doc-head h1{ font-size:2rem; font-weight:600; letter-spacing:-0.01em; }
+  .doc-meta{ color:var(--text-low); font-size:0.84rem; margin-top:10px; }
+
+  main{ padding-bottom:70px; }
+  section{ margin-bottom:40px; }
+  h2{ font-size:1.3rem; margin-bottom:14px; }
+  h3{ font-size:1.05rem; margin:20px 0 8px; color:var(--text-hi); }
+  p{ color:var(--text-mid); margin-bottom:12px; }
+  ul, ol{ color:var(--text-mid); padding-left:22px; margin-bottom:12px; }
+  li{ margin-bottom:6px; }
+
+  .arch-flow{ display:flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:18px 0; }
+  @media (max-width:640px){ .arch-flow{ flex-direction:column; } }
+  .arch-col{ flex:1; padding:20px; background:var(--bg-800); }
+  .arch-col + .arch-col{ border-left:1px solid var(--line); }
+  @media (max-width:640px){ .arch-col + .arch-col{ border-left:none; border-top:1px solid var(--line); } }
+  .arch-tag{ font-size:0.7rem; color:var(--text-low); margin-bottom:6px; }
+  .arch-title{ font-weight:600; margin-bottom:10px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:0.88rem; margin:14px 0; }
+  th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--line-soft); color:var(--text-mid); }
+  th{ color:var(--text-low); font-size:0.76rem; font-weight:600; }
+
+  footer{ border-top:1px solid var(--line-soft); padding:24px 0; text-align:center; font-size:0.82rem; color:var(--text-low); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="wordmark" href="index.html">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</a>
+    <a class="btn" href="index.html">Back to overview</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="doc-head">
+    <div class="doc-kicker">Technical brief</div>
+    <h1>Edge-AI onboard processing, integrated with a centralized urban intelligence platform</h1>
+    <div class="doc-meta mono">v1.0 · Updated September 2026</div>
+  </div>
+
+  <main>
+    <section>
+      <h2>1. Problem</h2>
+      <p>City buses already travel almost every major road, every day, and are increasingly fitted with front, rear, side and cabin cameras. Today that footage is used only to review incidents after the fact. Meanwhile transport authorities rely on fixed CCTV, manual inspection and citizen complaints to spot road defects, congestion, missing infrastructure and unsafe driving — all of which arrive late and cover only a fraction of the city.</p>
+    </section>
+
+    <section>
+      <h2>2. Approach</h2>
+      <p>Thrinethra turns each bus into a mobile sensing unit. An onboard edge-AI unit analyses the camera streams in real time; a centralized platform aggregates what every bus in the fleet reports into one live, GIS-based picture of the city.</p>
+      <div class="arch-flow">
+        <div class="arch-col">
+          <div class="arch-tag mono">01 · ONBOARD, PER BUS</div>
+          <div class="arch-title">Edge processing unit</div>
+          <ul>
+            <li>Ingests front, rear, side and cabin streams</li>
+            <li>Runs detection, classification and tracking locally</li>
+            <li>Tags every event with timestamp and GPS</li>
+            <li>Buffers and syncs opportunistically, no continuous upload</li>
+          </ul>
+        </div>
+        <div class="arch-col">
+          <div class="arch-tag mono">02 · IN TRANSIT</div>
+          <div class="arch-title">Event, not footage</div>
+          <ul>
+            <li>Compact structured alert: type, location, confidence, clip</li>
+            <li>Encrypted transmission to the command platform</li>
+            <li>Priority queue for safety-critical events</li>
+          </ul>
+        </div>
+        <div class="arch-col">
+          <div class="arch-tag mono">03 · CENTRAL PLATFORM</div>
+          <div class="arch-title">Fleet-wide command center</div>
+          <ul>
+            <li>Aggregates events across the fleet in real time</li>
+            <li>GIS map with congestion heat layers</li>
+            <li>Origin–destination and route-delay analytics</li>
+          </ul>
+        </div>
+      </div>
+      <p>Because the onboard unit sends compact events rather than raw video, bandwidth use stays low even across a fleet of thousands of buses — the platform sees everything the cameras see without needing to move the footage itself.</p>
+    </section>
+
+    <section>
+      <h2>3. Detection capabilities</h2>
+      <table>
+        <thead><tr><th>Category</th><th>What it detects</th></tr></thead>
+        <tbody>
+          <tr><td>Road &amp; infrastructure</td><td>Potholes, damaged road surface, missing dividers, faded/missing zebra crossings, damaged or missing signboards, waterlogging</td></tr>
+          <tr><td>Traffic</td><td>Vehicle detection, classification and counting; density estimation; bottleneck identification</td></tr>
+          <tr><td>Pedestrian safety</td><td>Vulnerable crossing situations, including school children crossing without a signal</td></tr>
+          <tr><td>Incidents</td><td>Hit-and-run and rash-driving detection with vehicle tracking, plate extraction, confidence score, timestamp and GPS</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. Centralized platform outputs</h2>
+      <ul>
+        <li>GIS map of live events across the fleet</li>
+        <li>Congestion heat maps and hourly traffic analytics</li>
+        <li>Road condition maps with severity and location</li>
+        <li>Origin–destination pattern analysis and route-delay estimates</li>
+        <li>Incident reports with plate confidence, timestamp and GPS</li>
+        <li>Exportable reports (PDF/CSV) for maintenance and planning teams</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Why edge processing</h2>
+      <p>Running detection, classification and tracking on the bus itself — rather than streaming raw video to a server — keeps bandwidth and storage costs low, works even with intermittent connectivity, and gets alerts to the command center in seconds rather than after a batch upload.</p>
+    </section>
+  </main>
+
+  <footer>Have questions about the architecture? <a href="request-demo.html">Talk to us</a>.</footer>
+</div>
+
+</body>
+</html>

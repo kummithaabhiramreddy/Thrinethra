@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request a demo — THRINETHRA</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-900:#0A0E13; --card-bg:#161B22; --card-bg-2:#1B2129;
+    --line:#242E38; --text-hi:#F3F1EC; --text-mid:#9AA7B4; --text-low:#6B7684; --alert:#FF7A45;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--bg-900); color:var(--text-hi); font-family:'Inter',sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:480px; margin:0 auto; padding:0 22px 60px; }
+  .top-logo{ display:flex; align-items:center; gap:9px; padding:26px 0 6px; }
+  .wordmark{ display:inline-flex; align-items:baseline; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.28rem; letter-spacing:0.01em; color:#fff; line-height:1; white-space:nowrap; }
+  .wordmark .gate-i{ position:relative; display:inline-flex; align-items:flex-end; justify-content:center; width:0.46em; height:1em; margin:0 0.01em; transform:translateY(0.02em); }
+  .wordmark .gate-frame{ position:absolute; left:0.03em; right:0.03em; top:0.02em; height:0.66em; border:0.09em solid var(--alert); border-bottom:none; border-radius:0.05em 0.05em 0 0; }
+  .wordmark .gate-stem{ position:relative; width:0.09em; height:0.74em; background:#fff; border-radius:0.03em; z-index:2; }
+  .wordmark .gate-star{ position:absolute; top:-0.2em; right:-0.14em; width:0.34em; height:0.34em; z-index:3; }
+
+  .hero-h{ font-family:'Fraunces',serif; font-weight:500; font-size:2.15rem; line-height:1.2; text-align:center; margin:34px 0 10px; }
+  .hero-sub{ text-align:center; color:var(--text-mid); font-size:0.92rem; margin-bottom:28px; }
+
+  .card{ background:var(--card-bg); border:1px solid var(--line); border-radius:20px; padding:26px 22px; }
+  .field{ margin-bottom:15px; }
+  .field label{ display:block; font-size:0.82rem; color:var(--text-mid); margin-bottom:7px; }
+  .field input, .field select, .field textarea{
+    width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+    background:var(--card-bg-2); color:var(--text-hi); font-size:0.9rem; font-family:'Inter',sans-serif; outline:none;
+  }
+  .field textarea{ resize:vertical; min-height:80px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--alert); }
+  .field input::placeholder, .field textarea::placeholder{ color:var(--text-low); }
+  .form-row-split{ display:flex; gap:12px; }
+  .form-row-split .field{ flex:1; }
+  @media (max-width:420px){ .form-row-split{ flex-direction:column; gap:0; } }
+
+  .btn-white{ display:block; width:100%; text-align:center; padding:14px; border-radius:12px; background:#fff; color:#141414; font-weight:600; font-size:0.95rem; border:none; cursor:pointer; margin-top:6px; }
+  .btn-white:hover{ background:#f0f0f0; }
+  .confirm-msg{ display:none; text-align:center; font-size:0.9rem; color:var(--text-mid); padding:10px 4px 2px; }
+  .confirm-msg.show{ display:block; }
+  .switch-row{ text-align:center; font-size:0.86rem; color:var(--text-mid); margin-top:22px; }
+  .switch-row a{ color:var(--alert); font-weight:600; }
+  .switch-row a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-logo">
+    <a class="wordmark">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</a>
+  </div>
+
+  <h1 class="hero-h">See it running on your fleet</h1>
+  <p class="hero-sub">Tell us about your city and we'll set up a walkthrough with live sample data.</p>
+
+  <div class="card">
+    <form id="demoForm">
+      <div class="form-row-split">
+        <div class="field"><label for="dfname">First name</label><input type="text" id="dfname" placeholder="Thri" required></div>
+        <div class="field"><label for="dlname">Last name</label><input type="text" id="dlname" placeholder="Nethra" required></div>
+      </div>
+      <div class="field"><label for="dorg">Transport authority / organisation</label><input type="text" id="dorg" placeholder="City Metropolitan Transport Corp." required></div>
+      <div class="field"><label for="demail">Work email</label><input type="email" id="demail" placeholder="you@transportauthority.gov" required></div>
+      <div class="field"><label for="dfleet">Fleet size</label>
+        <select id="dfleet">
+          <option>Under 100 buses</option>
+          <option>100 – 500 buses</option>
+          <option>500 – 2,000 buses</option>
+          <option>2,000+ buses</option>
+        </select>
+      </div>
+      <div class="field"><label for="dmsg">What would you like to see? (optional)</label><textarea id="dmsg" placeholder="Road condition mapping, incident detection, congestion analytics…"></textarea></div>
+      <button class="btn-white" type="submit" id="demoBtn">Request demo</button>
+    </form>
+    <div class="confirm-msg" id="demoConfirm">Thanks — someone from our team will reach out within one business day.</div>
+  </div>
+
+  <div class="switch-row">Just exploring? <a href="index.html">Back to the overview</a></div>
+</div>
+
+<script>
+  document.getElementById('demoForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('demoBtn');
+    var msg = document.getElementById('demoConfirm');
+    btn.disabled = true; btn.style.opacity = '0.7'; btn.textContent = 'Sending…';
+    setTimeout(function(){
+      btn.style.display = 'none';
+      msg.classList.add('show');
+    }, 600);
+  });
+</script>
+</body>
+</html>
