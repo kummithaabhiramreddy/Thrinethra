@@ -165,24 +165,24 @@
     position:relative; width:34px; height:34px; border-radius:50%;
     padding:0; border:2px solid var(--alert); background:var(--bg-800);
     cursor:pointer; outline:none; transition:transform .15s ease, box-shadow .15s ease;
-    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; display:none; align-items:center; justify-content:center;
   }
-  .user-avatar-btn:hover{ transform:scale(1.05); box-shadow:0 0 12px rgba(255,122,69,0.35); }
-  .user-avatar-btn img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; }
+  .user-avatar-btn:hover{ transform:scale(1.05); box-shadow:0 0 12px rgba(255,122,69,0.4); }
+  .user-avatar-btn img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; pointer-events:none; }
   .user-avatar-btn .online-dot{
     position:absolute; bottom:-1px; right:-1px; width:9px; height:9px;
-    border-radius:50%; background:var(--live); border:2px solid var(--bg-900);
+    border-radius:50%; background:var(--live); border:2px solid var(--bg-900); pointer-events:none;
   }
 
-  /* Floating User Account Card Popup */
+  /* Floating User Account Card Popup (Shows ONLY on avatar click) */
   .user-profile-popup{
-    position:fixed; top:64px; right:18px; width:310px; max-width:calc(100vw - 32px);
+    position:fixed; top:68px; right:18px; width:310px; max-width:calc(100vw - 32px);
     background:#161B22; border:1px solid var(--line); border-radius:16px;
-    box-shadow:0 20px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,122,69,0.15);
-    padding:18px; z-index:1000; animation:popupFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:0 20px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,122,69,0.2);
+    padding:18px; z-index:99999; animation:popupFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-family:'Inter',sans-serif; display:none;
   }
-  .user-profile-popup.open{ display:block; }
+  .user-profile-popup.open{ display:block !important; }
   @keyframes popupFadeIn{
     from{ opacity:0; transform:translateY(-8px) scale(0.96); }
     to{ opacity:1; transform:translateY(0) scale(1); }
@@ -552,14 +552,16 @@
       <a class="wordmark" href="index.html">THR<span class="gate-i"><span class="gate-frame"></span><span class="gate-stem"></span><svg class="gate-star" viewBox="0 0 24 24" fill="none"><path d="M12 1V23M2.5 6.2L21.5 17.8M21.5 6.2L2.5 17.8" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/></svg></span>NETHRA</a>
     </div>
     <div class="nav-cta" id="navCtaContainer">
-      <a class="btn btn-solid" href="login.html">Login</a>
+      <a class="btn btn-solid" id="navLoginBtn" href="login.html">Login</a>
+      <button class="user-avatar-btn" id="userAvatarBtn" type="button" aria-label="Account details" title="View Account Details">
+        <img src="logo.png" id="userAvatarImg" alt="User avatar">
+        <span class="online-dot"></span>
+      </button>
       <button class="hamburger" id="menuBtn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </div>
   <div class="mobile-menu" id="mobileMenu">
     <div class="wrap mm-inner">
-      <div id="mmUserRow"></div>
-
       <div class="mm-section-title">Core Features & AI</div>
       <a class="mm-link" href="#platform">
         <span class="mm-link-left">
@@ -629,7 +631,7 @@
   </div>
 </nav>
 
-<!-- Floating User Profile Card -->
+<!-- Floating User Profile Card (Opens ONLY when clicking small user logo) -->
 <div id="userProfilePopup" class="user-profile-popup" role="dialog" aria-modal="true" aria-label="Account details">
   <div class="upp-head">
     <img src="logo.png" id="uppAvatar" class="upp-avatar" alt="User avatar">
@@ -637,7 +639,7 @@
       <div id="uppName" class="upp-name">Active Officer</div>
       <div id="uppRole" class="upp-role">Fleet Director</div>
     </div>
-    <button type="button" id="uppCloseBtn" style="background:transparent; border:none; color:var(--text-low); font-size:1.1rem; cursor:pointer; padding:2px 6px; line-height:1;" aria-label="Close">✕</button>
+    <button type="button" id="uppCloseBtn" style="background:transparent; border:none; color:var(--text-low); font-size:1.2rem; cursor:pointer; padding:2px 6px; line-height:1;" aria-label="Close">✕</button>
   </div>
   <div class="upp-body">
     <div class="upp-row">
@@ -649,8 +651,8 @@
       <span id="uppOrg" class="upp-val">Urban Fleet Command · Hub 01</span>
     </div>
     <div class="upp-row">
-      <span class="upp-lbl">Access Level</span>
-      <span id="uppLevel" class="upp-val" style="color:var(--live); font-weight:600;">● Live Verified</span>
+      <span class="upp-lbl">Status</span>
+      <span id="uppLevel" class="upp-val" style="color:var(--live); font-weight:600;">● Active Session</span>
     </div>
   </div>
   <div class="upp-actions">
@@ -1009,37 +1011,99 @@
 </footer>
 
 <script>
-  // Hamburger nav toggle
+  // Hamburger and Profile Popup Controls
   (function(){
-    var btn = document.getElementById('menuBtn');
-    var menu = document.getElementById('mobileMenu');
-    if(!btn || !menu) return;
+    var menuBtn = document.getElementById('menuBtn');
+    var mobileMenu = document.getElementById('mobileMenu');
+    var userAvatarBtn = document.getElementById('userAvatarBtn');
+    var userProfilePopup = document.getElementById('userProfilePopup');
+    var uppCloseBtn = document.getElementById('uppCloseBtn');
+    var uppLogoutBtn = document.getElementById('uppLogoutBtn');
 
     function closeMenu(){
-      menu.classList.remove('open');
-      btn.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
+      if (mobileMenu) {
+        mobileMenu.classList.remove('open');
+      }
+      if (menuBtn) {
+        menuBtn.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
     }
     function toggleMenu(){
-      var isOpen = menu.classList.toggle('open');
-      btn.classList.toggle('open', isOpen);
-      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      closeProfilePopup();
+      if (!mobileMenu || !menuBtn) return;
+      var isOpen = mobileMenu.classList.toggle('open');
+      menuBtn.classList.toggle('open', isOpen);
+      menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     }
 
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      toggleMenu();
-    });
-    menu.querySelectorAll('a').forEach(function(a){
-      a.addEventListener('click', closeMenu);
-    });
+    function closeProfilePopup(){
+      if (userProfilePopup) userProfilePopup.classList.remove('open');
+    }
+    function toggleProfilePopup(){
+      closeMenu();
+      if (userProfilePopup) {
+        userProfilePopup.classList.toggle('open');
+      }
+    }
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        toggleMenu();
+      });
+    }
+
+    if (userAvatarBtn) {
+      userAvatarBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        toggleProfilePopup();
+      });
+    }
+
+    if (uppCloseBtn) {
+      uppCloseBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        closeProfilePopup();
+      });
+    }
+
+    if (uppLogoutBtn) {
+      uppLogoutBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        closeProfilePopup();
+        if (window.ThrinethraAuth) {
+          window.ThrinethraAuth.logout('index.html');
+        }
+      });
+    }
+
+    if (mobileMenu) {
+      mobileMenu.querySelectorAll('a').forEach(function(a){
+        a.addEventListener('click', closeMenu);
+      });
+    }
+
     document.addEventListener('click', function(e){
-      if(!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+      if (mobileMenu && !mobileMenu.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
+        closeMenu();
+      }
+      if (userProfilePopup && !userProfilePopup.contains(e.target) && userAvatarBtn && !userAvatarBtn.contains(e.target)) {
+        closeProfilePopup();
+      }
     });
+
     window.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') closeMenu();
+      if (e.key === 'Escape') {
+        closeMenu();
+        closeProfilePopup();
+      }
     });
-    window.addEventListener('resize', closeMenu);
+
+    window.addEventListener('resize', function(){
+      closeMenu();
+      closeProfilePopup();
+    });
   })();
 </script>
 
@@ -1054,47 +1118,16 @@
     var navCommandCenterLink = document.getElementById('navCommandCenterLink');
     var mmCommandCenterLink = document.getElementById('mmCommandCenterLink');
     var mmReportsLink = document.getElementById('mmReportsLink');
-    var navCtaContainer = document.getElementById('navCtaContainer');
+    var navLoginBtn = document.getElementById('navLoginBtn');
+    var userAvatarBtn = document.getElementById('userAvatarBtn');
+    var userAvatarImg = document.getElementById('userAvatarImg');
     var mmCtaContainer = document.getElementById('mmCtaContainer');
-    var mmUserRow = document.getElementById('mmUserRow');
-    var menuBtn = document.getElementById('menuBtn');
-
     var userProfilePopup = document.getElementById('userProfilePopup');
     var uppAvatar = document.getElementById('uppAvatar');
     var uppName = document.getElementById('uppName');
     var uppRole = document.getElementById('uppRole');
     var uppEmail = document.getElementById('uppEmail');
     var uppOrg = document.getElementById('uppOrg');
-    var uppCloseBtn = document.getElementById('uppCloseBtn');
-    var uppLogoutBtn = document.getElementById('uppLogoutBtn');
-
-    if (uppCloseBtn && userProfilePopup) {
-      uppCloseBtn.addEventListener('click', function(){
-        userProfilePopup.classList.remove('open');
-      });
-    }
-
-    if (uppLogoutBtn) {
-      uppLogoutBtn.addEventListener('click', function(){
-        window.ThrinethraAuth.logout('index.html');
-      });
-    }
-
-    // Close floating profile popup on click outside or Escape key
-    document.addEventListener('click', function(e) {
-      if (userProfilePopup && userProfilePopup.classList.contains('open')) {
-        var userAvatarBtn = document.getElementById('userAvatarBtn');
-        if (!userProfilePopup.contains(e.target) && (!userAvatarBtn || !userAvatarBtn.contains(e.target))) {
-          userProfilePopup.classList.remove('open');
-        }
-      }
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && userProfilePopup && userProfilePopup.classList.contains('open')) {
-        userProfilePopup.classList.remove('open');
-      }
-    });
 
     function updateNavForUser(user) {
       if (user) {
@@ -1108,66 +1141,23 @@
           mmCmdBadge.className = 'cmd-badge unlocked';
         }
 
-        // Populate Floating User Profile Card
+        // Show avatar logo button in header, hide login button
+        if (navLoginBtn) navLoginBtn.style.display = 'none';
+        if (userAvatarBtn) userAvatarBtn.style.display = 'inline-flex';
+        if (userAvatarImg) userAvatarImg.src = user.avatar || 'logo.png';
+
+        // Populate Floating User Profile Card (Opens ONLY when avatar is clicked)
         if (uppAvatar) uppAvatar.src = user.avatar || 'logo.png';
         if (uppName) uppName.textContent = user.name || 'Active Officer';
         if (uppRole) uppRole.textContent = user.role || 'Fleet Operations Officer';
         if (uppEmail) uppEmail.textContent = user.email || 'officer@thrinethra.gov.in';
         if (uppOrg) uppOrg.textContent = user.org || 'Urban Transit Control · Sector 04';
 
-        if (mmUserRow) {
-          mmUserRow.innerHTML = `
-            <div class="mobile-user-row">
-              <div class="mobile-user-info">
-                <img src="${user.avatar || 'logo.png'}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--alert); object-fit:cover;" alt="${user.name}">
-                <div>
-                  <div style="font-size:0.9rem; font-weight:600; color:#fff;">${user.name}</div>
-                  <div style="font-size:0.75rem; color:var(--text-mid);">${user.role || 'Officer'} · ${user.org || 'Transport Authority'}</div>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-
-        // Header CTA: Clean & Minimal (Small Avatar Logo Button + Hamburger Menu)
-        if (navCtaContainer) {
-          navCtaContainer.innerHTML = `
-            <button class="user-avatar-btn" id="userAvatarBtn" type="button" aria-label="Account details" title="View Account Details">
-              <img src="${user.avatar || 'logo.png'}" alt="${user.name}">
-              <span class="online-dot"></span>
-            </button>
-            <button class="hamburger" id="menuBtnDynamic" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
-          `;
-          var userAvatarBtn = document.getElementById('userAvatarBtn');
-          if (userAvatarBtn && userProfilePopup) {
-            userAvatarBtn.addEventListener('click', function(e){
-              e.stopPropagation();
-              userProfilePopup.classList.toggle('open');
-            });
-          }
-          var dynMenuBtn = document.getElementById('menuBtnDynamic');
-          if (dynMenuBtn && menuBtn) {
-            dynMenuBtn.addEventListener('click', function(e){
-              e.stopPropagation();
-              menuBtn.click();
-            });
-          }
-        }
-
-        // Mobile Menu CTA
+        // Mobile Menu CTA: Launch Command Center
         if (mmCtaContainer) {
           mmCtaContainer.innerHTML = `
-            <div style="display:flex; gap:10px; width:100%;">
-              <a class="btn btn-solid" style="flex:1; text-align:center;" href="dashboard.html">Launch Command Center</a>
-              <button class="btn btn-ghost" id="btnMobileLogout" style="background:transparent; cursor:pointer;" type="button">Log Out</button>
-            </div>
+            <a class="btn btn-solid" style="width:100%; text-align:center;" href="dashboard.html">Launch Command Center →</a>
           `;
-          var mLogout = document.getElementById('btnMobileLogout');
-          if (mLogout) {
-            mLogout.addEventListener('click', function(){
-              window.ThrinethraAuth.logout('index.html');
-            });
-          }
         }
       } else {
         // User is logged out
@@ -1180,23 +1170,10 @@
           mmCmdBadge.textContent = '🔒 Locked';
           mmCmdBadge.className = 'cmd-badge locked';
         }
-        if (mmUserRow) {
-          mmUserRow.innerHTML = '';
-        }
 
-        if (navCtaContainer) {
-          navCtaContainer.innerHTML = `
-            <a class="btn btn-solid" href="login.html">Login</a>
-            <button class="hamburger" id="menuBtnDynamic" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
-          `;
-          var dynMenuBtn = document.getElementById('menuBtnDynamic');
-          if (dynMenuBtn && menuBtn) {
-            dynMenuBtn.addEventListener('click', function(e){
-              e.stopPropagation();
-              menuBtn.click();
-            });
-          }
-        }
+        // Show login button in header, hide avatar button
+        if (navLoginBtn) navLoginBtn.style.display = 'inline-block';
+        if (userAvatarBtn) userAvatarBtn.style.display = 'none';
 
         if (mmCtaContainer) {
           mmCtaContainer.innerHTML = `
@@ -1213,6 +1190,7 @@
         e.preventDefault();
         e.stopPropagation();
         var mobileMenu = document.getElementById('mobileMenu');
+        var menuBtn = document.getElementById('menuBtn');
         if (mobileMenu && mobileMenu.classList.contains('open')) {
           mobileMenu.classList.remove('open');
           if (menuBtn) menuBtn.classList.remove('open');
