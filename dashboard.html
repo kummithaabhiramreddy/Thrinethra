@@ -245,14 +245,59 @@
     cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
   }
   .cam-ctrl-btn:hover{ background:var(--bg-700); border-color:var(--alert); }
-  .cam-ctrl-btn.active{ background:var(--alert); color:#141414; border-color:var(--alert); }
-
   /* Gallery of Screenshots / Snapshots */
   .snapshot-deck{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:10px; }
   .snap-card{
     background:var(--bg-900); border:1px solid var(--line); border-radius:8px;
     overflow:hidden; display:flex; flex-direction:column; transition:transform .2s;
   }
+
+  /* Bus Search & Lookup Gateway */
+  .bus-search-bar{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px;
+    background:var(--bg-900); padding:10px 14px; border-radius:10px; border:1px solid var(--line);
+  }
+  .bus-search-input-wrap{ position:relative; flex:1; min-width:220px; }
+  .bus-search-input{
+    width:100%; padding:10px 14px 10px 38px; border-radius:8px;
+    background:var(--bg-800); border:1px solid var(--line); color:var(--text-hi);
+    font-size:0.86rem; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s;
+  }
+  .bus-search-input:focus{ border-color:var(--alert); box-shadow:0 0 0 3px rgba(255,122,69,0.15); }
+  .bus-search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-low); pointer-events:none; }
+  
+  /* Bus Standby Empty State */
+  .bus-standby-card{
+    background:linear-gradient(180deg, rgba(20,27,36,0.7) 0%, rgba(10,14,19,0.9) 100%);
+    border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:38px 24px;
+    text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .bus-standby-icon{
+    width:56px; height:56px; border-radius:50%; background:rgba(255,122,69,0.12);
+    display:flex; align-items:center; justify-content:center; color:var(--alert); margin-bottom:14px;
+    box-shadow:0 0 24px rgba(255,122,69,0.25);
+  }
+  .bus-standby-title{ font-size:1.1rem; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
+  .bus-standby-sub{ font-size:0.84rem; color:var(--text-mid); max-width:540px; line-height:1.5; margin-bottom:20px; }
+  .bus-standby-quick{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .bus-chip{
+    background:var(--bg-800); border:1px solid var(--line); color:var(--text-mid);
+    padding:6px 12px; border-radius:20px; font-size:0.75rem; font-family:'JetBrains Mono',monospace;
+    cursor:pointer; transition:all .15s ease;
+  }
+  .bus-chip:hover{ background:var(--bg-700); border-color:var(--alert); color:var(--text-hi); }
+  .bus-chip.active{ background:var(--alert); color:#101419; font-weight:700; border-color:var(--alert); }
+
+  /* Vehicle Telemetry Dossier Bar */
+  .bus-dossier-bar{
+    background:var(--bg-900); border:1px solid var(--line); border-radius:10px;
+    padding:12px 16px; margin-bottom:16px; display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; align-items:center;
+  }
+  .dossier-item{ display:flex; flex-direction:column; gap:2px; }
+  .dossier-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; }
+  .dossier-val{ font-size:0.86rem; font-weight:600; color:var(--text-hi); display:flex; align-items:center; gap:6px; }
+
   .snap-card:hover{ transform:translateY(-2px); border-color:rgba(255,122,69,0.4); }
   .snap-thumb{ width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; display:block; }
   .snap-meta{ padding:8px 10px; display:flex; flex-direction:column; gap:2px; flex:1; }
@@ -411,11 +456,11 @@
       <section class="panel reveal" id="camera" style="animation-delay:.05s">
         <div class="panel-head">
           <div>
-            <div class="panel-kicker">Live Edge-AI Vision</div>
-            <div class="panel-title">Real-Time Camera Scanner &amp; Object Detection</div>
+            <div class="panel-kicker">Live Edge-AI Vision &amp; Vehicle Gateway</div>
+            <div class="panel-title">Fleet Camera Stream &amp; Vehicle Intelligence</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <span class="cam-badge rec"><i></i> LIVE SCANNING</span>
+            <span class="cam-badge rec" id="camStreamStatusBadge"><i></i> SYSTEM READY</span>
             <button class="btn btn-solid btn-sm" id="btnCaptureSnapshot" type="button" style="background:#FF5470; border-color:#FF5470; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 7h3l2-3h8l2 3h3v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
               📸 Capture Screenshot
@@ -427,60 +472,129 @@
           </div>
         </div>
         <div class="panel-body">
-          <!-- Fleet Bus Selector Bar -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:0.75rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-bottom:8px;">Select Active Fleet Vehicle Camera Stream:</div>
-            <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:6px;" id="busSelectorList">
-              <button class="cam-ctrl-btn active" data-bus="KA-05-AB-1147" type="button">🚌 Bus KA-05-AB-1147 (Route 42B)</button>
-              <button class="cam-ctrl-btn" data-bus="KA-03-CJ-8820" type="button">🚌 Bus KA-03-CJ-8820 (Route 17A)</button>
-              <button class="cam-ctrl-btn" data-bus="KA-01-FL-3390" type="button">🚌 Bus KA-01-FL-3390 (Route 9C)</button>
-              <button class="cam-ctrl-btn" data-bus="KA-41-BQ-0512" type="button">🚌 Bus KA-41-BQ-0512 (Route 52)</button>
-              <button class="cam-ctrl-btn" data-bus="KA-09-DP-6119" type="button">🚌 Bus KA-09-DP-6119 (Route 335E)</button>
-              <button class="cam-ctrl-btn" data-bus="WEBCAM" type="button" style="border-color:var(--route);">📹 Operator WebCam</button>
+          <!-- Bus Number Search Gateway -->
+          <div class="bus-search-bar">
+            <div class="bus-search-input-wrap">
+              <svg class="bus-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="busSearchInput" class="bus-search-input" placeholder="Enter Bus Number (e.g. KA-05-AB-1147, KA-03-CJ-8820, Route 42B)..." autocomplete="off" />
+            </div>
+            <button class="btn btn-solid" id="btnSearchBus" type="button" style="padding:10px 18px; font-size:0.84rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+              🔍 Query Bus Data &amp; Camera
+            </button>
+            <button class="btn btn-ghost" id="btnResetBusSearch" type="button" style="display:none; padding:10px 14px; font-size:0.82rem; cursor:pointer;">
+              ✕ Reset Search
+            </button>
+          </div>
+
+          <!-- Quick Active Vehicle Selector Chips -->
+          <div style="margin-bottom:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:0.72rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">Quick Query:</span>
+            <div style="display:inline-flex; gap:6px; flex-wrap:wrap;" id="busSelectorList">
+              <button class="bus-chip" data-bus="KA-05-AB-1147" type="button">🚌 KA-05-AB-1147 (42B)</button>
+              <button class="bus-chip" data-bus="KA-03-CJ-8820" type="button">🚌 KA-03-CJ-8820 (17A)</button>
+              <button class="bus-chip" data-bus="KA-01-FL-3390" type="button">🚌 KA-01-FL-3390 (9C)</button>
+              <button class="bus-chip" data-bus="KA-41-BQ-0512" type="button">🚌 KA-41-BQ-0512 (52)</button>
+              <button class="bus-chip" data-bus="KA-09-DP-6119" type="button">🚌 KA-09-DP-6119 (335E)</button>
+              <button class="bus-chip" data-bus="WEBCAM" type="button" style="border-color:var(--route); color:var(--route);">📹 Operator WebCam</button>
             </div>
           </div>
 
-          <div class="cam-grid">
-            <div>
-              <div class="cam-viewport" id="camViewport">
-                <!-- Video element for real webcam feed -->
-                <video id="cameraVideo" class="cam-video" autoplay playsinline muted style="display:none;"></video>
-                <!-- Canvas for simulated road scene + real-time bounding box AI overlay + OCR scanner -->
-                <canvas id="cameraCanvas" class="cam-canvas" width="800" height="450"></canvas>
-                <div class="cam-hud-top">
-                  <span class="cam-badge" id="camSourceBadge">SOURCE: BUS 42B (KA-05-AB-1147) · FRONT CAM</span>
-                  <span class="cam-badge" id="camModelBadge">YOLOv9-INT8 · 30 FPS · 14ms</span>
-                </div>
-                <div class="cam-hud-bottom">
-                  <span class="cam-badge" id="camGpsBadge">GPS: 12.9716° N, 77.5946° E</span>
-                  <span class="cam-badge" id="camSpeedBadge">SPEED: 38.4 KM/H</span>
-                </div>
+          <!-- STANDBY STATE: Shown when no bus has been entered yet -->
+          <div id="busStandbyState" class="bus-standby-card">
+            <div class="bus-standby-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+            </div>
+            <div class="bus-standby-title">Awaiting Bus Number Entry</div>
+            <div class="bus-standby-sub">
+              Enter any registered fleet vehicle number (e.g. <strong>KA-05-AB-1147</strong> or route <strong>42B</strong>) above or click a bus from the quick fleet chips or Fleet Status table below to decrypt &amp; reveal its 4-angle live cameras, AI road detections, GPS telemetry, driver logs, and snapshot evidence.
+            </div>
+            <div class="bus-standby-quick">
+              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-05-AB-1147')">Query Bus KA-05-AB-1147</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-03-CJ-8820')">Query Bus KA-03-CJ-8820</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-01-FL-3390')">Query Bus KA-01-FL-3390</button>
+            </div>
+          </div>
+
+          <!-- ACTIVE BUS DATA SUITE: Revealed ONLY after user enters/selects a bus -->
+          <div id="busDataSuite" style="display:none;">
+            <!-- Complete Vehicle Dossier Telemetry Bar -->
+            <div class="bus-dossier-bar" id="busDossierBar">
+              <div class="dossier-item">
+                <span class="dossier-lbl">Active Vehicle ID</span>
+                <span class="dossier-val mono" id="dossierBusId" style="color:var(--alert);">KA-05-AB-1147</span>
               </div>
-              <div class="cam-ctrls">
-                <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Front AI Vision</button>
-                <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Rear OCR Scanner</button>
-                <button class="cam-ctrl-btn" id="btnModeSide" type="button">🔍 Side Blindspot AI</button>
-                <button class="cam-ctrl-btn" id="btnModeCabin" type="button">👥 Cabin Passenger Density</button>
-                <button class="cam-ctrl-btn" id="btnToggleBoxes" type="button">🟩 Bounding Boxes: ON</button>
+              <div class="dossier-item">
+                <span class="dossier-lbl">Assigned Route</span>
+                <span class="dossier-val" id="dossierRoute">Route 42B (MG Road → Indiranagar)</span>
+              </div>
+              <div class="dossier-item">
+                <span class="dossier-lbl">Duty Officer / Driver</span>
+                <span class="dossier-val" id="dossierDriver">Ramesh K. (Depot 04)</span>
+              </div>
+              <div class="dossier-item">
+                <span class="dossier-lbl">Live GPS &amp; Location</span>
+                <span class="dossier-val mono" id="dossierLocation">MG Road Jn. (12.9716° N)</span>
+              </div>
+              <div class="dossier-item">
+                <span class="dossier-lbl">Vehicle Speed</span>
+                <span class="dossier-val mono" id="dossierSpeed" style="color:var(--live);">38.4 KM/H</span>
+              </div>
+              <div class="dossier-item">
+                <span class="dossier-lbl">Camera Sensors (4/4)</span>
+                <span class="dossier-val" id="dossierCams" style="color:var(--live);">
+                  <span class="cam-dots">
+                    <span class="cam-dot cam-ok" title="Front AI"></span>
+                    <span class="cam-dot cam-ok" title="Rear OCR"></span>
+                    <span class="cam-dot cam-ok" title="Side Blindspot"></span>
+                    <span class="cam-dot cam-ok" title="Cabin Occupancy"></span>
+                  </span>
+                  All Online
+                </span>
               </div>
             </div>
 
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <div style="font-size:0.86rem; font-weight:600; color:#fff;">Live Detected Items (<span id="detectedItemsCount">0</span>)</div>
-                <label style="font-size:0.75rem; color:var(--text-mid); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="checkbox" id="chkAutoCapture" checked> Auto-Capture Snapshot
-                </label>
-              </div>
-              <div class="log-list" id="camLiveDetections" style="max-height:220px; border:1px solid var(--line); border-radius:8px;"></div>
-
-              <div style="margin-top:16px;">
-                <div style="font-size:0.86rem; font-weight:600; color:#fff; display:flex; justify-content:space-between;">
-                  <span>Captured Evidence Screenshots</span>
-                  <span style="font-size:0.75rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
+            <div class="cam-grid">
+              <div>
+                <div class="cam-viewport" id="camViewport">
+                  <!-- Video element for real webcam feed -->
+                  <video id="cameraVideo" class="cam-video" autoplay playsinline muted style="display:none;"></video>
+                  <!-- Canvas for simulated road scene + real-time bounding box AI overlay + OCR scanner -->
+                  <canvas id="cameraCanvas" class="cam-canvas" width="800" height="450"></canvas>
+                  <div class="cam-hud-top">
+                    <span class="cam-badge" id="camSourceBadge">SOURCE: BUS 42B (KA-05-AB-1147) · FRONT CAM</span>
+                    <span class="cam-badge" id="camModelBadge">YOLOv9-INT8 · 30 FPS · 14ms</span>
+                  </div>
+                  <div class="cam-hud-bottom">
+                    <span class="cam-badge" id="camGpsBadge">GPS: 12.9716° N, 77.5946° E</span>
+                    <span class="cam-badge" id="camSpeedBadge">SPEED: 38.4 KM/H</span>
+                  </div>
                 </div>
-                <div class="snapshot-deck" id="snapshotDeck">
-                  <!-- Snapshots dynamically added here -->
+                <div class="cam-ctrls">
+                  <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Front AI Vision</button>
+                  <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Rear OCR Scanner</button>
+                  <button class="cam-ctrl-btn" id="btnModeSide" type="button">🔍 Side Blindspot AI</button>
+                  <button class="cam-ctrl-btn" id="btnModeCabin" type="button">👥 Cabin Passenger Density</button>
+                  <button class="cam-ctrl-btn" id="btnToggleBoxes" type="button">🟩 Bounding Boxes: ON</button>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <div style="font-size:0.86rem; font-weight:600; color:#fff;">Live Detected Items (<span id="detectedItemsCount">0</span>)</div>
+                  <label style="font-size:0.75rem; color:var(--text-mid); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" id="chkAutoCapture" checked> Auto-Capture Snapshot
+                  </label>
+                </div>
+                <div class="log-list" id="camLiveDetections" style="max-height:220px; border:1px solid var(--line); border-radius:8px;"></div>
+
+                <div style="margin-top:16px;">
+                  <div style="font-size:0.86rem; font-weight:600; color:#fff; display:flex; justify-content:space-between;">
+                    <span>Captured Evidence Screenshots</span>
+                    <span style="font-size:0.75rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
+                  </div>
+                  <div class="snapshot-deck" id="snapshotDeck">
+                    <!-- Snapshots dynamically added here -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -990,7 +1104,8 @@
 
   var ctx = canvas.getContext('2d');
   var currentMode = 'front'; // 'front' | 'rear' | 'side' | 'cabin' | 'webcam'
-  var currentBusId = 'KA-05-AB-1147';
+  var currentBusId = null;   // null until user queries/enters a bus number
+  var isBusLoaded = false;
   var showBoundingBoxes = true;
   var autoCapture = true;
   var webcamStream = null;
@@ -999,16 +1114,18 @@
   var scanDirection = 1;
   var snapshots = [];
 
-  // Bus Fleet Metadata
+  // Bus Fleet Metadata & Specifications
   var fleetMap = {
     'KA-05-AB-1147': {
+      id: 'KA-05-AB-1147',
+      routeNo: '42B',
       name: 'Bus KA-05-AB-1147 (Route 42B)',
       route: 'Route 42B (MG Road → Indiranagar)',
       location: 'MG Road Jn.',
       lat: 12.9716,
       lng: 77.5946,
       baseSpeed: 38.4,
-      driver: 'Ramesh K.',
+      driver: 'Ramesh K. (Depot 04)',
       hazards: [
         { type: 'POTHOLE', title: 'Pothole (Depth 45mm)', plate: 'KA-03-MN-8821', dist: '18m', conf: 97.4, sev: 3 }
       ],
@@ -1018,13 +1135,15 @@
       ]
     },
     'KA-03-CJ-8820': {
+      id: 'KA-03-CJ-8820',
+      routeNo: '17A',
       name: 'Bus KA-03-CJ-8820 (Route 17A)',
       route: 'Route 17A (Indiranagar → Marathahalli)',
       location: 'Indiranagar 100ft Rd',
       lat: 12.9784,
       lng: 77.6408,
       baseSpeed: 42.1,
-      driver: 'Suresh V.',
+      driver: 'Suresh V. (Depot 07)',
       hazards: [
         { type: 'WATERLOG', title: 'Waterlogged Puddle 60mm', plate: 'KA-51-AB-3310', dist: '14m', conf: 95.8, sev: 2 }
       ],
@@ -1034,13 +1153,15 @@
       ]
     },
     'KA-01-FL-3390': {
+      id: 'KA-01-FL-3390',
+      routeNo: '9C',
       name: 'Bus KA-01-FL-3390 (Route 9C)',
       route: 'Route 9C (Shivajinagar → Majestic)',
       location: 'Shivajinagar Bus Station',
       lat: 12.9856,
       lng: 77.6057,
       baseSpeed: 28.5,
-      driver: 'Anand M.',
+      driver: 'Anand M. (Depot 01)',
       hazards: [
         { type: 'CONGESTION', title: 'Heavy Congestion Bottleneck', plate: 'KA-01-EE-7712', dist: '8m', conf: 98.2, sev: 4 }
       ],
@@ -1050,13 +1171,15 @@
       ]
     },
     'KA-41-BQ-0512': {
+      id: 'KA-41-BQ-0512',
+      routeNo: '52',
       name: 'Bus KA-41-BQ-0512 (Route 52)',
       route: 'Route 52 (Koramangala → Electronic City)',
       location: 'Silk Board Jn.',
       lat: 12.9279,
       lng: 77.6271,
       baseSpeed: 46.2,
-      driver: 'Prakash N.',
+      driver: 'Prakash N. (Depot 12)',
       hazards: [
         { type: 'DEBRIS', title: 'Road Construction Debris', plate: 'KA-41-XY-1004', dist: '22m', conf: 96.1, sev: 3 }
       ],
@@ -1066,13 +1189,15 @@
       ]
     },
     'KA-09-DP-6119': {
+      id: 'KA-09-DP-6119',
+      routeNo: '335E',
       name: 'Bus KA-09-DP-6119 (Route 335E)',
       route: 'Route 335E (Lalbagh → Whitefield)',
       location: 'Lalbagh West Gate',
       lat: 12.9463,
       lng: 77.5801,
       baseSpeed: 34.0,
-      driver: 'Manjunath G.',
+      driver: 'Manjunath G. (Depot 09)',
       hazards: [
         { type: 'PEDESTRIAN', title: 'Pedestrian Crossing Zone', plate: 'KA-09-ZZ-5511', dist: '11m', conf: 99.0, sev: 2 }
       ],
@@ -1084,6 +1209,21 @@
   };
 
   // UI Elements
+  var busSearchInput = document.getElementById('busSearchInput');
+  var btnSearchBus = document.getElementById('btnSearchBus');
+  var btnResetBusSearch = document.getElementById('btnResetBusSearch');
+  var busStandbyState = document.getElementById('busStandbyState');
+  var busDataSuite = document.getElementById('busDataSuite');
+  var camStreamStatusBadge = document.getElementById('camStreamStatusBadge');
+
+  // Dossier Bar Elements
+  var dossierBusId = document.getElementById('dossierBusId');
+  var dossierRoute = document.getElementById('dossierRoute');
+  var dossierDriver = document.getElementById('dossierDriver');
+  var dossierLocation = document.getElementById('dossierLocation');
+  var dossierSpeed = document.getElementById('dossierSpeed');
+
+  // Camera Controls
   var btnFront = document.getElementById('btnModeFront');
   var btnRear = document.getElementById('btnModeRear');
   var btnSide = document.getElementById('btnModeSide');
@@ -1107,38 +1247,144 @@
     });
   }
 
-  // Global Bus Camera Switcher
-  window.switchBusCamera = function(busId) {
-    if (!busId) return;
-    
-    if (busId === 'WEBCAM') {
-      currentBusId = 'WEBCAM';
+  // Find matching bus key from search query
+  function findBusKey(query) {
+    if (!query) return null;
+    var q = query.trim().toUpperCase().replace(/[\s-]/g, '');
+    if (q === 'WEBCAM' || q === 'CAMERA' || q === 'OPERATOR') return 'WEBCAM';
+
+    var keys = Object.keys(fleetMap);
+    // 1. Exact match normalized
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (k.replace(/[\s-]/g, '').toUpperCase() === q) return k;
+    }
+    // 2. Route Number match (e.g. "42B", "17A", "9C", "52", "335E")
+    for (var j = 0; j < keys.length; j++) {
+      var bus = fleetMap[keys[j]];
+      if (bus.routeNo.toUpperCase() === q || ('ROUTE' + bus.routeNo.toUpperCase()) === q) return keys[j];
+    }
+    // 3. Substring match on Plate or Route
+    for (var m = 0; m < keys.length; m++) {
+      var bKey = keys[m];
+      var bInfo = fleetMap[bKey];
+      if (bKey.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1 ||
+          bInfo.route.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1) {
+        return bKey;
+      }
+    }
+    return null;
+  }
+
+  // Global Bus Loader & Camera Switcher
+  window.switchBusCamera = function(busQuery) {
+    if (!busQuery) return;
+    var targetKey = findBusKey(busQuery);
+
+    if (!targetKey) {
+      alert('Bus number "' + busQuery + '" not found in active fleet registry.\n\nAvailable fleet buses: KA-05-AB-1147, KA-03-CJ-8820, KA-01-FL-3390, KA-41-BQ-0512, KA-09-DP-6119, WEBCAM');
+      return;
+    }
+
+    currentBusId = targetKey;
+    isBusLoaded = true;
+
+    // Update search bar text & buttons
+    if (busSearchInput) busSearchInput.value = targetKey;
+    if (btnResetBusSearch) btnResetBusSearch.style.display = 'inline-block';
+
+    // Toggle from Standby to Active Data Suite
+    if (busStandbyState) busStandbyState.style.display = 'none';
+    if (busDataSuite) busDataSuite.style.display = 'block';
+
+    if (targetKey === 'WEBCAM') {
       setMode('webcam');
+      if (dossierBusId) dossierBusId.textContent = 'OPERATOR DESK CAM';
+      if (dossierRoute) dossierRoute.textContent = 'Fleet Control Terminal';
+      if (dossierDriver) dossierDriver.textContent = 'Active Command Officer';
+      if (dossierLocation) dossierLocation.textContent = 'Central HQ (Station 01)';
+      if (dossierSpeed) dossierSpeed.textContent = 'STATIONARY';
+      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> OPERATOR WEBCAM LIVE';
     } else {
       if (currentMode === 'webcam') {
         stopWebcam();
         currentMode = 'front';
       }
-      currentBusId = busId;
+      var info = fleetMap[targetKey];
+      if (dossierBusId) dossierBusId.textContent = info.id;
+      if (dossierRoute) dossierRoute.textContent = info.route;
+      if (dossierDriver) dossierDriver.textContent = info.driver;
+      if (dossierLocation) dossierLocation.textContent = info.location + ' (' + info.lat + '° N)';
+      if (dossierSpeed) dossierSpeed.textContent = info.baseSpeed + ' KM/H';
+      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> LIVE STREAM: ' + info.id;
+      
       updateCameraHud();
     }
 
-    // Update active pill in bus selector
+    // Update active pill in quick selector
     if (busSelectorList) {
       busSelectorList.querySelectorAll('button').forEach(function(b){
-        b.classList.toggle('active', b.getAttribute('data-bus') === busId);
+        b.classList.toggle('active', b.getAttribute('data-bus') === targetKey);
       });
     }
 
-    // Highlight camera section
+    // Smooth scroll into camera viewport
     var camSection = document.getElementById('camera');
     if (camSection) {
       camSection.classList.remove('tab-hidden');
       camSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    // Trigger initial snapshot for this newly inspected bus
+    captureSnapshot('Inspected Vehicle Baseline Scan', 'Road Hazard', 1);
   };
 
-  // Bus selector click handlers
+  // Reset / Clear search back to Standby
+  window.resetBusSearch = function() {
+    isBusLoaded = false;
+    currentBusId = null;
+    stopWebcam();
+    if (busSearchInput) busSearchInput.value = '';
+    if (btnResetBusSearch) btnResetBusSearch.style.display = 'none';
+    if (busStandbyState) busStandbyState.style.display = 'flex';
+    if (busDataSuite) busDataSuite.style.display = 'none';
+    if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> SYSTEM STANDBY';
+    if (busSelectorList) {
+      busSelectorList.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+    }
+  };
+
+  // Bind Search Button & Enter Key
+  if (btnSearchBus) {
+    btnSearchBus.addEventListener('click', function(){
+      var q = busSearchInput ? busSearchInput.value : '';
+      if (q.trim()) {
+        window.switchBusCamera(q.trim());
+      } else {
+        alert('Please enter a bus number (e.g. KA-05-AB-1147, Route 42B).');
+      }
+    });
+  }
+
+  if (busSearchInput) {
+    busSearchInput.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var q = busSearchInput.value;
+        if (q.trim()) {
+          window.switchBusCamera(q.trim());
+        }
+      }
+    });
+  }
+
+  if (btnResetBusSearch) {
+    btnResetBusSearch.addEventListener('click', function(){
+      window.resetBusSearch();
+    });
+  }
+
+  // Quick Chips Click Handlers
   if (busSelectorList) {
     busSelectorList.querySelectorAll('button').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -1149,6 +1395,7 @@
   }
 
   function updateCameraHud() {
+    if (!currentBusId) return;
     if (currentBusId === 'WEBCAM') {
       if (camSourceBadge) camSourceBadge.textContent = 'SOURCE: OPERATOR WEBCAM (LIVE HARDWARE FEED)';
       if (camGpsBadge) camGpsBadge.textContent = 'GPS: CONTROL STATION (12.9716° N, 77.5946° E)';
@@ -1172,6 +1419,7 @@
     if (camSpeedBadge) {
       var spd = (busInfo.baseSpeed + Math.sin(Date.now() / 3000) * 3).toFixed(1);
       camSpeedBadge.textContent = 'SPEED: ' + spd + ' KM/H';
+      if (dossierSpeed) dossierSpeed.textContent = spd + ' KM/H';
     }
   }
 
@@ -1218,13 +1466,11 @@
         .catch(function(err){
           console.warn('WebCam access denied or unavailable:', err);
           alert('WebCam access not available or permission denied. Defaulting to simulated bus DashCam.');
-          currentBusId = 'KA-05-AB-1147';
-          setMode('front');
+          window.switchBusCamera('KA-05-AB-1147');
         });
     } else {
       alert('Camera mediaDevices API not supported on this browser. Defaulting to simulated bus DashCam.');
-      currentBusId = 'KA-05-AB-1147';
-      setMode('front');
+      window.switchBusCamera('KA-05-AB-1147');
     }
   }
 
@@ -1316,7 +1562,7 @@
     ctx.fillStyle = '#101720';
     for (var i = 0; i < 16; i++) {
       var bx = i * 55;
-      var bh = 40 + Math.sin(i * 1.5 + (currentBusId.charCodeAt(3) || 0)) * 30 + (i % 3) * 25;
+      var bh = 40 + Math.sin(i * 1.5 + (currentBusId ? currentBusId.charCodeAt(3) : 0)) * 30 + (i % 3) * 25;
       ctx.fillRect(bx, h * 0.5 - bh, 48, bh);
     }
 
@@ -1463,7 +1709,7 @@
     ctx.fillStyle = '#1f3044';
     ctx.fillRect(bikeX + 30, bikeY, 40, 110);
     ctx.fillStyle = '#34D399';
-    ctx.fillRect(bikeX + 45, bikeY + 10, 12, 12); // helmet
+    ctx.fillRect(bikeX + 45, bikeY + 10, 12, 12);
 
     drawBoundingBox(bikeX, bikeY - 10, bikeW, bikeH, 'TWO-WHEELER IN BLINDSPOT', '#FF5470', '97.8', true);
     drawBoundingBox(30, 240, 110, 80, 'CURB DISTANCE: 0.45M', '#4FA3D1', '99.1', false);
@@ -1534,30 +1780,31 @@
 
   // Main Canvas Render Loop
   function mainLoop(time) {
-    frameCount++;
+    if (isBusLoaded) {
+      frameCount++;
 
-    if (currentMode === 'webcam' && video && video.readyState === 4) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      var faceX = canvas.width * 0.38 + Math.sin(time * 0.001) * 20;
-      var faceY = canvas.height * 0.22 + Math.cos(time * 0.001) * 15;
-      drawBoundingBox(faceX, faceY, 180, 210, 'OPERATOR IDENTIFIED · VERIFIED', '#34D399', '99.4', false);
-      drawBoundingBox(faceX - 30, faceY + 180, 240, 140, 'SAFETY HARNESS: DETECTED', '#4FA3D1', '96.2', false);
-    } else if (currentMode === 'rear') {
-      renderSimRear(time);
-    } else if (currentMode === 'side') {
-      renderSimSide(time);
-    } else if (currentMode === 'cabin') {
-      renderSimCabin(time);
-    } else {
-      renderSimFront(time);
+      if (currentMode === 'webcam' && video && video.readyState === 4) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var faceX = canvas.width * 0.38 + Math.sin(time * 0.001) * 20;
+        var faceY = canvas.height * 0.22 + Math.cos(time * 0.001) * 15;
+        drawBoundingBox(faceX, faceY, 180, 210, 'OPERATOR IDENTIFIED · VERIFIED', '#34D399', '99.4', false);
+        drawBoundingBox(faceX - 30, faceY + 180, 240, 140, 'SAFETY HARNESS: DETECTED', '#4FA3D1', '96.2', false);
+      } else if (currentMode === 'rear') {
+        renderSimRear(time);
+      } else if (currentMode === 'side') {
+        renderSimSide(time);
+      } else if (currentMode === 'cabin') {
+        renderSimCabin(time);
+      } else {
+        renderSimFront(time);
+      }
+
+      if (frameCount % 30 === 0) {
+        updateCameraHud();
+      }
+
+      drawScanLaser();
     }
-
-    // Dynamic HUD Refresh every 30 frames
-    if (frameCount % 30 === 0) {
-      updateCameraHud();
-    }
-
-    drawScanLaser();
     requestAnimationFrame(mainLoop);
   }
 
@@ -1565,6 +1812,8 @@
 
   // Snapshot capture function with Bus ID stamping
   function captureSnapshot(title, category, severity, plate) {
+    if (!isBusLoaded || !currentBusId) return;
+
     if (viewport) {
       viewport.style.transition = 'none';
       viewport.style.filter = 'brightness(2.2)';
@@ -1585,7 +1834,7 @@
                               currentMode === 'side' ? 'Blindspot Two-Wheeler Clearance' : 
                               currentMode === 'cabin' ? 'Passenger Density Surge' : 'Road Pothole Hazard (Depth 45mm)');
     var itemCat = category || (currentMode === 'rear' ? 'Incident' : currentMode === 'side' ? 'Safety' : 'Road Hazard');
-    var itemPlate = plate || (busInfo.cars[0] ? busInfo.cars[0].plate : 'KA-05-AB-1147');
+    var itemPlate = plate || (busInfo && busInfo.cars && busInfo.cars[0] ? busInfo.cars[0].plate : (currentBusId || 'KA-05-AB-1147'));
 
     var snapshotObj = {
       id: snapId,
@@ -1596,7 +1845,7 @@
       category: itemCat,
       severity: severity || 3,
       plate: itemPlate,
-      location: busInfo.location + ' (GPS: ' + busInfo.lat + '° N, ' + busInfo.lng + '° E)',
+      location: busInfo ? (busInfo.location + ' (GPS: ' + busInfo.lat + '° N, ' + busInfo.lng + '° E)') : 'Control HQ',
       dataUrl: dataUrl
     };
 
@@ -1673,6 +1922,7 @@
 
   // Automatic periodic detections & auto-capture
   setInterval(function(){
+    if (!isBusLoaded) return;
     if (autoCapture && Math.random() > 0.4) {
       var busKeys = Object.keys(fleetMap);
       var randomBus = busKeys[Math.floor(Math.random() * busKeys.length)];
@@ -1725,7 +1975,7 @@
           new Date().toISOString().split('T')[0],
           d.type,
           `"${d.title.replace(/"/g, '""')}"`,
-          `"${d.bus || currentBusId}"`,
+          `"${d.bus || (currentBusId || 'Fleet')}"`,
           `"${d.location}"`,
           d.severity,
           d.plate || 'N/A',
@@ -1746,8 +1996,6 @@
     });
   }
 
-  // Initial trigger
-  captureSnapshot('Initial Fleet Road Surface Scan', 'Road Hazard', 1);
 })();
 </script>
 </body>
