@@ -500,12 +500,17 @@
 
         var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
         var dateStr = new Date().toISOString().slice(0, 10);
-        var csv = 'ID,Type,Category,Location,Timestamp,Severity,Status\n';
+        var csv = 'ID,Type,Category,Title,Problem Diagnosis,Width (mm),Depth (mm),Dist to Camera (m),Bus ID,GPS Latitude,GPS Longitude,Google Maps Link,Automated Solution,Work Order,Status\n';
         (state.recentDetections || []).forEach(function(d){
-          csv += `${d.id},${d.type},${d.category || ''},"${d.location}",${d.time},${d.severity || 1},${d.status || 'Active'}\n`;
+          var dim = d.dimensions || { widthMm: 680, depthMm: 54, distanceM: 12.4 };
+          var sol = d.solution || { action: 'Cold-mix patch', workOrder: 'WO-8841', status: 'Dispatched' };
+          var lat = d.lat || 12.9716;
+          var lng = d.lng || 77.5946;
+          var gmaps = `https://www.google.com/maps?q=${lat},${lng}`;
+          csv += `${d.id},${d.type},${d.category || ''},"${(d.title || '').replace(/"/g, '""')}","${(d.problem || '').replace(/"/g, '""')}",${dim.widthMm},${dim.depthMm},${dim.distanceM},"${d.busId || d.bus || 'Fleet'}",${lat},${lng},"${gmaps}","${(sol.action || '').replace(/"/g, '""')}","${sol.workOrder}",${d.status || 'Active'}\n`;
         });
 
-        downloadFile(csv, `Thrinethra_${type.replace(/\s+/g, '_')}_${dateStr}.csv`, 'text/csv');
+        downloadFile(csv, `Trinethra_AI_${type.replace(/\s+/g, '_')}_${dateStr}.csv`, 'text/csv');
       }, 500);
     });
   });

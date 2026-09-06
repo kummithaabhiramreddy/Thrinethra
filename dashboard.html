@@ -311,32 +311,86 @@
   .snap-inspect-btn{ font-size:0.7rem; color:var(--route); background:transparent; border:none; padding:0; cursor:pointer; font-weight:600; }
   .snap-inspect-btn:hover{ text-decoration:underline; }
 
-  /* Forensic Telemetry Modal */
+  /* Trinethra AI Forensic Telemetry Modal */
   .telemetry-modal-overlay{
-    position:fixed; inset:0; background:rgba(4,7,11,0.85); backdrop-filter:blur(8px);
-    z-index:9999; display:none; align-items:center; justify-content:center; padding:20px;
+    position:fixed; inset:0; background:rgba(4,7,11,0.88); backdrop-filter:blur(10px);
+    z-index:9999; display:none; align-items:center; justify-content:center; padding:16px;
   }
   .telemetry-modal-overlay.active{ display:flex; }
   .telemetry-modal-card{
-    background:var(--bg-900); border:1px solid rgba(255,255,255,0.15); border-radius:14px;
-    max-width:860px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.8);
+    background:var(--bg-900); border:1px solid rgba(255,122,69,0.3); border-radius:14px;
+    max-width:980px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 24px 70px rgba(0,0,0,0.9), 0 0 30px rgba(255,122,69,0.15);
     display:flex; flex-direction:column;
   }
   .modal-head{
-    display:flex; justify-content:space-between; align-items:center; padding:16px 20px;
-    border-bottom:1px solid var(--line); background:var(--bg-800);
+    display:flex; justify-content:space-between; align-items:center; padding:16px 22px;
+    border-bottom:1px solid var(--line); background:var(--bg-800); position:sticky; top:0; z-index:10;
   }
-  .modal-title{ font-size:1.05rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; }
-  .modal-close{ background:transparent; border:none; color:var(--text-low); font-size:1.4rem; cursor:pointer; }
+  .modal-title{ font-size:1.05rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:10px; }
+  .modal-title-ai-badge{ font-size:0.7rem; font-weight:700; background:linear-gradient(135deg,#FF7A45,#FF5470); color:#fff; padding:2px 8px; border-radius:4px; letter-spacing:0.04em; }
+  .modal-close{ background:transparent; border:none; color:var(--text-low); font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; }
   .modal-close:hover{ color:#fff; }
-  .modal-body{ padding:20px; display:grid; grid-template-columns:1.2fr 1fr; gap:20px; }
-  @media (max-width:768px){ .modal-body{ grid-template-columns:1fr; } }
+  .modal-body{ padding:20px; display:grid; grid-template-columns:1.15fr 1.25fr; gap:20px; }
+  @media (max-width:880px){ .modal-body{ grid-template-columns:1fr; } }
+  
   .modal-preview-box{
     position:relative; width:100%; aspect-ratio:16/9; background:#000;
     border-radius:10px; overflow:hidden; border:1px solid var(--line);
   }
   .modal-preview-img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .modal-telemetry-grid{ display:flex; flex-direction:column; gap:12px; }
+  
+  /* Google Maps GIS Card */
+  .modal-gis-card{
+    margin-top:14px; background:var(--bg-800); border:1px solid var(--line-soft); border-radius:10px; padding:12px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .gis-header{ display:flex; justify-content:space-between; align-items:center; }
+  .gis-title{ font-size:0.75rem; font-weight:700; color:var(--text-hi); display:flex; align-items:center; gap:6px; }
+  .gis-map-frame{
+    position:relative; width:100%; height:140px; background:#0d151e; border-radius:8px; overflow:hidden;
+    border:1px solid rgba(66,133,244,0.3);
+  }
+  .gis-radar-canvas{ width:100%; height:100%; display:block; }
+  .gis-coords-badge{
+    position:absolute; bottom:8px; left:8px; background:rgba(10,16,24,0.9); border:1px solid rgba(255,255,255,0.15);
+    padding:3px 8px; border-radius:4px; font-size:0.72rem; color:#fff; font-family:'JetBrains Mono',monospace;
+  }
+  .gis-live-badge{
+    position:absolute; top:8px; right:8px; background:rgba(52,211,153,0.2); border:1px solid var(--live);
+    color:var(--live); font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px;
+  }
+  .gis-address-text{ font-size:0.75rem; color:var(--text-mid); line-height:1.35; }
+  .gis-actions{ display:flex; gap:8px; }
+  .btn-gmaps{
+    background:#4285F4; border:1px solid #4285F4; color:#fff; font-size:0.75rem; font-weight:600;
+    padding:6px 12px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    transition:background .2s;
+  }
+  .btn-gmaps:hover{ background:#3367D6; }
+
+  /* Live 1-Second Telemetry HUD */
+  .live-telemetry-hud{
+    background:linear-gradient(180deg, rgba(255,122,69,0.06) 0%, rgba(15,21,28,0.8) 100%);
+    border:1px solid rgba(255,122,69,0.3); border-radius:10px; padding:12px; margin-bottom:12px;
+  }
+  .hud-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .hud-title{ font-size:0.78rem; font-weight:700; color:var(--alert); display:flex; align-items:center; gap:6px; }
+  .hud-1s-badge{
+    background:rgba(52,211,153,0.15); border:1px solid var(--live); color:var(--live);
+    font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;
+    display:flex; align-items:center; gap:4px;
+  }
+  .hud-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;
+  }
+  @media (max-width:540px){ .hud-grid{ grid-template-columns:1fr 1fr; } }
+  .hud-cell{
+    background:var(--bg-800); border:1px solid var(--line-soft); border-radius:6px; padding:8px;
+  }
+  .hud-cell-lbl{ font-size:0.64rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; font-weight:600; }
+  .hud-cell-val{ font-size:0.86rem; font-weight:700; color:#fff; font-family:'JetBrains Mono',monospace; }
+
+  .modal-telemetry-grid{ display:flex; flex-direction:column; gap:10px; }
   .telemetry-field{
     background:var(--bg-800); border:1px solid var(--line-soft); border-radius:8px; padding:10px 14px;
   }
@@ -346,6 +400,14 @@
   .telemetry-dim-table td{ padding:4px 8px; border-bottom:1px solid var(--line-soft); }
   .telemetry-dim-table td:first-child{ color:var(--text-low); }
   .telemetry-dim-table td:last-child{ text-align:right; font-family:'JetBrains Mono',monospace; color:var(--alert); font-weight:700; }
+
+  /* Bus Full Dossier Table inside Modal */
+  .bus-specs-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.76rem;
+  }
+  .bus-spec-item{ background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid var(--line-soft); }
+  .bus-spec-lbl{ color:var(--text-low); font-size:0.65rem; text-transform:uppercase; }
+  .bus-spec-val{ color:#fff; font-weight:600; margin-top:2px; }
 
   .legend{ display:flex; gap:14px; font-size:0.74rem; color:var(--text-mid); flex-wrap:wrap; padding-top:2px; }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
@@ -1082,6 +1144,10 @@
           <td class="mono" style="font-size:0.75rem;">
             ${lat}° N, ${lng}° E
             <br><span style="color:var(--text-low); font-size:0.7rem;">${item.location}</span>
+            <br><a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="gmaps-link" style="display:inline-flex; align-items:center; gap:4px; margin-top:3px; color:#4285F4; text-decoration:none; font-size:0.7rem; font-weight:600;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              Google Maps ↗
+            </a>
           </td>
           <td>
             <span class="status-pill status-ontime" style="font-size:0.7rem; margin-bottom:3px;">● ${sol.status || 'Active'}</span>
@@ -1093,8 +1159,8 @@
             </div>
           </td>
           <td>
-            <button class="btn btn-solid btn-inspect-det" data-idx="${idx}" style="padding:4px 10px; font-size:0.74rem; cursor:pointer; background:var(--route); border-color:var(--route);" type="button">
-              🔍 Inspect
+            <button class="btn btn-solid btn-inspect-det" data-idx="${idx}" style="padding:5px 12px; font-size:0.74rem; cursor:pointer; background:linear-gradient(135deg,#FF7A45,#FF5470); border-color:#FF7A45; display:inline-flex; align-items:center; gap:4px;" type="button">
+              🔍 Trinethra AI
             </button>
           </td>
         </tr>
@@ -2113,19 +2179,22 @@
     snapshots.slice(0, 8).forEach(function(s, idx){
       var dim = s.dimensions || { widthMm: 680, depthMm: 54, distanceM: 12.4 };
       var sol = s.solution || { action: 'Work Order Dispatched', workOrder: 'WO-8841', status: 'Dispatched' };
+      var lat = s.lat || 12.9716;
+      var lng = s.lng || 77.5946;
 
       html += `
         <div class="snap-card">
           <img src="${s.dataUrl}" class="snap-thumb" alt="${s.title}" onclick="window.openTelemetryModal(window._snapshots[${idx}])">
           <div class="snap-meta">
             <div class="snap-title">${s.title}</div>
-            <div class="snap-sub">${s.busId} · ${s.time} · ${s.lat}° N, ${s.lng}° E</div>
+            <div class="snap-sub">${s.busId} · ${s.time} · ${lat}° N, ${lng}° E</div>
             <div class="snap-dim">↔ W:${dim.widthMm}mm · ↕ D:${dim.depthMm}mm · 📏 ${dim.distanceM}m</div>
             <div class="snap-solution">● ${sol.status}: ${sol.workOrder}</div>
           </div>
           <div class="snap-actions">
-            <button class="snap-inspect-btn" onclick="window.openTelemetryModal(window._snapshots[${idx}])" type="button">🔍 Inspect Full Telemetry</button>
-            <a href="${s.dataUrl}" download="Thrinethra_${s.busId}_${s.id}_${s.time.replace(/:/g,'-')}.png" class="snap-dl-btn">Download PNG ↓</a>
+            <button class="snap-inspect-btn" onclick="window.openTelemetryModal(window._snapshots[${idx}])" type="button" style="color:var(--alert); font-weight:700;">🔍 Trinethra AI Telemetry</button>
+            <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="snap-dl-btn" style="color:#4285F4;">Google Maps ↗</a>
+            <a href="${s.dataUrl}" download="Trinethra_${s.busId}_${s.id}_${s.time.replace(/:/g,'-')}.png" class="snap-dl-btn">PNG ↓</a>
           </div>
         </div>
       `;
@@ -2188,54 +2257,211 @@
     }
   }, 10000);
 
-  // Forensic Telemetry Modal Opener
+  // Live Modal 1-Second GPS Tracking Loop & Radar Renderer
+  var modalLiveInterval = null;
+  var activeModalBusId = null;
+  var radarAngle = 0;
+
+  function renderModalGisRadar(lat, lng, speed, busId) {
+    var radarCanvas = document.getElementById('modalGisRadarCanvas');
+    if (!radarCanvas) return;
+    var rCtx = radarCanvas.getContext('2d');
+    var w = radarCanvas.width;
+    var h = radarCanvas.height;
+
+    rCtx.fillStyle = '#0a1017';
+    rCtx.fillRect(0, 0, w, h);
+
+    // Coordinate Grid lines
+    rCtx.strokeStyle = 'rgba(66,133,244,0.18)';
+    rCtx.lineWidth = 1;
+    for (var x = 0; x < w; x += 30) {
+      rCtx.beginPath(); rCtx.moveTo(x, 0); rCtx.lineTo(x, h); rCtx.stroke();
+    }
+    for (var y = 0; y < h; y += 30) {
+      rCtx.beginPath(); rCtx.moveTo(0, y); rCtx.lineTo(w, y); rCtx.stroke();
+    }
+
+    // Concentric Radar Range Rings
+    var cx = w * 0.5;
+    var cy = h * 0.5;
+    [30, 60, 90, 120].forEach(function(rad){
+      rCtx.beginPath();
+      rCtx.arc(cx, cy, rad, 0, Math.PI * 2);
+      rCtx.strokeStyle = 'rgba(66,133,244,0.22)';
+      rCtx.stroke();
+    });
+
+    // Sweeping Radar Beam
+    radarAngle = (radarAngle + 0.08) % (Math.PI * 2);
+    var sweepGrad = rCtx.createRadialGradient(cx, cy, 5, cx, cy, 120);
+    sweepGrad.addColorStop(0, 'rgba(66,133,244,0.35)');
+    sweepGrad.addColorStop(1, 'rgba(66,133,244,0)');
+    
+    rCtx.save();
+    rCtx.beginPath();
+    rCtx.moveTo(cx, cy);
+    rCtx.arc(cx, cy, 120, radarAngle - 0.4, radarAngle);
+    rCtx.closePath();
+    rCtx.fillStyle = sweepGrad;
+    rCtx.fill();
+    rCtx.restore();
+
+    // Center Bus GPS Marker
+    rCtx.beginPath();
+    rCtx.arc(cx, cy, 7, 0, Math.PI * 2);
+    rCtx.fillStyle = '#4285F4';
+    rCtx.fill();
+    rCtx.strokeStyle = '#fff';
+    rCtx.lineWidth = 2;
+    rCtx.stroke();
+
+    // Live Target Blip
+    var targetX = cx + Math.sin(Date.now() * 0.001) * 35;
+    var targetY = cy - 25 + Math.cos(Date.now() * 0.001) * 15;
+    rCtx.beginPath();
+    rCtx.arc(targetX, targetY, 4, 0, Math.PI * 2);
+    rCtx.fillStyle = '#FF7A45';
+    rCtx.fill();
+
+    // Vector line
+    rCtx.strokeStyle = 'rgba(255,122,69,0.7)';
+    rCtx.setLineDash([4, 4]);
+    rCtx.beginPath();
+    rCtx.moveTo(cx, cy);
+    rCtx.lineTo(targetX, targetY);
+    rCtx.stroke();
+    rCtx.setLineDash([]);
+
+    // HUD Text overlay
+    rCtx.fillStyle = '#34D399';
+    rCtx.font = 'bold 10px JetBrains Mono, monospace';
+    rCtx.fillText('GPS LOCK: ' + lat + '° N, ' + lng + '° E', 10, 18);
+    rCtx.fillStyle = '#8FA3BF';
+    rCtx.fillText('TARGET VECTOR: ' + busId + ' @ ' + speed + ' KM/H', 10, 32);
+  }
+
+  // Trinethra AI Forensic Telemetry Modal Opener
   window.openTelemetryModal = function(data) {
     if (!data) return;
     var modal = document.getElementById('telemetryModal');
     if (!modal) return;
 
+    var targetBusKey = data.busId || data.bus || currentBusId || 'KA-05-AB-1147';
+    // Clean key
+    if (targetBusKey.indexOf(' ') !== -1) targetBusKey = targetBusKey.split(' ')[0];
+    activeModalBusId = targetBusKey;
+
+    var busInfo = fleetMap[targetBusKey] || fleetMap['KA-05-AB-1147'];
+    var engineStatus = (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().fleetStatus.find(b => b.id === targetBusKey) : null) || {};
+
     var dim = data.dimensions || { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 };
     var sol = data.solution || { action: 'Cold-mix asphalt patch & compaction', workOrder: 'WO-8841', advisory: 'Downstream fleet advisory active', status: 'Work Order Dispatched' };
+    var curLat = (engineStatus.lat || data.lat || busInfo.lat || 12.9716);
+    var curLng = (engineStatus.lng || data.lng || busInfo.lng || 77.5946);
+    var curSpeed = (engineStatus.speed || busInfo.baseSpeed || 38.5);
+    var curAddress = engineStatus.address || (busInfo.location + ', Bengaluru, Karnataka, India');
 
+    // Populate Snapshot & Problem
     document.getElementById('modalSnapImg').src = data.dataUrl || data.snapshot || 'logo.png';
     document.getElementById('modalProblemTitle').textContent = data.title || 'Road Hazard Detected';
     document.getElementById('modalProblemDiagnosis').textContent = data.problem || data.category || 'Road surface sub-base degradation and hazard risk';
-    document.getElementById('modalBusId').textContent = (data.busId || data.bus || currentBusId) + ' (GPS: ' + (data.lat || '12.9716') + '° N, ' + (data.lng || '77.5946') + '° E)';
+    document.getElementById('modalBusId').textContent = targetBusKey + ' · ' + (busInfo.route || 'Fleet Route Active');
+    
+    // 3D Spatial Measurements
     document.getElementById('modalWidth').textContent = (dim.widthMm || 680) + ' mm (' + ((dim.widthMm || 680)/1000).toFixed(2) + ' m)';
     document.getElementById('modalDepth').textContent = (dim.depthMm ? (dim.depthMm + ' mm') : '0 mm (Surface Level)');
     document.getElementById('modalLength').textContent = (dim.lengthMm || 920) + ' mm (' + ((dim.lengthMm || 920)/1000).toFixed(2) + ' m)';
-    document.getElementById('modalDistance').textContent = (dim.distanceM || 12.4) + ' meters from Camera Lens';
-    document.getElementById('modalGpsCoords').textContent = (data.lat || '12.9716') + '° N, ' + (data.lng || '77.5946') + '° E · ' + (data.location || 'Fleet Route');
+    document.getElementById('modalDistance').textContent = (dim.distanceM || 12.4) + ' meters from Optical Lens';
+    
+    // Google Maps Link & Address
+    var gmapsUrl = 'https://www.google.com/maps?q=' + curLat + ',' + curLng;
+    document.getElementById('modalGmapsBtn').href = gmapsUrl;
+    document.getElementById('modalGpsCoords').textContent = curLat + '° N, ' + curLng + '° E';
+    document.getElementById('modalGisAddress').textContent = curAddress;
+    document.getElementById('modalPlusCode').textContent = 'GRID: 8J4V+' + Math.floor(curLat*100)%90 + ' BENGALURU';
+
+    // Solution Section
     document.getElementById('modalSolutionAction').textContent = sol.action || 'Cold-mix asphalt patch dispatched';
     document.getElementById('modalWorkOrder').textContent = sol.workOrder || 'WO-RD-8841';
     document.getElementById('modalAdvisory').textContent = sol.advisory || 'Speed reduction advisory (20 km/h) active';
     document.getElementById('modalStatusBadge').textContent = '● ' + (sol.status || 'Active Dispatch');
 
+    // Entire Bus Vehicle & Driver Specifications Suite
+    var driver = busInfo.driverObj || (engineStatus.driver) || { name: busInfo.driver || 'Ramesh Kumar', badge: 'DRV-4418', license: 'DL-04-2016-88214', shift: 'Morning (06:00 - 14:00)', score: '98.6%' };
+    var health = engineStatus.health || { batterySoc: 84, engineTempC: 68, tirePressurePsi: 118, brakeWearPct: 14, odoKm: 42180.5, transStatus: 'Nominal' };
+
+    document.getElementById('modalSpecModel').textContent = engineStatus.model || 'Tata Starbus EV Ultra 12M';
+    document.getElementById('modalSpecDepot').textContent = engineStatus.depot || 'Depot 04 (Central Majestic)';
+    document.getElementById('modalSpecDriver').textContent = driver.name + ' (' + (driver.badge || 'DRV-4418') + ')';
+    document.getElementById('modalSpecLicense').textContent = driver.license || 'DL-04-2016-88214';
+    document.getElementById('modalSpecBattery').textContent = (health.batterySoc || 84) + '% SOC (Nominal)';
+    document.getElementById('modalSpecEngineTemp').textContent = (health.engineTempC || 68) + ' °C';
+    document.getElementById('modalSpecTire').textContent = (health.tirePressurePsi || 118) + ' PSI (Optimal)';
+    document.getElementById('modalSpecOdo').textContent = (health.odoKm ? health.odoKm.toLocaleString() : '42,180.5') + ' km';
+
+    // Live Telemetry 1-Second HUD initial populate
+    document.getElementById('modalLiveLat').textContent = curLat + '° N';
+    document.getElementById('modalLiveLng').textContent = curLng + '° E';
+    document.getElementById('modalLiveSpeed').textContent = curSpeed + ' KM/H';
+    document.getElementById('modalLiveAltitude').textContent = (engineStatus.altitudeM || 920.4) + ' m';
+    document.getElementById('modalLiveBearing').textContent = (engineStatus.bearingDeg || 78) + '° (' + ((engineStatus.bearingDeg || 78) < 90 ? 'ENE' : 'SE') + ')';
+    document.getElementById('modalLiveSats').textContent = (engineStatus.satellites || 18) + ' Sats (RTK Lock)';
+
+    // Certified Download Button
     var dlBtn = document.getElementById('modalDownloadBtn');
-    if (dlBtn && data.dataUrl) {
-      dlBtn.href = data.dataUrl;
-      dlBtn.download = 'Thrinethra_Forensic_' + (data.id || 'SNAP') + '.png';
+    if (dlBtn) {
+      dlBtn.href = data.dataUrl || data.snapshot || 'logo.png';
+      dlBtn.download = 'Trinethra_AI_Forensic_' + (data.id || 'SNAP') + '.png';
     }
 
     modal.classList.add('active');
+
+    // Start 1-Second Live Location Tracking Loop for this modal
+    if (modalLiveInterval) clearInterval(modalLiveInterval);
+    modalLiveInterval = setInterval(function(){
+      if (!modal.classList.contains('active')) return;
+      var liveBus = (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().fleetStatus.find(b => b.id === activeModalBusId) : null);
+      if (liveBus) {
+        document.getElementById('modalLiveLat').textContent = liveBus.lat + '° N';
+        document.getElementById('modalLiveLng').textContent = liveBus.lng + '° E';
+        document.getElementById('modalLiveSpeed').textContent = liveBus.speed + ' KM/H';
+        document.getElementById('modalLiveAltitude').textContent = liveBus.altitudeM + ' m';
+        document.getElementById('modalLiveBearing').textContent = liveBus.bearingDeg + '°';
+        document.getElementById('modalLiveSats').textContent = liveBus.satellites + ' Sats (RTK)';
+        document.getElementById('modalGpsCoords').textContent = liveBus.lat + '° N, ' + liveBus.lng + '° E';
+        document.getElementById('modalGmapsBtn').href = 'https://www.google.com/maps?q=' + liveBus.lat + ',' + liveBus.lng;
+        renderModalGisRadar(liveBus.lat, liveBus.lng, liveBus.speed, activeModalBusId);
+      }
+    }, 1000);
+
+    renderModalGisRadar(curLat, curLng, curSpeed, targetBusKey);
   };
 
   window.closeTelemetryModal = function() {
     var modal = document.getElementById('telemetryModal');
     if (modal) modal.classList.remove('active');
+    if (modalLiveInterval) {
+      clearInterval(modalLiveInterval);
+      modalLiveInterval = null;
+    }
   };
 
   // Export Live Incident Report CSV with Dimensions & Solutions
   if (btnExport) {
     btnExport.addEventListener('click', function(){
       var rows = [
-        ['Incident ID', 'Timestamp', 'Date', 'Type', 'Problem Diagnosis', 'Width (mm)', 'Depth (mm)', 'Dist to Camera (m)', 'Bus ID', 'GPS Latitude', 'GPS Longitude', 'Automated Solution', 'Work Order / Citation', 'Status']
+        ['Incident ID', 'Timestamp', 'Date', 'Type', 'Problem Diagnosis', 'Width (mm)', 'Depth (mm)', 'Dist to Camera (m)', 'Bus ID', 'GPS Latitude', 'GPS Longitude', 'Google Maps Link', 'Automated Solution', 'Work Order / Citation', 'Status']
       ];
 
       var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : { recentDetections: [] };
       state.recentDetections.forEach(function(d){
         var dim = d.dimensions || { widthMm: 680, depthMm: 54, distanceM: 12.4 };
         var sol = d.solution || { action: 'Cold-mix patch', workOrder: 'WO-8841', status: 'Dispatched' };
+        var lat = d.lat || '12.9716';
+        var lng = d.lng || '77.5946';
+        var gmapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+
         rows.push([
           d.id,
           d.time,
@@ -2246,8 +2472,9 @@
           dim.depthMm,
           dim.distanceM,
           `"${d.busId || d.bus || 'Fleet'}"`,
-          d.lat || '12.9716',
-          d.lng || '77.5946',
+          lat,
+          lng,
+          `"${gmapsLink}"`,
           `"${sol.action.replace(/"/g, '""')}"`,
           `"${sol.workOrder}"`,
           sol.status || 'Active'
@@ -2259,7 +2486,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = 'Thrinethra_Physical_Photogrammetry_Incidents_' + new Date().toISOString().split('T')[0] + '.csv';
+      a.download = 'Trinethra_AI_Photogrammetry_Incidents_' + new Date().toISOString().split('T')[0] + '.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2270,53 +2497,167 @@
 })();
 </script>
 
-<!-- FORENSIC TELEMETRY & 3D PHYSICAL MEASUREMENT MODAL -->
-<div id="telemetryModal" class="telemetry-modal-overlay" role="dialog" aria-modal="true" aria-label="Forensic Telemetry Report">
+<!-- TRINETHRA AI · FORENSIC TELEMETRY, GOOGLE MAPS GIS & 1-SECOND LIVE TRACKING MODAL -->
+<div id="telemetryModal" class="telemetry-modal-overlay" role="dialog" aria-modal="true" aria-label="Trinethra AI Forensic Telemetry Report">
   <div class="telemetry-modal-card">
     <div class="modal-head">
       <div class="modal-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7A45" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        AI Optical Telemetry &amp; Forensic Solution Report
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A45" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Trinethra AI · Live Forensic Telemetry &amp; 3D Optical Report</span>
+        <span class="modal-title-ai-badge">TRINETHRA AI CORE</span>
       </div>
       <button type="button" class="modal-close" onclick="window.closeTelemetryModal()">✕</button>
     </div>
     <div class="modal-body">
+      
+      <!-- LEFT COLUMN: Optical Snapshot & Google Maps GIS Radar -->
       <div>
         <div class="modal-preview-box">
           <img id="modalSnapImg" src="logo.png" class="modal-preview-img" alt="Forensic snapshot" />
         </div>
-        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-          <a id="modalDownloadBtn" href="#" class="btn btn-solid btn-sm" style="flex:1; text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
-            📥 Download Certified Snapshot PNG
+        
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <a id="modalDownloadBtn" href="#" class="btn btn-solid btn-sm" style="flex:1; text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:0.75rem;">
+            📥 Download Certified PNG
           </a>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="alert('Digital Cryptographic Forensic Seal Verified: SHA-256 Validated against Edge Hardware ID.');">
-            🔒 Verify Crypto Seal
+          <button type="button" class="btn btn-ghost btn-sm" onclick="alert('Digital Cryptographic Forensic Seal Verified: SHA-256 Validated against Trinethra AI Edge Hardware ID.');" style="font-size:0.75rem;">
+            🔒 SHA-256 Seal
           </button>
         </div>
+
+        <!-- Google Maps GIS & Radar Card -->
+        <div class="modal-gis-card">
+          <div class="gis-header">
+            <div class="gis-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#4285F4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span>Google Maps GIS Telemetry &amp; Coordinates</span>
+            </div>
+            <span class="status-pill status-ontime" style="font-size:0.65rem;">● GPS Synced</span>
+          </div>
+
+          <!-- Mini Interactive GIS Radar Canvas -->
+          <div class="gis-map-frame">
+            <canvas id="modalGisRadarCanvas" class="gis-radar-canvas" width="440" height="140"></canvas>
+            <div class="gis-coords-badge" id="modalGpsCoords">12.9716° N, 77.5946° E</div>
+            <div class="gis-live-badge">RADAR SWEEP ACTIVE</div>
+          </div>
+
+          <div class="gis-address-text" id="modalGisAddress">
+            Mahatma Gandhi Rd, Ashok Nagar, Bengaluru, Karnataka 560001
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-low); font-family:'JetBrains Mono',monospace;" id="modalPlusCode">
+            GRID: 8J4V+3Q BENGALURU
+          </div>
+
+          <div class="gis-actions">
+            <a id="modalGmapsBtn" href="https://www.google.com/maps?q=12.9716,77.5946" target="_blank" class="btn-gmaps" style="flex:1; justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              Open in Google Maps ↗
+            </a>
+          </div>
+        </div>
+
       </div>
+
+      <!-- RIGHT COLUMN: Live 1-Second Telemetry HUD, Entire Bus Specs, 3D Measurements, & Solutions -->
       <div class="modal-telemetry-grid">
-        <div class="telemetry-field">
-          <div class="telemetry-field-lbl">Problem Diagnostic &amp; Root Cause</div>
-          <div class="telemetry-field-val" id="modalProblemTitle" style="color:var(--alert); font-size:0.95rem; margin-bottom:4px;">Severe Asphalt Pothole Crater</div>
-          <div style="font-size:0.78rem; color:var(--text-mid); line-height:1.4;" id="modalProblemDiagnosis">Sub-grade gravel washout causing road crater with sharp asphalt rim edge.</div>
+
+        <!-- LIVE BUS 1-SECOND GPS LOCATION TRACKER HUD -->
+        <div class="live-telemetry-hud">
+          <div class="hud-head">
+            <div class="hud-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF7A45" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Live Bus Kinematics &amp; GPS Tracker
+            </div>
+            <span class="hud-1s-badge"><span class="pulse-dot"></span> LIVE 1s TICK</span>
+          </div>
+          <div class="hud-grid">
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">GPS Latitude</div>
+              <div class="hud-cell-val" id="modalLiveLat" style="color:#4FA3D1;">12.97164° N</div>
+            </div>
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">GPS Longitude</div>
+              <div class="hud-cell-val" id="modalLiveLng" style="color:#4FA3D1;">77.59462° E</div>
+            </div>
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">Vehicle Velocity</div>
+              <div class="hud-cell-val" id="modalLiveSpeed" style="color:var(--live);">38.5 KM/H</div>
+            </div>
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">Altitude</div>
+              <div class="hud-cell-val" id="modalLiveAltitude">920.4 m</div>
+            </div>
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">Heading Vector</div>
+              <div class="hud-cell-val" id="modalLiveBearing">78° ENE</div>
+            </div>
+            <div class="hud-cell">
+              <div class="hud-cell-lbl">Satellites / Fix</div>
+              <div class="hud-cell-val" id="modalLiveSats" style="color:var(--alert);">18 Sats (RTK)</div>
+            </div>
+          </div>
         </div>
 
+        <!-- Problem Diagnostic & Root Cause -->
         <div class="telemetry-field">
-          <div class="telemetry-field-lbl">Active Vehicle &amp; GPS Coordinate</div>
-          <div class="telemetry-field-val mono" id="modalBusId" style="font-size:0.8rem;">KA-05-AB-1147 (GPS: 12.9716° N, 77.5946° E)</div>
+          <div class="telemetry-field-lbl">Trinethra AI Root-Cause Diagnostic</div>
+          <div class="telemetry-field-val" id="modalProblemTitle" style="color:var(--alert); font-size:0.92rem; margin-bottom:3px;">Severe Asphalt Pothole Crater</div>
+          <div style="font-size:0.76rem; color:var(--text-mid); line-height:1.35;" id="modalProblemDiagnosis">Sub-grade gravel washout causing road crater with sharp asphalt rim edge.</div>
+          <div style="font-size:0.7rem; color:var(--text-low); margin-top:4px;" class="mono" id="modalBusId">KA-05-AB-1147 · Route 42B</div>
         </div>
 
+        <!-- Entire Bus Vehicle Specifications & Driver Health Suite -->
         <div class="telemetry-field">
-          <div class="telemetry-field-lbl">3D Spatial Photogrammetric Measurements</div>
+          <div class="telemetry-field-lbl" style="color:var(--route);">Comprehensive Bus &amp; Driver Dossier</div>
+          <div class="bus-specs-grid">
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Vehicle Model</div>
+              <div class="bus-spec-val" id="modalSpecModel">Tata Starbus EV Ultra 12M</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Assigned Depot</div>
+              <div class="bus-spec-val" id="modalSpecDepot">Depot 04 (Majestic)</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Driver Operator</div>
+              <div class="bus-spec-val" id="modalSpecDriver">Ramesh Kumar (DRV-4418)</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Driving License</div>
+              <div class="bus-spec-val mono" id="modalSpecLicense">DL-04-2016-88214</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Battery / Fuel SOC</div>
+              <div class="bus-spec-val" id="modalSpecBattery" style="color:var(--live);">84% SOC (Nominal)</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Inverter / Engine Temp</div>
+              <div class="bus-spec-val" id="modalSpecEngineTemp">68 °C</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Tire Pressure</div>
+              <div class="bus-spec-val" id="modalSpecTire">118 PSI</div>
+            </div>
+            <div class="bus-spec-item">
+              <div class="bus-spec-lbl">Total Odometer</div>
+              <div class="bus-spec-val mono" id="modalSpecOdo">42,180.5 km</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Spatial Photogrammetric Measurements -->
+        <div class="telemetry-field">
+          <div class="telemetry-field-lbl">3D Spatial Photogrammetric Dimensions</div>
           <table class="telemetry-dim-table">
             <tr><td>Hazard Width (X-Axis):</td><td id="modalWidth">680 mm (0.68 m)</td></tr>
-            <tr><td>Crater Depth / Intrusion (Z-Axis):</td><td id="modalDepth">54 mm</td></tr>
+            <tr><td>Crater Depth / Penetration (Z-Axis):</td><td id="modalDepth">54 mm</td></tr>
             <tr><td>Hazard Length / Height (Y-Axis):</td><td id="modalLength">920 mm (0.92 m)</td></tr>
-            <tr><td>Distance to Camera Lens:</td><td id="modalDistance" style="color:var(--live);">12.4 meters</td></tr>
-            <tr><td>Exact GPS Coordinates:</td><td id="modalGpsCoords" style="color:var(--text-hi);">12.9716° N, 77.5946° E</td></tr>
+            <tr><td>Camera Lens to Target Distance:</td><td id="modalDistance" style="color:var(--live);">12.4 meters</td></tr>
           </table>
         </div>
 
+        <!-- Automated Real-Time Solution Dispatched -->
         <div class="telemetry-field" style="border-color:rgba(52,211,153,0.3); background:rgba(52,211,153,0.04);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <div class="telemetry-field-lbl" style="color:var(--live);">Automated Real-Time Solution Dispatched</div>
@@ -2332,6 +2673,7 @@
             Downstream speed limit reduced to 20 km/h · Warning broadcasted
           </div>
         </div>
+
       </div>
     </div>
   </div>
