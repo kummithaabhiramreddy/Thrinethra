@@ -9,11 +9,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-900:#0A0E13; --bg-800:#0F151C; --bg-700:#141C25;
-    --line:#212B36; --line-soft:#1A222C;
-    --text-hi:#EAEFF3; --text-mid:#9AA7B4; --text-low:#5E6B78;
-    --alert:#FF7A45; --alert-dim:#4A2E20;
-    --live:#34D399; --live-dim:#173229;
+    --bg-900:#070A0E; --bg-800:#0C1118; --bg-700:#121822; --bg-card:#0E141D;
+    --line:#1B2430; --line-soft:#151D27;
+    --text-hi:#EDF2F7; --text-mid:#94A3B8; --text-low:#5B6A7D;
+    --alert:#FF7A45; --alert-dim:#422115;
+    --live:#34D399; --live-dim:#132E24;
     --route:#4FA3D1; --danger:#FF5470;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -23,7 +23,7 @@
   body::-webkit-scrollbar{ display:none; }
   body{
     background:var(--bg-900); color:var(--text-hi);
-    font-family:'Inter',sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased;
+    font-family:'Inter',sans-serif; font-size:0.78rem; line-height:1.35; -webkit-font-smoothing:antialiased;
   }
   a{ color:inherit; text-decoration:none; }
   img,svg{ display:block; max-width:100%; }
@@ -34,427 +34,398 @@
   /* ---------- WORDMARK ---------- */
   .wordmark{
     display:inline-flex; align-items:baseline;
-    font-family:'Space Grotesk',sans-serif; font-weight:600;
-    font-size:1.3rem; letter-spacing:0.01em; color:#fff; line-height:1; white-space:nowrap;
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:1.05rem; letter-spacing:0.02em; color:#fff; line-height:1; white-space:nowrap;
   }
   .wordmark .gate-i{ position:relative; display:inline-flex; align-items:flex-end; justify-content:center; width:0.46em; height:1em; margin:0 0.01em; transform:translateY(0.02em); }
   .wordmark .gate-frame{ position:absolute; left:0.03em; right:0.03em; top:0.02em; height:0.66em; border:0.09em solid var(--alert); border-bottom:none; border-radius:0.05em 0.05em 0 0; }
   .wordmark .gate-stem{ position:relative; width:0.09em; height:0.74em; background:#fff; border-radius:0.03em; z-index:2; }
   .wordmark .gate-star{ position:absolute; top:-0.2em; right:-0.14em; width:0.34em; height:0.34em; z-index:3; }
 
-  .btn{ padding:9px 16px; border-radius:7px; font-size:0.86rem; font-weight:600; border:1px solid var(--line); white-space:nowrap; display:inline-block; }
-  .btn-ghost{ color:var(--text-mid); }
-  .btn-ghost:hover{ color:var(--text-hi); border-color:#33404D; }
-  .btn-solid{ background:var(--alert); color:#191008; border-color:var(--alert); }
+  .btn{ padding:5px 10px; border-radius:5px; font-size:0.72rem; font-weight:600; border:1px solid var(--line); white-space:nowrap; display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
+  .btn-ghost{ color:var(--text-mid); background:var(--bg-800); }
+  .btn-ghost:hover{ color:var(--text-hi); border-color:#33404D; background:var(--bg-700); }
+  .btn-solid{ background:var(--alert); color:#101419; border-color:var(--alert); }
   .btn-solid:hover{ background:#ff8b5c; }
+  .btn-sm{ padding:4px 8px; font-size:0.68rem; }
 
-  .pulse-dot{ width:7px; height:7px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(52,211,153,0.6); animation:pulse 2s infinite; flex-shrink:0; }
-  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(52,211,153,.55);} 70%{box-shadow:0 0 0 8px rgba(52,211,153,0);} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0);} }
+  .pulse-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(52,211,153,0.6); animation:pulse 2s infinite; flex-shrink:0; }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(52,211,153,.55);} 70%{box-shadow:0 0 0 6px rgba(52,211,153,0);} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0);} }
 
   /* ---------- APP SHELL ---------- */
   .app-shell{ display:flex; min-height:100vh; }
 
   .sidebar{
-    width:232px; flex-shrink:0; background:var(--bg-800); border-right:1px solid var(--line-soft);
-    padding:20px 16px; position:sticky; top:0; height:100vh; overflow-y:auto;
-    display:flex; flex-direction:column;
-    scrollbar-width:none; -ms-overflow-style:none;
+    width:190px; flex-shrink:0; background:var(--bg-800); border-right:1px solid var(--line-soft);
+    padding:12px 10px; position:sticky; top:0; height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column; scrollbar-width:none; -ms-overflow-style:none;
   }
   .sidebar::-webkit-scrollbar{ display:none; }
-  .sidebar .logo-row{ padding:6px 8px 22px; }
+  .sidebar .logo-row{ padding:4px 6px 14px; }
   .side-nav{ display:flex; flex-direction:column; gap:2px; flex:1; }
   .side-link{
-    display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:8px;
-    font-size:0.88rem; color:var(--text-mid); border-left:2px solid transparent;
+    display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:6px;
+    font-size:0.75rem; color:var(--text-mid); border-left:2px solid transparent; font-weight:500;
   }
-  .side-link svg{ width:17px; height:17px; flex-shrink:0; opacity:0.85; }
+  .side-link svg{ width:14px; height:14px; flex-shrink:0; opacity:0.85; }
   .side-link:hover{ background:var(--bg-700); color:var(--text-hi); }
-  .side-link.active{ background:var(--bg-700); color:var(--text-hi); border-left-color:var(--alert); }
-  .side-foot{ border-top:1px solid var(--line-soft); padding-top:14px; margin-top:14px; font-size:0.76rem; color:var(--text-low); }
-  .side-foot .fleet-live{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .side-link.active{ background:var(--bg-700); color:var(--text-hi); border-left-color:var(--alert); font-weight:600; }
+  .side-foot{ border-top:1px solid var(--line-soft); padding-top:10px; margin-top:10px; font-size:0.68rem; color:var(--text-low); }
+  .side-foot .fleet-live{ display:flex; align-items:center; gap:6px; margin-bottom:3px; }
 
   .main-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
   .topbar{
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    padding:16px 28px; border-bottom:1px solid var(--line-soft);
-    background:rgba(10,14,19,0.75); backdrop-filter:blur(10px);
-    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:8px 18px; border-bottom:1px solid var(--line-soft);
+    background:rgba(7,10,14,0.85); backdrop-filter:blur(10px);
+    position:sticky; top:0; z-index:30; height:44px;
   }
-  .topbar h1{ font-size:1.18rem; font-weight:600; }
-  .topbar .sub{ font-size:0.78rem; color:var(--text-mid); margin-top:2px; }
-  .topbar-right{ display:flex; align-items:center; gap:14px; }
+  .topbar h1{ font-size:0.92rem; font-weight:600; line-height:1.2; }
+  .topbar .sub{ font-size:0.68rem; color:var(--text-mid); }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
   .live-pill{
-    display:flex; align-items:center; gap:8px; font-size:0.78rem; color:var(--text-mid);
-    border:1px solid var(--line); border-radius:999px; padding:6px 12px;
+    display:flex; align-items:center; gap:6px; font-size:0.68rem; color:var(--text-mid);
+    border:1px solid var(--line); border-radius:999px; padding:3px 8px; font-family:'JetBrains Mono',monospace;
   }
   /* Compact User Profile Button in Header */
   .user-avatar-btn{
-    position:relative; width:36px; height:36px; border-radius:50%;
-    padding:0; border:2px solid var(--alert); background:var(--bg-800);
+    position:relative; width:28px; height:28px; border-radius:50%;
+    padding:0; border:1.5px solid var(--alert); background:var(--bg-800);
     cursor:pointer; outline:none; transition:transform .15s ease, box-shadow .15s ease;
     flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
   }
-  .user-avatar-btn:hover{ transform:scale(1.05); box-shadow:0 0 12px rgba(255,122,69,0.4); }
+  .user-avatar-btn:hover{ transform:scale(1.06); box-shadow:0 0 10px rgba(255,122,69,0.4); }
   .user-avatar-btn img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; pointer-events:none; }
   .user-avatar-btn .online-dot{
-    position:absolute; bottom:-1px; right:-1px; width:9px; height:9px;
-    border-radius:50%; background:var(--live); border:2px solid var(--bg-900); pointer-events:none;
+    position:absolute; bottom:-1px; right:-1px; width:7px; height:7px;
+    border-radius:50%; background:var(--live); border:1.5px solid var(--bg-900); pointer-events:none;
   }
 
-  /* Floating User Account Card Popup (Shows ONLY on avatar click) */
+  /* Floating User Account Card Popup */
   .user-profile-popup{
-    position:fixed; top:68px; right:24px; width:310px; max-width:calc(100vw - 32px);
-    background:#161B22; border:1px solid var(--line); border-radius:16px;
-    box-shadow:0 20px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,122,69,0.2);
-    padding:18px; z-index:99999; animation:popupFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position:fixed; top:52px; right:18px; width:280px; max-width:calc(100vw - 32px);
+    background:#121820; border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,122,69,0.2);
+    padding:14px; z-index:99999; animation:popupFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     font-family:'Inter',sans-serif; display:none;
   }
   .user-profile-popup.open{ display:block !important; }
   @keyframes popupFadeIn{
-    from{ opacity:0; transform:translateY(-8px) scale(0.96); }
+    from{ opacity:0; transform:translateY(-6px) scale(0.96); }
     to{ opacity:1; transform:translateY(0) scale(1); }
   }
-  .upp-head{ display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--line-soft); }
-  .upp-avatar{ width:42px; height:42px; border-radius:50%; border:2px solid var(--alert); object-fit:cover; flex-shrink:0; }
-  .upp-name{ font-size:0.92rem; font-weight:600; color:#fff; line-height:1.2; }
-  .upp-role{ font-size:0.75rem; color:var(--alert); font-weight:500; margin-top:2px; }
-  .upp-body{ padding:12px 0; border-bottom:1px solid var(--line-soft); display:flex; flex-direction:column; gap:8px; }
+  .upp-head{ display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--line-soft); }
+  .upp-avatar{ width:34px; height:34px; border-radius:50%; border:1.5px solid var(--alert); object-fit:cover; flex-shrink:0; }
+  .upp-name{ font-size:0.84rem; font-weight:600; color:#fff; line-height:1.2; }
+  .upp-role{ font-size:0.68rem; color:var(--alert); font-weight:500; }
+  .upp-body{ padding:10px 0; border-bottom:1px solid var(--line-soft); display:flex; flex-direction:column; gap:6px; }
   .upp-row{ display:flex; flex-direction:column; gap:1px; }
-  .upp-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:600; }
-  .upp-val{ font-size:0.82rem; color:var(--text-hi); word-break:break-all; }
-  .upp-actions{ padding-top:12px; display:flex; flex-direction:column; gap:8px; }
-  .upp-btn-cmd{
-    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
-    background:var(--alert); color:#141414; padding:10px; border-radius:8px;
-    font-size:0.86rem; font-weight:600; border:none; text-decoration:none; text-align:center;
-    box-sizing:border-box;
-  }
-  .upp-btn-cmd:hover{ background:#ff8b5c; }
+  .upp-lbl{ font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:600; }
+  .upp-val{ font-size:0.75rem; color:var(--text-hi); word-break:break-all; }
+  .upp-actions{ padding-top:10px; display:flex; flex-direction:column; gap:6px; }
   .upp-btn-ghost{
-    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
-    background:var(--bg-800); color:var(--text-hi); padding:9px; border-radius:8px;
-    font-size:0.82rem; font-weight:500; border:1px solid var(--line); text-decoration:none;
-    box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%;
+    background:var(--bg-800); color:var(--text-hi); padding:6px; border-radius:6px;
+    font-size:0.74rem; font-weight:500; border:1px solid var(--line); text-decoration:none; box-sizing:border-box;
   }
   .upp-btn-ghost:hover{ background:var(--bg-700); }
   .upp-btn-logout{
     width:100%; background:transparent; color:var(--danger); border:1px solid rgba(255,84,112,0.3);
-    padding:8px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; margin-top:4px;
-    box-sizing:border-box;
+    padding:6px; border-radius:6px; font-size:0.74rem; font-weight:500; cursor:pointer; box-sizing:border-box;
   }
   .upp-btn-logout:hover{ background:rgba(255,84,112,0.12); }
 
-  .dash-content{ padding:26px 28px 60px; display:flex; flex-direction:column; gap:24px; max-width:1360px; width:100%; }
+  .dash-content{ padding:12px 16px 36px; display:flex; flex-direction:column; gap:10px; max-width:1440px; width:100%; }
   .table-responsive{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
   @media (max-width:900px){
     .sidebar{
       position:static; height:auto; width:100%; flex-direction:row; align-items:center;
-      overflow-x:auto; padding:12px 16px; gap:16px; border-right:none; border-bottom:1px solid var(--line-soft);
+      overflow-x:auto; padding:8px 12px; gap:12px; border-right:none; border-bottom:1px solid var(--line-soft);
     }
     .sidebar .logo-row{ padding:0; flex-shrink:0; }
-    .side-nav{ flex-direction:row; gap:6px; }
-    .side-link{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; }
+    .side-nav{ flex-direction:row; gap:4px; }
+    .side-link{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; padding:5px 8px; }
     .side-link.active{ border-left:none; border-bottom-color:var(--alert); }
     .side-foot{ display:none; }
     .app-shell{ flex-direction:column; }
-    .topbar{ padding:14px 18px; }
-    .dash-content{ padding:16px 14px 50px; }
+    .topbar{ padding:8px 12px; }
+    .dash-content{ padding:10px 10px 30px; }
   }
 
-  @media (max-width:600px){
-    .topbar{ flex-wrap:wrap; gap:10px; padding:12px 14px; }
-    .topbar h1{ font-size:1.05rem; }
-    .topbar .sub{ font-size:0.72rem; }
-    .topbar-right{ width:100%; justify-content:space-between; }
-    .kpi-cell{ padding:14px 16px; }
-    .kpi-num{ font-size:1.55rem; }
-    .panel-head{ padding:12px 14px; }
-    .panel-body{ padding:12px 14px; }
-    thead th{ padding:0 12px 8px; }
-    tbody td{ padding:10px 12px; font-size:0.8rem; }
-  }
+  /* ---------- CARD ENTRANCE ---------- */
+  .reveal{ opacity:0; animation:cardIn 0.5s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes cardIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+  @media (prefers-reduced-motion:reduce){ .reveal{ animation:none; opacity:1; } }
 
-  /* ---------- CARD ENTRANCE (CSS-only, no scroll/JS dependency) ---------- */
-  .reveal{
-    opacity:0;
-    animation:cardIn 0.75s cubic-bezier(.2,.7,.2,1) forwards;
-  }
-  @keyframes cardIn{
-    from{ opacity:0; transform:translateY(22px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
-  @media (prefers-reduced-motion:reduce){
-    .reveal{ animation:none; opacity:1; }
-  }
-
-  /* ---------- TAB SECTIONS (one visible at a time) ---------- */
+  /* ---------- TAB SECTIONS ---------- */
   .dash-content > section.tab-hidden{ display:none; }
 
-  /* ---------- KPI ROW ---------- */
-  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  @media (max-width:900px){ .kpi-row{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:520px){ .kpi-row{ grid-template-columns:1fr; } }
-  .kpi-cell{ padding:20px 22px; border-right:1px solid var(--line); background:var(--bg-800); }
-  .kpi-cell:last-child{ border-right:none; }
-  @media (max-width:900px){ .kpi-cell:nth-child(2n){ border-right:none; } .kpi-cell{ border-bottom:1px solid var(--line); } .kpi-cell:nth-last-child(-n+2){ border-bottom:none; } }
-  .kpi-label{ font-size:0.76rem; color:var(--text-mid); display:flex; align-items:center; gap:7px; }
-  .kpi-num{ font-size:1.85rem; font-weight:700; margin-top:8px; color:var(--text-hi); }
-  .kpi-delta{ font-size:0.76rem; margin-top:6px; }
-  .kpi-delta.up{ color:var(--danger); }
-  .kpi-delta.down{ color:var(--live); }
+  /* ---------- MICRO KPI GRID (8 MICRO STAT CARDS) ---------- */
+  .micro-kpi-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;
+  }
+  @media (max-width:1100px){ .micro-kpi-grid{ grid-template-columns:repeat(4, 1fr); } }
+  @media (max-width:768px){ .micro-kpi-grid{ grid-template-columns:repeat(2, 1fr); } }
+  @media (max-width:420px){ .micro-kpi-grid{ grid-template-columns:1fr; } }
+  
+  .micro-kpi-card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:7px;
+    padding:8px 10px; display:flex; flex-direction:column; gap:2px; transition:border-color .15s;
+  }
+  .micro-kpi-card:hover{ border-color:rgba(255,122,69,0.35); }
+  .micro-kpi-head{ display:flex; justify-content:space-between; align-items:center; }
+  .micro-kpi-lbl{ font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; }
+  .micro-kpi-icon{ font-size:0.75rem; }
+  .micro-kpi-val{ font-size:1.12rem; font-weight:700; color:var(--text-hi); line-height:1.2; }
+  .micro-kpi-sub{ font-size:0.64rem; color:var(--text-mid); display:flex; align-items:center; gap:4px; margin-top:2px; }
+  .micro-kpi-sub.up{ color:var(--danger); }
+  .micro-kpi-sub.down{ color:var(--live); }
 
   /* ---------- PANELS ---------- */
-  .grid-2col{ display:grid; grid-template-columns:1.55fr 1fr; gap:20px; align-items:start; }
+  .grid-2col{ display:grid; grid-template-columns:1.4fr 1fr; gap:10px; align-items:start; }
   @media (max-width:980px){ .grid-2col{ grid-template-columns:1fr; } }
-  .panel{ border:1px solid var(--line); border-radius:12px; background:var(--bg-800); overflow:hidden; }
-  .panel-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--line-soft); flex-wrap:wrap; }
-  .panel-kicker{ font-size:0.68rem; letter-spacing:0.09em; color:var(--alert); font-weight:700; text-transform:uppercase; margin-bottom:5px; }
-  .panel-title{ font-size:1.08rem; font-weight:600; color:var(--text-hi); letter-spacing:-0.005em; }
-  .panel-head .meta{ font-size:0.76rem; color:var(--text-low); padding-top:2px; }
-  .panel-body{ padding:18px 20px; }
+  .panel{ border:1px solid var(--line); border-radius:8px; background:var(--bg-card); overflow:hidden; }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line-soft); flex-wrap:wrap; }
+  .panel-kicker{ font-size:0.58rem; letter-spacing:0.08em; color:var(--alert); font-weight:700; text-transform:uppercase; margin-bottom:1px; }
+  .panel-title{ font-size:0.84rem; font-weight:600; color:var(--text-hi); }
+  .panel-head .meta{ font-size:0.68rem; color:var(--text-low); }
+  .panel-body{ padding:10px 12px; }
 
   /* ---------- LIVE CAMERA SCANNER & AI VISION ---------- */
-  .cam-grid{ display:grid; grid-template-columns:1.55fr 1fr; gap:20px; align-items:start; }
-  @media (max-width:1024px){ .cam-grid{ grid-template-columns:1fr; } }
+  .cam-grid{ display:grid; grid-template-columns:1.35fr 1fr; gap:10px; align-items:start; }
+  @media (max-width:960px){ .cam-grid{ grid-template-columns:1fr; } }
   .cam-viewport{
     position:relative; width:100%; aspect-ratio:16/9; background:#05070a;
-    border-radius:12px; overflow:hidden; border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center; box-shadow:0 12px 32px rgba(0,0,0,0.5);
+    border-radius:8px; overflow:hidden; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);
   }
   .cam-video{ width:100%; height:100%; object-fit:cover; display:block; }
   .cam-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   .cam-hud-top{
-    position:absolute; top:12px; left:14px; right:14px; display:flex;
+    position:absolute; top:8px; left:10px; right:10px; display:flex;
     justify-content:space-between; align-items:center; pointer-events:none; z-index:5;
   }
   .cam-hud-bottom{
-    position:absolute; bottom:12px; left:14px; right:14px; display:flex;
+    position:absolute; bottom:8px; left:10px; right:10px; display:flex;
     justify-content:space-between; align-items:center; pointer-events:none; z-index:5;
   }
   .cam-badge{
-    background:rgba(10,14,19,0.85); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.15);
-    padding:4px 10px; border-radius:6px; font-size:0.72rem; color:#fff; font-family:'JetBrains Mono',monospace;
+    background:rgba(7,10,14,0.85); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.15);
+    padding:2px 7px; border-radius:4px; font-size:0.64rem; color:#fff; font-family:'JetBrains Mono',monospace;
   }
-  .cam-badge.rec{ border-color:var(--danger); color:var(--danger); display:flex; align-items:center; gap:6px; font-weight:700; }
-  .cam-badge.rec i{ width:8px; height:8px; border-radius:50%; background:var(--danger); animation:pulse 1.2s infinite; }
-  .cam-ctrls{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .cam-badge.rec{ border-color:var(--danger); color:var(--danger); display:flex; align-items:center; gap:4px; font-weight:700; }
+  .cam-badge.rec i{ width:6px; height:6px; border-radius:50%; background:var(--danger); animation:pulse 1.2s infinite; }
+  .cam-ctrls{ display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
   .cam-ctrl-btn{
-    padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:600;
+    padding:4px 8px; border-radius:5px; font-size:0.70rem; font-weight:600;
     border:1px solid var(--line); background:var(--bg-800); color:var(--text-hi);
-    cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+    cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all .15s ease;
   }
   .cam-ctrl-btn:hover{ background:var(--bg-700); border-color:var(--alert); }
-  /* Gallery of Screenshots / Snapshots */
-  .snapshot-deck{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:10px; }
+  .cam-ctrl-btn.active{ background:var(--alert); color:#101419; border-color:var(--alert); }
+  
+  /* Gallery of Micro Snapshots */
+  .snapshot-deck{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-top:6px; }
   .snap-card{
-    background:var(--bg-900); border:1px solid var(--line); border-radius:8px;
-    overflow:hidden; display:flex; flex-direction:column; transition:transform .2s;
+    background:var(--bg-900); border:1px solid var(--line); border-radius:6px;
+    overflow:hidden; display:flex; flex-direction:column; transition:transform .15s;
   }
+  .snap-card:hover{ transform:translateY(-2px); border-color:rgba(255,122,69,0.4); }
+  .snap-thumb{ width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; display:block; cursor:pointer; }
+  .snap-meta{ padding:5px 6px; display:flex; flex-direction:column; gap:2px; flex:1; }
+  .snap-title{ font-size:0.70rem; font-weight:600; color:var(--text-hi); line-height:1.2; }
+  .snap-sub{ font-size:0.62rem; color:var(--text-low); font-family:'JetBrains Mono',monospace; }
+  .snap-dim{ font-size:0.62rem; color:var(--alert); font-family:'JetBrains Mono',monospace; background:rgba(255,122,69,0.08); padding:1px 4px; border-radius:3px; margin-top:1px; display:inline-block; }
+  .snap-solution{ font-size:0.62rem; color:var(--live); background:rgba(52,211,153,0.08); padding:1px 4px; border-radius:3px; margin-top:1px; display:inline-block; }
+  .snap-actions{ padding:4px 6px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); gap:4px; flex-wrap:wrap; }
+  .snap-dl-btn{ font-size:0.64rem; color:var(--alert); text-decoration:none; font-weight:600; cursor:pointer; }
+  .snap-dl-btn:hover{ text-decoration:underline; }
+  .snap-inspect-btn{ font-size:0.64rem; color:var(--route); background:transparent; border:none; padding:0; cursor:pointer; font-weight:600; }
+  .snap-inspect-btn:hover{ text-decoration:underline; }
 
   /* Bus Search & Lookup Gateway */
   .bus-search-bar{
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px;
-    background:var(--bg-900); padding:10px 14px; border-radius:10px; border:1px solid var(--line);
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px;
+    background:var(--bg-900); padding:6px 10px; border-radius:7px; border:1px solid var(--line);
   }
-  .bus-search-input-wrap{ position:relative; flex:1; min-width:220px; }
+  .bus-search-input-wrap{ position:relative; flex:1; min-width:180px; }
   .bus-search-input{
-    width:100%; padding:10px 14px 10px 38px; border-radius:8px;
+    width:100%; padding:6px 10px 6px 30px; border-radius:6px;
     background:var(--bg-800); border:1px solid var(--line); color:var(--text-hi);
-    font-size:0.86rem; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s;
+    font-size:0.75rem; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s;
   }
-  .bus-search-input:focus{ border-color:var(--alert); box-shadow:0 0 0 3px rgba(255,122,69,0.15); }
-  .bus-search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-low); pointer-events:none; }
+  .bus-search-input:focus{ border-color:var(--alert); box-shadow:0 0 0 2px rgba(255,122,69,0.15); }
+  .bus-search-icon{ position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--text-low); pointer-events:none; }
   
   /* Bus Standby Empty State */
   .bus-standby-card{
-    background:linear-gradient(180deg, rgba(20,27,36,0.7) 0%, rgba(10,14,19,0.9) 100%);
-    border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:38px 24px;
+    background:linear-gradient(180deg, rgba(18,24,34,0.7) 0%, rgba(7,10,14,0.9) 100%);
+    border:1px dashed rgba(255,255,255,0.15); border-radius:8px; padding:24px 16px;
     text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
   .bus-standby-icon{
-    width:56px; height:56px; border-radius:50%; background:rgba(255,122,69,0.12);
-    display:flex; align-items:center; justify-content:center; color:var(--alert); margin-bottom:14px;
-    box-shadow:0 0 24px rgba(255,122,69,0.25);
+    width:42px; height:42px; border-radius:50%; background:rgba(255,122,69,0.12);
+    display:flex; align-items:center; justify-content:center; color:var(--alert); margin-bottom:10px;
+    box-shadow:0 0 16px rgba(255,122,69,0.2);
   }
-  .bus-standby-title{ font-size:1.1rem; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
-  .bus-standby-sub{ font-size:0.84rem; color:var(--text-mid); max-width:540px; line-height:1.5; margin-bottom:20px; }
-  .bus-standby-quick{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .bus-standby-title{ font-size:0.92rem; font-weight:700; color:var(--text-hi); margin-bottom:4px; }
+  .bus-standby-sub{ font-size:0.74rem; color:var(--text-mid); max-width:480px; line-height:1.4; margin-bottom:14px; }
+  .bus-standby-quick{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
   .bus-chip{
     background:var(--bg-800); border:1px solid var(--line); color:var(--text-mid);
-    padding:6px 12px; border-radius:20px; font-size:0.75rem; font-family:'JetBrains Mono',monospace;
+    padding:3px 8px; border-radius:14px; font-size:0.68rem; font-family:'JetBrains Mono',monospace;
     cursor:pointer; transition:all .15s ease;
   }
   .bus-chip:hover{ background:var(--bg-700); border-color:var(--alert); color:var(--text-hi); }
-  .bus-chip.active{ background:var(--alert); color:#101419; font-weight:700; border-color:var(--alert); }
+  .bus-chip.active{ background:var(--alert); color:#070A0E; font-weight:700; border-color:var(--alert); }
 
-  /* Vehicle Telemetry Dossier Bar */
+  /* Micro Vehicle Telemetry Dossier Bar */
   .bus-dossier-bar{
-    background:var(--bg-900); border:1px solid var(--line); border-radius:10px;
-    padding:12px 16px; margin-bottom:16px; display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; align-items:center;
+    background:var(--bg-900); border:1px solid var(--line); border-radius:7px;
+    padding:8px 10px; margin-bottom:10px; display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; align-items:center;
   }
-  .dossier-item{ display:flex; flex-direction:column; gap:2px; }
-  .dossier-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; }
-  .dossier-val{ font-size:0.86rem; font-weight:600; color:var(--text-hi); display:flex; align-items:center; gap:6px; }
-
-  .snap-card:hover{ transform:translateY(-2px); border-color:rgba(255,122,69,0.4); }
-  .snap-thumb{ width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; display:block; cursor:pointer; }
-  .snap-meta{ padding:8px 10px; display:flex; flex-direction:column; gap:3px; flex:1; }
-  .snap-title{ font-size:0.78rem; font-weight:600; color:var(--text-hi); line-height:1.2; }
-  .snap-sub{ font-size:0.68rem; color:var(--text-low); font-family:'JetBrains Mono',monospace; }
-  .snap-dim{ font-size:0.7rem; color:var(--alert); font-family:'JetBrains Mono',monospace; background:rgba(255,122,69,0.08); padding:2px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
-  .snap-solution{ font-size:0.68rem; color:var(--live); background:rgba(52,211,153,0.08); padding:2px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
-  .snap-actions{ padding:6px 10px 8px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); gap:6px; flex-wrap:wrap; }
-  .snap-dl-btn{ font-size:0.7rem; color:var(--alert); text-decoration:none; font-weight:600; cursor:pointer; }
-  .snap-dl-btn:hover{ text-decoration:underline; }
-  .snap-inspect-btn{ font-size:0.7rem; color:var(--route); background:transparent; border:none; padding:0; cursor:pointer; font-weight:600; }
-  .snap-inspect-btn:hover{ text-decoration:underline; }
+  .dossier-item{ display:flex; flex-direction:column; gap:1px; }
+  .dossier-lbl{ font-size:0.58rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; }
+  .dossier-val{ font-size:0.75rem; font-weight:600; color:var(--text-hi); display:flex; align-items:center; gap:4px; }
 
   /* Trinethra AI Forensic Telemetry Modal */
   .telemetry-modal-overlay{
-    position:fixed; inset:0; background:rgba(4,7,11,0.88); backdrop-filter:blur(10px);
-    z-index:9999; display:none; align-items:center; justify-content:center; padding:16px;
+    position:fixed; inset:0; background:rgba(4,7,11,0.88); backdrop-filter:blur(8px);
+    z-index:9999; display:none; align-items:center; justify-content:center; padding:12px;
   }
   .telemetry-modal-overlay.active{ display:flex; }
   .telemetry-modal-card{
-    background:var(--bg-900); border:1px solid rgba(255,122,69,0.3); border-radius:14px;
-    max-width:980px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 24px 70px rgba(0,0,0,0.9), 0 0 30px rgba(255,122,69,0.15);
-    display:flex; flex-direction:column;
+    background:var(--bg-900); border:1px solid rgba(255,122,69,0.3); border-radius:10px;
+    max-width:920px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.9);
+    display:flex; flex-direction:column; font-size:0.75rem;
   }
   .modal-head{
-    display:flex; justify-content:space-between; align-items:center; padding:16px 22px;
+    display:flex; justify-content:space-between; align-items:center; padding:10px 14px;
     border-bottom:1px solid var(--line); background:var(--bg-800); position:sticky; top:0; z-index:10;
   }
-  .modal-title{ font-size:1.05rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:10px; }
-  .modal-title-ai-badge{ font-size:0.7rem; font-weight:700; background:linear-gradient(135deg,#FF7A45,#FF5470); color:#fff; padding:2px 8px; border-radius:4px; letter-spacing:0.04em; }
-  .modal-close{ background:transparent; border:none; color:var(--text-low); font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; }
+  .modal-title{ font-size:0.88rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; }
+  .modal-title-ai-badge{ font-size:0.62rem; font-weight:700; background:linear-gradient(135deg,#FF7A45,#FF5470); color:#fff; padding:1px 6px; border-radius:3px; }
+  .modal-close{ background:transparent; border:none; color:var(--text-low); font-size:1.2rem; cursor:pointer; padding:2px 6px; line-height:1; }
   .modal-close:hover{ color:#fff; }
-  .modal-body{ padding:20px; display:grid; grid-template-columns:1.15fr 1.25fr; gap:20px; }
-  @media (max-width:880px){ .modal-body{ grid-template-columns:1fr; } }
+  .modal-body{ padding:12px; display:grid; grid-template-columns:1.1fr 1.25fr; gap:12px; }
+  @media (max-width:820px){ .modal-body{ grid-template-columns:1fr; } }
   
   .modal-preview-box{
     position:relative; width:100%; aspect-ratio:16/9; background:#000;
-    border-radius:10px; overflow:hidden; border:1px solid var(--line);
+    border-radius:6px; overflow:hidden; border:1px solid var(--line);
   }
   .modal-preview-img{ width:100%; height:100%; object-fit:cover; display:block; }
   
   /* Google Maps GIS Card */
   .modal-gis-card{
-    margin-top:14px; background:var(--bg-800); border:1px solid var(--line-soft); border-radius:10px; padding:12px;
-    display:flex; flex-direction:column; gap:10px;
+    margin-top:8px; background:var(--bg-800); border:1px solid var(--line-soft); border-radius:7px; padding:8px 10px;
+    display:flex; flex-direction:column; gap:6px;
   }
   .gis-header{ display:flex; justify-content:space-between; align-items:center; }
-  .gis-title{ font-size:0.75rem; font-weight:700; color:var(--text-hi); display:flex; align-items:center; gap:6px; }
+  .gis-title{ font-size:0.68rem; font-weight:700; color:var(--text-hi); display:flex; align-items:center; gap:5px; }
   .gis-map-frame{
-    position:relative; width:100%; height:140px; background:#0d151e; border-radius:8px; overflow:hidden;
+    position:relative; width:100%; height:110px; background:#070d14; border-radius:6px; overflow:hidden;
     border:1px solid rgba(66,133,244,0.3);
   }
   .gis-radar-canvas{ width:100%; height:100%; display:block; }
   .gis-coords-badge{
-    position:absolute; bottom:8px; left:8px; background:rgba(10,16,24,0.9); border:1px solid rgba(255,255,255,0.15);
-    padding:3px 8px; border-radius:4px; font-size:0.72rem; color:#fff; font-family:'JetBrains Mono',monospace;
+    position:absolute; bottom:5px; left:6px; background:rgba(7,10,14,0.9); border:1px solid rgba(255,255,255,0.15);
+    padding:2px 6px; border-radius:3px; font-size:0.64rem; color:#fff; font-family:'JetBrains Mono',monospace;
   }
   .gis-live-badge{
-    position:absolute; top:8px; right:8px; background:rgba(52,211,153,0.2); border:1px solid var(--live);
-    color:var(--live); font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px;
+    position:absolute; top:5px; right:6px; background:rgba(52,211,153,0.2); border:1px solid var(--live);
+    color:var(--live); font-size:0.58rem; font-weight:700; padding:1px 5px; border-radius:3px;
   }
-  .gis-address-text{ font-size:0.75rem; color:var(--text-mid); line-height:1.35; }
-  .gis-actions{ display:flex; gap:8px; }
+  .gis-address-text{ font-size:0.68rem; color:var(--text-mid); line-height:1.3; }
+  .gis-actions{ display:flex; gap:6px; }
   .btn-gmaps{
-    background:#4285F4; border:1px solid #4285F4; color:#fff; font-size:0.75rem; font-weight:600;
-    padding:6px 12px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-    transition:background .2s;
+    background:#4285F4; border:1px solid #4285F4; color:#fff; font-size:0.68rem; font-weight:600;
+    padding:4px 8px; border-radius:5px; text-decoration:none; display:inline-flex; align-items:center; gap:5px;
   }
   .btn-gmaps:hover{ background:#3367D6; }
 
   /* Live 1-Second Telemetry HUD */
   .live-telemetry-hud{
-    background:linear-gradient(180deg, rgba(255,122,69,0.06) 0%, rgba(15,21,28,0.8) 100%);
-    border:1px solid rgba(255,122,69,0.3); border-radius:10px; padding:12px; margin-bottom:12px;
+    background:linear-gradient(180deg, rgba(255,122,69,0.06) 0%, rgba(12,17,24,0.8) 100%);
+    border:1px solid rgba(255,122,69,0.3); border-radius:7px; padding:8px 10px; margin-bottom:8px;
   }
-  .hud-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-  .hud-title{ font-size:0.78rem; font-weight:700; color:var(--alert); display:flex; align-items:center; gap:6px; }
+  .hud-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .hud-title{ font-size:0.70rem; font-weight:700; color:var(--alert); display:flex; align-items:center; gap:5px; }
   .hud-1s-badge{
     background:rgba(52,211,153,0.15); border:1px solid var(--live); color:var(--live);
-    font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace;
-    display:flex; align-items:center; gap:4px;
+    font-size:0.58rem; font-weight:700; padding:1px 5px; border-radius:3px; font-family:'JetBrains Mono',monospace;
   }
-  .hud-grid{
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;
-  }
+  .hud-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
   @media (max-width:540px){ .hud-grid{ grid-template-columns:1fr 1fr; } }
-  .hud-cell{
-    background:var(--bg-800); border:1px solid var(--line-soft); border-radius:6px; padding:8px;
-  }
-  .hud-cell-lbl{ font-size:0.64rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px; font-weight:600; }
-  .hud-cell-val{ font-size:0.86rem; font-weight:700; color:#fff; font-family:'JetBrains Mono',monospace; }
+  .hud-cell{ background:var(--bg-800); border:1px solid var(--line-soft); border-radius:5px; padding:5px 7px; }
+  .hud-cell-lbl{ font-size:0.56rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:1px; font-weight:600; }
+  .hud-cell-val{ font-size:0.75rem; font-weight:700; color:#fff; font-family:'JetBrains Mono',monospace; }
 
-  .modal-telemetry-grid{ display:flex; flex-direction:column; gap:10px; }
+  .modal-telemetry-grid{ display:flex; flex-direction:column; gap:8px; }
   .telemetry-field{
-    background:var(--bg-800); border:1px solid var(--line-soft); border-radius:8px; padding:10px 14px;
+    background:var(--bg-800); border:1px solid var(--line-soft); border-radius:6px; padding:7px 10px;
   }
-  .telemetry-field-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; margin-bottom:4px; }
-  .telemetry-field-val{ font-size:0.86rem; color:#fff; font-weight:600; }
-  .telemetry-dim-table{ width:100%; border-collapse:collapse; margin-top:6px; font-size:0.8rem; }
-  .telemetry-dim-table td{ padding:4px 8px; border-bottom:1px solid var(--line-soft); }
+  .telemetry-field-lbl{ font-size:0.58rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:700; margin-bottom:2px; }
+  .telemetry-field-val{ font-size:0.76rem; color:#fff; font-weight:600; }
+  .telemetry-dim-table{ width:100%; border-collapse:collapse; margin-top:4px; font-size:0.70rem; }
+  .telemetry-dim-table td{ padding:3px 6px; border-bottom:1px solid var(--line-soft); }
   .telemetry-dim-table td:first-child{ color:var(--text-low); }
   .telemetry-dim-table td:last-child{ text-align:right; font-family:'JetBrains Mono',monospace; color:var(--alert); font-weight:700; }
 
   /* Bus Full Dossier Table inside Modal */
-  .bus-specs-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.76rem;
-  }
-  .bus-spec-item{ background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid var(--line-soft); }
-  .bus-spec-lbl{ color:var(--text-low); font-size:0.65rem; text-transform:uppercase; }
-  .bus-spec-val{ color:#fff; font-weight:600; margin-top:2px; }
+  .bus-specs-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.68rem; }
+  .bus-spec-item{ background:rgba(0,0,0,0.25); padding:4px 6px; border-radius:5px; border:1px solid var(--line-soft); }
+  .bus-spec-lbl{ color:var(--text-low); font-size:0.56rem; text-transform:uppercase; }
+  .bus-spec-val{ color:#fff; font-weight:600; margin-top:1px; }
 
-  .legend{ display:flex; gap:14px; font-size:0.74rem; color:var(--text-mid); flex-wrap:wrap; padding-top:2px; }
-  .legend span{ display:inline-flex; align-items:center; gap:6px; }
-  .legend i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .legend{ display:flex; gap:10px; font-size:0.68rem; color:var(--text-mid); flex-wrap:wrap; }
+  .legend span{ display:inline-flex; align-items:center; gap:4px; }
+  .legend i{ width:6px; height:6px; border-radius:50%; display:inline-block; }
 
   /* feed / log list */
-  .log-list{ display:flex; flex-direction:column; max-height:390px; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
+  .log-list{ display:flex; flex-direction:column; max-height:260px; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
   .log-list::-webkit-scrollbar{ display:none; }
-  .log-line{ display:flex; gap:10px; align-items:baseline; font-size:0.78rem; padding:10px 20px; border-bottom:1px solid var(--line-soft); transition:background .3s; }
+  .log-line{ display:flex; gap:8px; align-items:baseline; font-size:0.70rem; padding:6px 12px; border-bottom:1px solid var(--line-soft); transition:background .2s; }
   .log-line:last-child{ border-bottom:none; }
-  .log-t{ color:var(--text-low); flex-shrink:0; }
-  .log-tag{ flex-shrink:0; font-size:0.66rem; padding:2px 6px; border-radius:4px; font-weight:600; }
+  .log-t{ color:var(--text-low); flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+  .log-tag{ flex-shrink:0; font-size:0.58rem; padding:1px 5px; border-radius:3px; font-weight:600; }
   .tag-hazard{ background:var(--alert-dim); color:var(--alert); }
   .tag-live{ background:var(--live-dim); color:var(--live); }
-  .tag-danger{ background:#3A1622; color:var(--danger); }
-  .log-desc{ color:var(--text-mid); }
+  .tag-danger{ background:#33141F; color:var(--danger); }
+  .log-desc{ color:var(--text-mid); line-height:1.25; }
   .log-line.fresh{ background:rgba(255,122,69,0.06); }
 
   /* bar chart */
-  .bar-chart{ display:flex; align-items:flex-end; gap:6px; height:150px; padding-top:10px; }
-  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
-  .bar{ width:100%; border-radius:4px 4px 0 0; background:var(--route); transition:height 1.1s cubic-bezier(.2,.7,.2,1); }
+  .bar-chart{ display:flex; align-items:flex-end; gap:4px; height:90px; padding-top:6px; }
+  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
+  .bar{ width:100%; border-radius:3px 3px 0 0; background:var(--route); transition:height 0.8s cubic-bezier(.2,.7,.2,1); }
   .bar.peak{ background:var(--alert); }
-  .bar-hr{ font-size:0.62rem; color:var(--text-low); }
+  .bar-hr{ font-size:0.56rem; color:var(--text-low); font-family:'JetBrains Mono',monospace; }
 
   /* hazard breakdown */
-  .hz-row{ margin-bottom:16px; }
+  .hz-row{ margin-bottom:8px; }
   .hz-row:last-child{ margin-bottom:0; }
-  .hz-top{ display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:7px; }
-  .hz-top .n{ color:var(--text-mid); font-family:'JetBrains Mono',monospace; font-size:0.76rem; }
-  .hz-track{ height:7px; border-radius:4px; background:var(--bg-700); overflow:hidden; }
-  .hz-fill{ height:100%; border-radius:4px; background:var(--alert); transition:width 1.1s cubic-bezier(.2,.7,.2,1); }
+  .hz-top{ display:flex; justify-content:space-between; font-size:0.70rem; margin-bottom:3px; }
+  .hz-top .n{ color:var(--text-mid); font-family:'JetBrains Mono',monospace; font-size:0.65rem; }
+  .hz-track{ height:5px; border-radius:3px; background:var(--bg-700); overflow:hidden; }
+  .hz-fill{ height:100%; border-radius:3px; background:var(--alert); transition:width 0.8s cubic-bezier(.2,.7,.2,1); }
 
   /* tables */
-  table{ width:100%; border-collapse:collapse; font-size:0.85rem; }
-  thead th{ text-align:left; font-size:0.72rem; color:var(--text-low); font-weight:600; padding:0 20px 10px; letter-spacing:0.03em; }
-  tbody td{ padding:12px 20px; border-top:1px solid var(--line-soft); color:var(--text-mid); }
+  table{ width:100%; border-collapse:collapse; font-size:0.73rem; }
+  thead th{ text-align:left; font-size:0.64rem; color:var(--text-low); font-weight:600; padding:4px 10px 6px; letter-spacing:0.04em; text-transform:uppercase; }
+  tbody td{ padding:6px 10px; border-top:1px solid var(--line-soft); color:var(--text-mid); }
   tbody tr td:first-child{ color:var(--text-hi); font-weight:500; }
-  .status-pill{ font-size:0.72rem; padding:3px 9px; border-radius:999px; font-weight:600; display:inline-block; }
+  .status-pill{ font-size:0.62rem; padding:2px 6px; border-radius:999px; font-weight:600; display:inline-block; }
   .status-ontime{ background:var(--live-dim); color:var(--live); }
   .status-delayed{ background:var(--alert-dim); color:var(--alert); }
-  .status-severe{ background:#3A1622; color:var(--danger); }
-  .cam-dots{ display:flex; gap:5px; }
-  .cam-dot{ width:8px; height:8px; border-radius:50%; }
+  .status-severe{ background:#33141F; color:var(--danger); }
+  .cam-dots{ display:flex; gap:4px; }
+  .cam-dot{ width:6px; height:6px; border-radius:50%; }
   .cam-ok{ background:var(--live); }
   .cam-down{ background:var(--danger); }
-  .trend{ font-size:0.78rem; }
+  .trend{ font-size:0.68rem; }
   .trend.up{ color:var(--danger); }
   .trend.down{ color:var(--live); }
 </style>
@@ -531,26 +502,78 @@
 
     <main class="dash-content">
 
-      <section class="kpi-row reveal" id="overview" style="animation-delay:.02s">
-        <div class="kpi-cell">
-          <div class="kpi-label"><span class="pulse-dot"></span>Active buses</div>
-          <div class="kpi-num mono" id="kpi-buses">—</div>
-          <div class="kpi-delta down" id="kpi-buses-delta">—</div>
+      <!-- 8-TILE MICRO KPI GRID -->
+      <section class="micro-kpi-grid reveal" id="overview" style="animation-delay:.02s">
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl"><span class="pulse-dot"></span> Active Fleet Buses</span>
+            <span class="micro-kpi-icon">🚌</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-buses">5 / 5</div>
+          <div class="micro-kpi-sub down" id="kpi-buses-delta">● 100% 4-Cam Sync</div>
         </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Open road hazards</div>
-          <div class="kpi-num mono" id="kpi-hazards">—</div>
-          <div class="kpi-delta up" id="kpi-hazards-delta">—</div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">Open Road Hazards</span>
+            <span class="micro-kpi-icon">⚠️</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-hazards" style="color:var(--alert);">0</div>
+          <div class="micro-kpi-sub up" id="kpi-hazards-delta">▲ Realtime 3D Photogrammetry</div>
         </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Incidents today</div>
-          <div class="kpi-num mono" id="kpi-incidents">—</div>
-          <div class="kpi-delta down" id="kpi-incidents-delta">—</div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">Critical Incidents</span>
+            <span class="micro-kpi-icon">🚨</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-incidents" style="color:var(--danger);">0</div>
+          <div class="micro-kpi-sub down" id="kpi-incidents-delta">● Auto Citations Ready</div>
         </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Avg route delay</div>
-          <div class="kpi-num mono" id="kpi-delay">—</div>
-          <div class="kpi-delta up" id="kpi-delay-delta">—</div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">Avg Route Delay</span>
+            <span class="micro-kpi-icon">⏱️</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-delay">5.6<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;">m</span></div>
+          <div class="micro-kpi-sub up" id="kpi-delay-delta">Fleet Corridor Average</div>
+        </div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">KM Covered Today</span>
+            <span class="micro-kpi-icon">📍</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-km" style="color:#4FA3D1;">18,420.4<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;"> km</span></div>
+          <div class="micro-kpi-sub down" id="kpi-km-delta">● +0.12 km/s Live Ticks</div>
+        </div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">4-Cam Vision Health</span>
+            <span class="micro-kpi-icon">📡</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-health" style="color:var(--live);">100%</div>
+          <div class="micro-kpi-sub down">20 / 20 Sensors Online</div>
+        </div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">Trinethra AI Inference</span>
+            <span class="micro-kpi-icon">⚡</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-fps" style="color:var(--alert);">30.0<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;"> FPS</span></div>
+          <div class="micro-kpi-sub down">12.4ms TensorRT INT8</div>
+        </div>
+
+        <div class="micro-kpi-card">
+          <div class="micro-kpi-head">
+            <span class="micro-kpi-lbl">Solutions Dispatched</span>
+            <span class="micro-kpi-icon">🔧</span>
+          </div>
+          <div class="micro-kpi-val mono" id="kpi-solutions" style="color:#4FA3D1;">100%</div>
+          <div class="micro-kpi-sub down">Auto WO &amp; e-Challan Active</div>
         </div>
       </section>
 
@@ -558,18 +581,18 @@
       <section class="panel reveal" id="camera" style="animation-delay:.05s">
         <div class="panel-head">
           <div>
-            <div class="panel-kicker">Live Edge-AI Vision &amp; Vehicle Gateway</div>
-            <div class="panel-title">Fleet Camera Stream &amp; Vehicle Intelligence</div>
+            <div class="panel-kicker">Trinethra AI Vision &amp; Vehicle Gateway</div>
+            <div class="panel-title">Multi-Angle Edge Camera &amp; Photogrammetric Detection</div>
           </div>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <span class="cam-badge rec" id="camStreamStatusBadge"><i></i> SYSTEM READY</span>
-            <button class="btn btn-solid btn-sm" id="btnCaptureSnapshot" type="button" style="background:#FF5470; border-color:#FF5470; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 7h3l2-3h8l2 3h3v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
-              📸 Capture Screenshot
+            <button class="btn btn-solid btn-sm" id="btnCaptureSnapshot" type="button" style="background:#FF5470; border-color:#FF5470;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 7h3l2-3h8l2 3h3v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+              📸 Capture Evidence
             </button>
-            <button class="btn btn-ghost btn-sm" id="btnExportLiveReport" type="button" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Live Incident Report
+            <button class="btn btn-ghost btn-sm" id="btnExportLiveReport" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export Incident CSV
             </button>
           </div>
         </div>
@@ -577,21 +600,21 @@
           <!-- Bus Number Search Gateway -->
           <div class="bus-search-bar">
             <div class="bus-search-input-wrap">
-              <svg class="bus-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="busSearchInput" class="bus-search-input" placeholder="Enter Bus Number (e.g. KA-05-AB-1147, KA-03-CJ-8820, Route 42B)..." autocomplete="off" />
+              <svg class="bus-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="busSearchInput" class="bus-search-input" placeholder="Query Vehicle Number (e.g. KA-05-AB-1147, KA-03-CJ-8820, Route 42B)..." autocomplete="off" />
             </div>
-            <button class="btn btn-solid" id="btnSearchBus" type="button" style="padding:10px 18px; font-size:0.84rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-              🔍 Query Bus Data &amp; Camera
+            <button class="btn btn-solid" id="btnSearchBus" type="button">
+              🔍 Inspect Bus Camera
             </button>
-            <button class="btn btn-ghost" id="btnResetBusSearch" type="button" style="display:none; padding:10px 14px; font-size:0.82rem; cursor:pointer;">
-              ✕ Reset Search
+            <button class="btn btn-ghost" id="btnResetBusSearch" type="button" style="display:none;">
+              ✕ Reset
             </button>
           </div>
 
           <!-- Quick Active Vehicle Selector Chips -->
-          <div style="margin-bottom:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span style="font-size:0.72rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">Quick Query:</span>
-            <div style="display:inline-flex; gap:6px; flex-wrap:wrap;" id="busSelectorList">
+          <div style="margin-bottom:8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="font-size:0.62rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">Quick Query:</span>
+            <div style="display:inline-flex; gap:4px; flex-wrap:wrap;" id="busSelectorList">
               <button class="bus-chip" data-bus="KA-05-AB-1147" type="button">🚌 KA-05-AB-1147 (42B)</button>
               <button class="bus-chip" data-bus="KA-03-CJ-8820" type="button">🚌 KA-03-CJ-8820 (17A)</button>
               <button class="bus-chip" data-bus="KA-01-FL-3390" type="button">🚌 KA-01-FL-3390 (9C)</button>
@@ -601,14 +624,14 @@
             </div>
           </div>
 
-          <!-- STANDBY STATE: Shown when no bus has been entered yet -->
+          <!-- STANDBY STATE -->
           <div id="busStandbyState" class="bus-standby-card">
             <div class="bus-standby-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
             </div>
             <div class="bus-standby-title">Awaiting Bus Number Entry</div>
             <div class="bus-standby-sub">
-              Enter any registered fleet vehicle number (e.g. <strong>KA-05-AB-1147</strong> or route <strong>42B</strong>) above or click a bus from the quick fleet chips or Fleet Status table below to decrypt &amp; reveal its 4-angle live cameras, AI road detections, GPS telemetry, driver logs, and snapshot evidence.
+              Enter any registered fleet vehicle number (e.g. <strong>KA-05-AB-1147</strong> or route <strong>42B</strong>) above or click a quick fleet chip to reveal its 4-angle live cameras, AI road detections, GPS telemetry, driver credentials, and 3D photogrammetry.
             </div>
             <div class="bus-standby-quick">
               <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-05-AB-1147')">Query Bus KA-05-AB-1147</button>
@@ -617,9 +640,9 @@
             </div>
           </div>
 
-          <!-- ACTIVE BUS DATA SUITE: Revealed ONLY after user enters/selects a bus -->
+          <!-- ACTIVE BUS DATA SUITE -->
           <div id="busDataSuite" style="display:none;">
-            <!-- Complete Vehicle Dossier Telemetry Bar -->
+            <!-- Micro Vehicle Dossier Telemetry Bar -->
             <div class="bus-dossier-bar" id="busDossierBar">
               <div class="dossier-item">
                 <span class="dossier-lbl">Active Vehicle ID</span>
@@ -638,11 +661,11 @@
                 <span class="dossier-val mono" id="dossierLocation">MG Road Jn. (12.9716° N)</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Vehicle Speed</span>
+                <span class="dossier-lbl">Vehicle Velocity</span>
                 <span class="dossier-val mono" id="dossierSpeed" style="color:var(--live);">38.4 KM/H</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Camera Sensors (4/4)</span>
+                <span class="dossier-lbl">4-Cam Vision Sensors</span>
                 <span class="dossier-val" id="dossierCams" style="color:var(--live);">
                   <span class="cam-dots">
                     <span class="cam-dot cam-ok" title="Front AI"></span>
@@ -658,9 +681,7 @@
             <div class="cam-grid">
               <div>
                 <div class="cam-viewport" id="camViewport">
-                  <!-- Video element for real webcam feed -->
                   <video id="cameraVideo" class="cam-video" autoplay playsinline muted style="display:none;"></video>
-                  <!-- Canvas for simulated road scene + real-time bounding box AI overlay + OCR scanner -->
                   <canvas id="cameraCanvas" class="cam-canvas" width="800" height="450"></canvas>
                   <div class="cam-hud-top">
                     <span class="cam-badge" id="camSourceBadge">SOURCE: BUS 42B (KA-05-AB-1147) · FRONT CAM</span>
@@ -672,31 +693,29 @@
                   </div>
                 </div>
                 <div class="cam-ctrls">
-                  <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Front AI Vision</button>
-                  <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Rear OCR Scanner</button>
-                  <button class="cam-ctrl-btn" id="btnModeSide" type="button">🔍 Side Blindspot AI</button>
-                  <button class="cam-ctrl-btn" id="btnModeCabin" type="button">👥 Cabin Passenger Density</button>
-                  <button class="cam-ctrl-btn" id="btnToggleBoxes" type="button">🟩 Bounding Boxes: ON</button>
+                  <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Front AI</button>
+                  <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Rear OCR</button>
+                  <button class="cam-ctrl-btn" id="btnModeSide" type="button">🔍 Side Blindspot</button>
+                  <button class="cam-ctrl-btn" id="btnModeCabin" type="button">👥 Cabin Density</button>
+                  <button class="cam-ctrl-btn" id="btnToggleBoxes" type="button">🟩 Boxes: ON</button>
                 </div>
               </div>
 
               <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                  <div style="font-size:0.86rem; font-weight:600; color:#fff;">Live Detected Items (<span id="detectedItemsCount">0</span>)</div>
-                  <label style="font-size:0.75rem; color:var(--text-mid); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                    <input type="checkbox" id="chkAutoCapture" checked> Auto-Capture Snapshot
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">Live Detections (<span id="detectedItemsCount">0</span>)</div>
+                  <label style="font-size:0.68rem; color:var(--text-mid); display:flex; align-items:center; gap:4px; cursor:pointer;">
+                    <input type="checkbox" id="chkAutoCapture" checked> Auto-Capture
                   </label>
                 </div>
-                <div class="log-list" id="camLiveDetections" style="max-height:220px; border:1px solid var(--line); border-radius:8px;"></div>
+                <div class="log-list" id="camLiveDetections" style="max-height:160px; border:1px solid var(--line); border-radius:6px;"></div>
 
-                <div style="margin-top:16px;">
-                  <div style="font-size:0.86rem; font-weight:600; color:#fff; display:flex; justify-content:space-between;">
-                    <span>Captured Evidence Screenshots</span>
-                    <span style="font-size:0.75rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
+                <div style="margin-top:8px;">
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff; display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>Captured Evidence</span>
+                    <span style="font-size:0.68rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
                   </div>
-                  <div class="snapshot-deck" id="snapshotDeck">
-                    <!-- Snapshots dynamically added here -->
-                  </div>
+                  <div class="snapshot-deck" id="snapshotDeck"></div>
                 </div>
               </div>
             </div>
@@ -975,16 +994,23 @@
     var elIncidentsDelta = document.getElementById('kpi-incidents-delta');
     var elDelay = document.getElementById('kpi-delay');
     var elDelayDelta = document.getElementById('kpi-delay-delta');
+    var elKm = document.getElementById('kpi-km');
+    var elKmDelta = document.getElementById('kpi-km-delta');
+    var elFps = document.getElementById('kpi-fps');
+    var elSolutions = document.getElementById('kpi-solutions');
     var sideCount = document.getElementById('side-fleet-count');
 
-    if (elBuses) elBuses.textContent = activeBuses;
-    if (elBusesDelta) elBusesDelta.textContent = '● 100% 4-Cam Vision Active';
+    if (elBuses) elBuses.textContent = activeBuses + ' / 5';
+    if (elBusesDelta) elBusesDelta.textContent = '● 100% 4-Cam Sync';
     if (elHazards) elHazards.textContent = hazards;
     if (elHazardsDelta) elHazardsDelta.textContent = '▲ ' + hazards + ' Photogrammetric hits';
     if (elIncidents) elIncidents.textContent = incidents;
-    if (elIncidentsDelta) elIncidentsDelta.textContent = incidents > 0 ? '● Auto-citations generated' : '● Zero open violations';
-    if (elDelay) elDelay.innerHTML = avgDelay.toFixed(1) + '<span style="font-size:1rem;color:var(--text-mid)">min</span>';
-    if (elDelayDelta) elDelayDelta.textContent = 'Live fleet GPS average';
+    if (elIncidentsDelta) elIncidentsDelta.textContent = incidents > 0 ? '● Auto-citations active' : '● Zero open conflicts';
+    if (elDelay) elDelay.innerHTML = avgDelay.toFixed(1) + '<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;">m</span>';
+    if (elDelayDelta) elDelayDelta.textContent = 'Fleet Corridor Average';
+    if (elKm) elKm.innerHTML = (state.kmCoveredToday ? state.kmCoveredToday.toLocaleString() : '18,420.4') + '<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;"> km</span>';
+    if (elFps) elFps.innerHTML = (29.8 + (Math.random()*0.4)).toFixed(1) + '<span style="font-size:0.75rem; color:var(--text-mid); font-weight:400;"> FPS</span>';
+    if (elSolutions) elSolutions.textContent = (hazards + incidents > 0 ? (hazards + incidents) + ' Dispatched' : '100% Active');
     if (sideCount) sideCount.textContent = activeBuses;
   }
 
