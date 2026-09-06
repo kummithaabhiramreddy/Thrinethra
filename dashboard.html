@@ -91,6 +91,7 @@
   .avatar img{ width:100%; height:100%; object-fit:cover; }
 
   .dash-content{ padding:26px 28px 60px; display:flex; flex-direction:column; gap:24px; max-width:1360px; width:100%; }
+  .table-responsive{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
   @media (max-width:900px){
     .sidebar{
@@ -104,7 +105,20 @@
     .side-foot{ display:none; }
     .app-shell{ flex-direction:column; }
     .topbar{ padding:14px 18px; }
-    .dash-content{ padding:20px 18px 50px; }
+    .dash-content{ padding:16px 14px 50px; }
+  }
+
+  @media (max-width:600px){
+    .topbar{ flex-wrap:wrap; gap:10px; padding:12px 14px; }
+    .topbar h1{ font-size:1.05rem; }
+    .topbar .sub{ font-size:0.72rem; }
+    .topbar-right{ width:100%; justify-content:space-between; }
+    .kpi-cell{ padding:14px 16px; }
+    .kpi-num{ font-size:1.55rem; }
+    .panel-head{ padding:12px 14px; }
+    .panel-body{ padding:12px 14px; }
+    thead th{ padding:0 12px 8px; }
+    tbody td{ padding:10px 12px; font-size:0.8rem; }
   }
 
   /* ---------- CARD ENTRANCE (CSS-only, no scroll/JS dependency) ---------- */
@@ -341,10 +355,12 @@
           <div><div class="panel-kicker">Incidents</div><div class="panel-title">Plate confidence &amp; location</div></div>
           <span class="meta mono" id="incident-count-label">—</span>
         </div>
-        <table>
-          <thead><tr><th>Time</th><th>Type</th><th>Bus / Route</th><th>Plate (confidence)</th><th>Location</th></tr></thead>
-          <tbody id="incident-body"></tbody>
-        </table>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Time</th><th>Type</th><th>Bus / Route</th><th>Plate (confidence)</th><th>Location</th><th>Action</th></tr></thead>
+            <tbody id="incident-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="panel reveal" id="routes" style="animation-delay:.26s">
@@ -352,10 +368,12 @@
           <div><div class="panel-kicker">Routes &amp; Delay</div><div class="panel-title">Origin–destination patterns</div></div>
           <span class="meta">today vs 7-day avg, live</span>
         </div>
-        <table>
-          <thead><tr><th>Route</th><th>Origin → Destination</th><th>Avg delay</th><th>Trend</th><th>Status</th></tr></thead>
-          <tbody id="routes-body"></tbody>
-        </table>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Route</th><th>Origin → Destination</th><th>Avg delay</th><th>Trend</th><th>Status</th></tr></thead>
+            <tbody id="routes-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="panel reveal" id="fleet" style="animation-delay:.32s">
@@ -363,10 +381,12 @@
           <div><div class="panel-kicker">Fleet Status</div><div class="panel-title">Vehicles &amp; camera health</div></div>
           <span class="meta mono" id="fleet-count-label">—</span>
         </div>
-        <table>
-          <thead><tr><th>Bus ID</th><th>Route</th><th>Cameras (F/R/S/C)</th><th>Last sync</th><th>Status</th></tr></thead>
-          <tbody id="fleet-body"></tbody>
-        </table>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Bus ID</th><th>Route</th><th>Cameras (F/R/S/C)</th><th>Location / Status</th><th>State</th></tr></thead>
+            <tbody id="fleet-body"></tbody>
+          </table>
+        </div>
       </section>
 
     </main>

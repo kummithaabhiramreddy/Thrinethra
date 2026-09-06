@@ -122,16 +122,41 @@
   .hamburger.open span:nth-child(2){ opacity:0; }
   .hamburger.open span:nth-child(3){ transform:translateY(-7.5px) rotate(-45deg); }
 
+  body{
+    background:var(--bg-900);
+    color:var(--text-hi);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    width:100%;
+  }
+
   .mobile-menu{
     max-height:0; overflow:hidden;
-    background:rgba(10,14,19,0.97); backdrop-filter:blur(10px);
+    background:rgba(10,14,19,0.98); backdrop-filter:blur(14px);
     border-bottom:1px solid transparent;
-    transition:max-height .32s ease, border-color .32s ease;
+    transition:max-height .38s cubic-bezier(0.16, 1, 0.3, 1), border-color .3s ease;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
-  .mobile-menu.open{ max-height:420px; border-color:var(--line-soft); }
-  .mm-inner{ display:flex; flex-direction:column; gap:2px; padding:6px 24px 22px; }
+  .mobile-menu.open{ max-height:86vh; border-color:var(--line-soft); }
+  .mm-inner{ display:flex; flex-direction:column; gap:4px; padding:12px 20px 28px; }
+  .mm-section-title{
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-low); margin:14px 0 6px; padding-left:4px;
+  }
+  .mm-section-title:first-child{ margin-top:4px; }
+  .mm-link{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 8px; font-size:0.92rem; color:var(--text-mid);
+    border-radius:8px; transition:background .15s ease, color .15s ease;
+  }
+  .mm-link:hover{ background:var(--bg-800); color:var(--text-hi); }
+  .mm-link-left{ display:flex; align-items:center; gap:10px; }
+  .mm-link-icon{ width:16px; height:16px; opacity:0.8; }
   .nav-cmd-link{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
-  .cmd-badge{ font-size:0.72rem; padding:2px 6px; border-radius:6px; display:inline-flex; align-items:center; }
+  .cmd-badge{ font-size:0.72rem; padding:2px 7px; border-radius:6px; display:inline-flex; align-items:center; font-weight:600; }
   .cmd-badge.locked{ background:rgba(255,122,69,0.14); color:var(--alert); border:1px solid rgba(255,122,69,0.3); }
   .cmd-badge.unlocked{ background:rgba(52,211,153,0.14); color:var(--live); border:1px solid rgba(52,211,153,0.3); }
 
@@ -144,8 +169,13 @@
   .btn-logout-mini{ background:none; border:none; color:var(--text-low); font-size:0.76rem; cursor:pointer; padding:2px 4px; }
   .btn-logout-mini:hover{ color:var(--danger); }
 
-  .mobile-user-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line-soft); }
+  .mobile-user-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px; background:var(--bg-800); border-radius:10px; border:1px solid var(--line);
+    margin-bottom:12px;
+  }
   .mobile-user-info{ display:flex; align-items:center; gap:10px; }
+
 
 
   /* ---------- HERO ---------- */
@@ -496,15 +526,71 @@
   </div>
   <div class="mobile-menu" id="mobileMenu">
     <div class="wrap mm-inner">
-      <a href="#platform">Platform</a>
-      <a href="#capabilities">Detection</a>
-      <a href="#incidents">Incidents</a>
-      <a href="dashboard.html" id="mmCommandCenterLink" class="nav-cmd-link">
-        <span>Command Center</span>
-        <span id="mmCmdBadge" class="cmd-badge locked">🔒</span>
+      <div id="mmUserRow"></div>
+
+      <div class="mm-section-title">Core Features & AI</div>
+      <a class="mm-link" href="#platform">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          Platform Overview
+        </span>
+        <span style="font-size:0.75rem; color:var(--text-low);">#platform</span>
       </a>
+      <a class="mm-link" href="#capabilities">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="#FF7A45" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          50+ Road Detections
+        </span>
+        <span style="font-size:0.72rem; color:var(--alert);">AI Vision</span>
+      </a>
+      <a class="mm-link" href="#incidents">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="#FF5470" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.7 18a1.8 1.8 0 0 0 1.6 2.6h15.4a1.8 1.8 0 0 0 1.6-2.6L13.7 3.9a1.8 1.8 0 0 0-3.4 0z"/></svg>
+          Incidents & Number Plates
+        </span>
+        <span style="font-size:0.72rem; color:var(--danger);">OCR</span>
+      </a>
+      <a class="mm-link" href="#pipeline">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="#4FA3D1" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Edge AI Architecture
+        </span>
+        <span style="font-size:0.72rem; color:var(--route);">Pipeline</span>
+      </a>
+
+      <div class="mm-section-title">Command & Intelligence</div>
+      <a class="mm-link nav-cmd-link" href="dashboard.html" id="mmCommandCenterLink">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Command Center
+        </span>
+        <span id="mmCmdBadge" class="cmd-badge locked">🔒 Locked</span>
+      </a>
+      <a class="mm-link nav-cmd-link" href="reports.html" id="mmReportsLink">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Fleet Reports & Exports
+        </span>
+        <span style="font-size:0.72rem; color:var(--text-mid);">CSV / JSON</span>
+      </a>
+      <a class="mm-link" href="technical-brief.html">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Technical Brief
+        </span>
+        <span style="font-size:0.72rem; color:var(--text-low);">Specs</span>
+      </a>
+      <a class="mm-link" href="request-demo.html">
+        <span class="mm-link-left">
+          <svg class="mm-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+          Request Live City Demo
+        </span>
+        <span style="font-size:0.72rem; color:var(--alert);">Walkthrough</span>
+      </a>
+
+      <div class="mm-section-title">Account Access</div>
       <div class="mm-cta" id="mmCtaContainer">
-        <a class="btn btn-ghost" href="register.html">Register</a>
+        <a class="btn btn-ghost" href="register.html">Create Account</a>
         <a class="btn btn-solid" href="login.html">Login</a>
       </div>
     </div>
@@ -904,8 +990,10 @@
     var mmCmdBadge = document.getElementById('mmCmdBadge');
     var navCommandCenterLink = document.getElementById('navCommandCenterLink');
     var mmCommandCenterLink = document.getElementById('mmCommandCenterLink');
+    var mmReportsLink = document.getElementById('mmReportsLink');
     var navCtaContainer = document.getElementById('navCtaContainer');
     var mmCtaContainer = document.getElementById('mmCtaContainer');
+    var mmUserRow = document.getElementById('mmUserRow');
     var menuBtn = document.getElementById('menuBtn');
 
     function updateNavForUser(user) {
@@ -918,6 +1006,20 @@
         if (mmCmdBadge) {
           mmCmdBadge.textContent = '● Live';
           mmCmdBadge.className = 'cmd-badge unlocked';
+        }
+
+        if (mmUserRow) {
+          mmUserRow.innerHTML = `
+            <div class="mobile-user-row">
+              <div class="mobile-user-info">
+                <img src="${user.avatar}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--alert); object-fit:cover;" alt="${user.name}">
+                <div>
+                  <div style="font-size:0.9rem; font-weight:600; color:#fff;">${user.name}</div>
+                  <div style="font-size:0.75rem; color:var(--text-mid);">${user.role || 'Officer'} · ${user.org || 'Transport Authority'}</div>
+                </div>
+              </div>
+            </div>
+          `;
         }
 
         // Desktop CTA
@@ -949,18 +1051,9 @@
         // Mobile Menu CTA
         if (mmCtaContainer) {
           mmCtaContainer.innerHTML = `
-            <div style="padding:10px 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); margin-bottom:12px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <img src="${user.avatar}" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--alert);" alt="${user.name}">
-                <div>
-                  <div style="font-size:0.9rem; font-weight:600; color:#fff;">${user.name}</div>
-                  <div style="font-size:0.75rem; color:var(--text-mid);">${user.role}</div>
-                </div>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:10px; width:100%;">
               <a class="btn btn-solid" style="flex:1; text-align:center;" href="dashboard.html">Launch Command Center</a>
-              <button class="btn btn-ghost" id="btnMobileLogout" style="background:none; cursor:pointer;" type="button">Log Out</button>
+              <button class="btn btn-ghost" id="btnMobileLogout" style="background:transparent; cursor:pointer;" type="button">Log Out</button>
             </div>
           `;
           var mLogout = document.getElementById('btnMobileLogout');
@@ -980,6 +1073,9 @@
           mmCmdBadge.textContent = '🔒 Locked';
           mmCmdBadge.className = 'cmd-badge locked';
         }
+        if (mmUserRow) {
+          mmUserRow.innerHTML = '';
+        }
 
         if (navCtaContainer) {
           navCtaContainer.innerHTML = `
@@ -998,15 +1094,15 @@
 
         if (mmCtaContainer) {
           mmCtaContainer.innerHTML = `
-            <a class="btn btn-ghost" href="register.html">Register</a>
-            <a class="btn btn-solid" href="login.html">Login</a>
+            <a class="btn btn-ghost" style="flex:1; text-align:center;" href="register.html">Create Account</a>
+            <a class="btn btn-solid" style="flex:1; text-align:center;" href="login.html">Login</a>
           `;
         }
       }
     }
 
     // Intercept protected link clicks if not authenticated
-    function handleProtectedNav(e) {
+    function handleProtectedNav(e, targetPage) {
       if (!window.ThrinethraAuth || !window.ThrinethraAuth.isAuthenticated()) {
         e.preventDefault();
         e.stopPropagation();
@@ -1015,12 +1111,13 @@
           mobileMenu.classList.remove('open');
           if (menuBtn) menuBtn.classList.remove('open');
         }
-        window.ThrinethraAuth.showAuthRequiredModal('dashboard.html');
+        window.ThrinethraAuth.showAuthRequiredModal(targetPage || 'dashboard.html');
       }
     }
 
-    if (navCommandCenterLink) navCommandCenterLink.addEventListener('click', handleProtectedNav);
-    if (mmCommandCenterLink) mmCommandCenterLink.addEventListener('click', handleProtectedNav);
+    if (navCommandCenterLink) navCommandCenterLink.addEventListener('click', function(e){ handleProtectedNav(e, 'dashboard.html'); });
+    if (mmCommandCenterLink) mmCommandCenterLink.addEventListener('click', function(e){ handleProtectedNav(e, 'dashboard.html'); });
+    if (mmReportsLink) mmReportsLink.addEventListener('click', function(e){ handleProtectedNav(e, 'reports.html'); });
 
     if (window.ThrinethraAuth) {
       window.ThrinethraAuth.onAuthStateChanged(updateNavForUser);
