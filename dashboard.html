@@ -183,7 +183,8 @@
   .micro-kpi-sub.down{ color:var(--live); }
 
   /* ---------- PANELS ---------- */
-  .grid-2col{ display:grid; grid-template-columns:1.4fr 1fr; gap:10px; align-items:start; }
+  .grid-2col{ display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr); gap:10px; align-items:start; width:100%; }
+  .grid-2col > div{ min-width:0; max-width:100%; width:100%; }
   @media (max-width:980px){ .grid-2col{ grid-template-columns:1fr; } }
   .panel{ border:1px solid var(--line); border-radius:8px; background:var(--bg-card); overflow:hidden; }
   .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line-soft); flex-wrap:wrap; }
@@ -193,7 +194,8 @@
   .panel-body{ padding:10px 12px; }
 
   /* ---------- LIVE CAMERA SCANNER & AI VISION ---------- */
-  .cam-grid{ display:grid; grid-template-columns:1.35fr 1fr; gap:10px; align-items:start; }
+  .cam-grid{ display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(0, 1fr); gap:10px; align-items:start; width:100%; }
+  .cam-grid > div{ min-width:0; max-width:100%; width:100%; overflow:hidden; }
   @media (max-width:960px){ .cam-grid{ grid-template-columns:1fr; } }
   .cam-viewport{
     position:relative; width:100%; aspect-ratio:16/9; background:#05070a;
@@ -225,24 +227,64 @@
   .cam-ctrl-btn:hover{ background:var(--bg-700); border-color:var(--alert); }
   .cam-ctrl-btn.active{ background:var(--alert); color:#101419; border-color:var(--alert); }
   
-  /* Gallery of Micro Snapshots */
-  .snapshot-deck{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-top:6px; }
+  /* Gallery of Micro Snapshots - Fixed 2-Card Viewport with Left/Right Scroll */
+  .snapshot-deck-container{ width:100%; min-width:0; max-width:100%; overflow:hidden; position:relative; }
+  .snapshot-deck{
+    display:flex; flex-direction:row; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden;
+    gap:8px; margin-top:4px; padding:4px 2px 8px 2px; scroll-snap-type:x mandatory;
+    scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+    width:100%; max-width:100%; box-sizing:border-box;
+  }
+  .snapshot-deck::-webkit-scrollbar{ height:5px; }
+  .snapshot-deck::-webkit-scrollbar-track{ background:var(--bg-800); border-radius:3px; }
+  .snapshot-deck::-webkit-scrollbar-thumb{ background:var(--line); border-radius:3px; }
+  .snapshot-deck::-webkit-scrollbar-thumb:hover{ background:var(--alert); }
   .snap-card{
+    flex:0 0 calc(50% - 4px); width:calc(50% - 4px); min-width:160px; max-width:220px; scroll-snap-align:start;
     background:var(--bg-900); border:1px solid var(--line); border-radius:6px;
-    overflow:hidden; display:flex; flex-direction:column; transition:transform .15s;
+    overflow:hidden; display:flex; flex-direction:column; transition:transform .15s, border-color .15s;
+    box-sizing:border-box; flex-shrink:0;
   }
   .snap-card:hover{ transform:translateY(-2px); border-color:rgba(255,122,69,0.4); }
   .snap-thumb{ width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; display:block; cursor:pointer; }
-  .snap-meta{ padding:5px 6px; display:flex; flex-direction:column; gap:2px; flex:1; }
-  .snap-title{ font-size:0.70rem; font-weight:600; color:var(--text-hi); line-height:1.2; }
-  .snap-sub{ font-size:0.62rem; color:var(--text-low); font-family:'JetBrains Mono',monospace; }
-  .snap-dim{ font-size:0.62rem; color:var(--alert); font-family:'JetBrains Mono',monospace; background:rgba(255,122,69,0.08); padding:1px 4px; border-radius:3px; margin-top:1px; display:inline-block; }
-  .snap-solution{ font-size:0.62rem; color:var(--live); background:rgba(52,211,153,0.08); padding:1px 4px; border-radius:3px; margin-top:1px; display:inline-block; }
-  .snap-actions{ padding:4px 6px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); gap:4px; flex-wrap:wrap; }
-  .snap-dl-btn{ font-size:0.64rem; color:var(--alert); text-decoration:none; font-weight:600; cursor:pointer; }
+  .snap-meta{ padding:4px 5px; display:flex; flex-direction:column; gap:1px; flex:1; }
+  .snap-title{ font-size:0.68rem; font-weight:600; color:var(--text-hi); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .snap-sub{ font-size:0.58rem; color:var(--text-low); font-family:'JetBrains Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .snap-dim{ font-size:0.58rem; color:var(--alert); font-family:'JetBrains Mono',monospace; background:rgba(255,122,69,0.08); padding:1px 3px; border-radius:3px; margin-top:1px; display:inline-block; }
+  .snap-solution{ font-size:0.58rem; color:var(--live); background:rgba(52,211,153,0.08); padding:1px 3px; border-radius:3px; margin-top:1px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .snap-actions{ padding:3px 5px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); gap:3px; flex-wrap:wrap; }
+  .snap-dl-btn{ font-size:0.60rem; color:var(--alert); text-decoration:none; font-weight:600; cursor:pointer; }
   .snap-dl-btn:hover{ text-decoration:underline; }
-  .snap-inspect-btn{ font-size:0.64rem; color:var(--route); background:transparent; border:none; padding:0; cursor:pointer; font-weight:600; }
+  .snap-inspect-btn{ font-size:0.60rem; color:var(--route); background:transparent; border:none; padding:0; cursor:pointer; font-weight:600; }
   .snap-inspect-btn:hover{ text-decoration:underline; }
+  .snap-scroll-btn{
+    background:var(--bg-800); border:1px solid var(--line); color:var(--text-mid);
+    border-radius:4px; width:22px; height:22px; display:inline-flex; align-items:center;
+    justify-content:center; font-size:0.62rem; cursor:pointer; transition:all .15s ease; padding:0;
+  }
+  .snap-scroll-btn:hover{ background:var(--alert); color:#101419; border-color:var(--alert); }
+
+  /* Micro Search Wrap & Inputs for Every Feature */
+  .micro-search-wrap{ position:relative; display:flex; align-items:center; min-width:130px; }
+  .micro-search-input{
+    width:100%; padding:3px 6px 3px 22px; background:var(--bg-800); border:1px solid var(--line);
+    border-radius:4px; color:var(--text-hi); font-size:0.68rem; font-family:'Inter',sans-serif;
+    outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  .micro-search-input:focus{ border-color:var(--alert); box-shadow:0 0 0 2px rgba(255,122,69,0.15); }
+  .micro-search-icon{ position:absolute; left:6px; color:var(--text-low); pointer-events:none; width:11px; height:11px; }
+
+  /* Responsive Mobile Micro Indications */
+  @media (max-width:680px){
+    .panel-head{ padding:6px 8px; gap:6px; }
+    .btn-responsive-lbl{ display:none; }
+    .cam-badge.rec{ padding:2px 5px; font-size:0.58rem; }
+    .bus-search-bar{ padding:4px 6px; gap:4px; }
+    .bus-search-input{ font-size:0.70rem; padding:4px 6px 4px 22px; }
+    .bus-chip{ padding:2px 6px; font-size:0.62rem; }
+    .dossier-val{ font-size:0.70rem; }
+    .micro-search-wrap{ width:100% !important; min-width:0; margin-top:4px; }
+  }
 
   /* Bus Search & Lookup Gateway */
   .bus-search-bar{
@@ -588,11 +630,11 @@
             <span class="cam-badge rec" id="camStreamStatusBadge"><i></i> SYSTEM READY</span>
             <button class="btn btn-solid btn-sm" id="btnCaptureSnapshot" type="button" style="background:#FF5470; border-color:#FF5470;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 7h3l2-3h8l2 3h3v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
-              📸 Capture Evidence
+              <span>📸 Capture<span class="btn-responsive-lbl"> Evidence</span></span>
             </button>
             <button class="btn btn-ghost btn-sm" id="btnExportLiveReport" type="button">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Export Incident CSV
+              <span>Export <span class="btn-responsive-lbl">Incident </span>CSV</span>
             </button>
           </div>
         </div>
@@ -702,20 +744,35 @@
               </div>
 
               <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:6px; flex-wrap:wrap;">
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">Live Detections (<span id="detectedItemsCount">0</span>)</div>
-                  <label style="font-size:0.68rem; color:var(--text-mid); display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkAutoCapture" checked> Auto-Capture
-                  </label>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="micro-search-wrap" style="width:130px;">
+                      <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      <input type="text" id="filterCamDetections" class="micro-search-input" placeholder="Filter..." />
+                    </div>
+                    <label style="font-size:0.68rem; color:var(--text-mid); display:flex; align-items:center; gap:4px; cursor:pointer; white-space:nowrap;">
+                      <input type="checkbox" id="chkAutoCapture" checked> Auto
+                    </label>
+                  </div>
                 </div>
                 <div class="log-list" id="camLiveDetections" style="max-height:160px; border:1px solid var(--line); border-radius:6px;"></div>
 
                 <div style="margin-top:8px;">
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff; display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span>Captured Evidence</span>
-                    <span style="font-size:0.68rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span>Captured Evidence</span>
+                      <span style="font-size:0.64rem; color:var(--text-low);" id="snapCountLabel">0 captured</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                      <button type="button" class="snap-scroll-btn" id="btnSnapScrollLeft" aria-label="Scroll left" title="Scroll Left (One by one)">◀</button>
+                      <button type="button" class="snap-scroll-btn" id="btnSnapScrollRight" aria-label="Scroll right" title="Scroll Right (One by one)">▶</button>
+                    </div>
                   </div>
-                  <div class="snapshot-deck" id="snapshotDeck"></div>
+                  <!-- Fixed 2-Card Viewport Horizontal Scroll Deck -->
+                  <div class="snapshot-deck-container">
+                    <div class="snapshot-deck" id="snapshotDeck"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -770,7 +827,10 @@
         <div class="panel">
           <div class="panel-head">
             <div><div class="panel-kicker">Live Feed</div><div class="panel-title">Fleet event stream</div></div>
-            <span class="meta mono">auto-updating</span>
+            <div class="micro-search-wrap" style="width:160px;">
+              <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchLiveFeed" class="micro-search-input" placeholder="Search stream..." />
+            </div>
           </div>
           <div class="log-list" id="live-feed"></div>
         </div>
@@ -790,6 +850,10 @@
         <div class="panel">
           <div class="panel-head">
             <div><div class="panel-kicker">Road Conditions</div><div class="panel-title">Hazard breakdown</div></div>
+            <div class="micro-search-wrap" style="width:150px;">
+              <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchHazards" class="micro-search-input" placeholder="Filter hazards..." />
+            </div>
           </div>
           <div class="panel-body" id="hazard-list"></div>
         </div>
@@ -798,7 +862,13 @@
       <section class="panel reveal" id="incidents" style="animation-delay:.2s">
         <div class="panel-head">
           <div><div class="panel-kicker">Live Detections &amp; Measurements</div><div class="panel-title">Physical Hazard Dimensions, Camera Distance &amp; Solutions</div></div>
-          <span class="meta mono" id="incident-count-label">—</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div class="micro-search-wrap" style="width:230px; max-width:100%;">
+              <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchIncidents" class="micro-search-input" placeholder="Search incidents, bus, GPS, diagnosis..." />
+            </div>
+            <span class="meta mono" id="incident-count-label" style="font-size:0.65rem;">—</span>
+          </div>
         </div>
         <div class="table-responsive">
           <table>
@@ -821,7 +891,13 @@
       <section class="panel reveal" id="routes" style="animation-delay:.26s">
         <div class="panel-head">
           <div><div class="panel-kicker">Routes &amp; Delay</div><div class="panel-title">Origin–destination patterns</div></div>
-          <span class="meta">today vs 7-day avg, live</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div class="micro-search-wrap" style="width:170px;">
+              <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchRoutes" class="micro-search-input" placeholder="Search route, status..." />
+            </div>
+            <span class="meta">today vs 7-day avg, live</span>
+          </div>
         </div>
         <div class="table-responsive">
           <table>
@@ -834,7 +910,13 @@
       <section class="panel reveal" id="fleet" style="animation-delay:.32s">
         <div class="panel-head">
           <div><div class="panel-kicker">Fleet Status</div><div class="panel-title">Vehicles &amp; camera health</div></div>
-          <span class="meta mono" id="fleet-count-label">—</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div class="micro-search-wrap" style="width:180px;">
+              <svg class="micro-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchFleet" class="micro-search-input" placeholder="Search bus, route, depot..." />
+            </div>
+            <span class="meta mono" id="fleet-count-label" style="font-size:0.65rem;">—</span>
+          </div>
         </div>
         <div class="table-responsive">
           <table>
@@ -1026,19 +1108,82 @@
     if (syncEl) syncEl.textContent = 'Live sync ' + secs + 's ago';
   }, 1000);
 
+  /* ---------------- SEARCH INPUT FILTERS ---------------- */
+  var searchLiveFeedInput = document.getElementById('searchLiveFeed');
+  var searchHazardsInput = document.getElementById('searchHazards');
+  var searchIncidentsInput = document.getElementById('searchIncidents');
+  var searchRoutesInput = document.getElementById('searchRoutes');
+  var searchFleetInput = document.getElementById('searchFleet');
+  var filterCamDetectionsInput = document.getElementById('filterCamDetections');
+
+  if (searchLiveFeedInput) {
+    searchLiveFeedInput.addEventListener('input', function(){
+      var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+      renderLiveFeed(state.recentDetections);
+    });
+  }
+  if (searchHazardsInput) {
+    searchHazardsInput.addEventListener('input', function(){
+      var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+      renderHazards(state.recentDetections);
+    });
+  }
+  if (searchIncidentsInput) {
+    searchIncidentsInput.addEventListener('input', function(){
+      var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+      renderIncidentsTable(state.recentDetections);
+    });
+  }
+  if (searchRoutesInput) {
+    searchRoutesInput.addEventListener('input', function(){
+      var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+      renderRoutes(state.routes);
+    });
+  }
+  if (searchFleetInput) {
+    searchFleetInput.addEventListener('input', function(){
+      var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+      renderFleet(state.fleetStatus);
+    });
+  }
+  if (filterCamDetectionsInput) {
+    filterCamDetectionsInput.addEventListener('input', function(){
+      var q = (filterCamDetectionsInput.value || '').toLowerCase().trim();
+      var lines = document.querySelectorAll('#camLiveDetections .log-line');
+      lines.forEach(function(l){
+        if (!q || l.textContent.toLowerCase().indexOf(q) !== -1) {
+          l.style.display = 'flex';
+        } else {
+          l.style.display = 'none';
+        }
+      });
+    });
+  }
+
   /* ---------------- LIVE EVENT FEED ---------------- */
   var feed = document.getElementById('live-feed');
   function renderLiveFeed(detections){
     if (!feed) return;
     feed.innerHTML = '';
-    var items = (detections || []).slice(0, 10);
+    var list = detections || [];
+    var q = searchLiveFeedInput ? (searchLiveFeedInput.value || '').toLowerCase().trim() : '';
+    if (q) {
+      list = list.filter(function(d){
+        return (d.busId && d.busId.toLowerCase().indexOf(q) !== -1) ||
+               (d.bus && d.bus.toLowerCase().indexOf(q) !== -1) ||
+               (d.title && d.title.toLowerCase().indexOf(q) !== -1) ||
+               (d.type && d.type.toLowerCase().indexOf(q) !== -1) ||
+               (d.problem && d.problem.toLowerCase().indexOf(q) !== -1);
+      });
+    }
+    var items = list.slice(0, 10);
     if (items.length === 0) {
-      feed.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-low); font-size:0.8rem;">Awaiting vehicle camera detections...</div>';
+      feed.innerHTML = '<div style="padding:14px; text-align:center; color:var(--text-low); font-size:0.75rem;">' + (q ? 'No events matching search query.' : 'Awaiting vehicle camera detections...') + '</div>';
       return;
     }
     items.forEach(function(ev){
       var cls = ev.type === 'HAZARD' ? 'tag-hazard' : (ev.type === 'INCIDENT' ? 'tag-danger' : 'tag-live');
-      var dim = ev.dimensions ? `[W: ${ev.dimensions.widthMm}mm | D: ${ev.dimensions.depthMm}mm | Dist: ${ev.dimensions.distanceM}m]` : '';
+      var dim = ev.dimensions ? `[W:${ev.dimensions.widthMm}mm | D:${ev.dimensions.depthMm}mm | Dist:${ev.dimensions.distanceM}m]` : '';
       var line = document.createElement('div');
       line.className = 'log-line fresh';
       line.style.cursor = 'pointer';
@@ -1048,8 +1193,8 @@
         <span class="log-tag ${cls}">${ev.type}</span>
         <span class="log-desc">
           <strong>${ev.bus || ev.busId}</strong> · ${ev.title} 
-          <span style="color:var(--alert); font-family:'JetBrains Mono',monospace; font-size:0.72rem;">${dim}</span>
-          <br><span style="font-size:0.7rem; color:var(--live);">Fix: ${(ev.solution && ev.solution.action) || 'Work Order Dispatched'}</span>
+          <span style="color:var(--alert); font-family:'JetBrains Mono',monospace; font-size:0.70rem;">${dim}</span>
+          <br><span style="font-size:0.68rem; color:var(--live);">Fix: ${(ev.solution && ev.solution.action) || 'Work Order Dispatched'}</span>
         </span>
       `;
       line.addEventListener('click', function(){
@@ -1105,8 +1250,19 @@
       else hazardCategories['Potholes / Sub-base Failure']++;
     });
 
+    var q = searchHazardsInput ? (searchHazardsInput.value || '').toLowerCase().trim() : '';
+    var keys = Object.keys(hazardCategories);
+    if (q) {
+      keys = keys.filter(function(k){ return k.toLowerCase().indexOf(q) !== -1; });
+    }
+
+    if (keys.length === 0) {
+      hazardList.innerHTML = '<div style="padding:14px; text-align:center; color:var(--text-low); font-size:0.75rem;">No hazard categories matching query.</div>';
+      return;
+    }
+
     var html = '';
-    Object.keys(hazardCategories).forEach(function(label){
+    keys.forEach(function(label){
       var count = hazardCategories[label];
       var pct = total > 0 ? Math.round((count / total) * 100) : 0;
       if (pct === 0 && total === 0) pct = Math.floor(15 + Math.random() * 20);
@@ -1131,11 +1287,25 @@
     var countLabel = document.getElementById('incident-count-label');
     if (!tbody) return;
 
-    var items = (detections || []).slice(0, 8);
+    var list = detections || [];
+    var q = searchIncidentsInput ? (searchIncidentsInput.value || '').toLowerCase().trim() : '';
+    if (q) {
+      list = list.filter(function(item){
+        var busId = (item.busId || '').toLowerCase();
+        var title = (item.title || '').toLowerCase();
+        var problem = (item.problem || item.category || '').toLowerCase();
+        var loc = (item.location || '').toLowerCase();
+        var sol = (item.solution ? (item.solution.action + ' ' + item.solution.workOrder) : '').toLowerCase();
+        var coords = ((item.lat || '') + ' ' + (item.lng || '')).toLowerCase();
+        return busId.indexOf(q) !== -1 || title.indexOf(q) !== -1 || problem.indexOf(q) !== -1 || loc.indexOf(q) !== -1 || sol.indexOf(q) !== -1 || coords.indexOf(q) !== -1;
+      });
+    }
+
+    var items = list.slice(0, 10);
     if (countLabel) countLabel.textContent = items.length + ' real-time detections with 3D photogrammetry';
 
     if (items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-low);">No live detections recorded yet. Enter a bus number to begin camera streaming.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-low);">' + (q ? 'No incidents matching search query "' + q + '".' : 'No live detections recorded yet. Enter a bus number to begin camera streaming.') + '</td></tr>';
       return;
     }
 
@@ -1152,40 +1322,40 @@
           <td class="mono">${item.time}</td>
           <td>
             <strong style="color:#fff;">${item.title}</strong>
-            <br><span style="font-size:0.74rem; color:var(--text-mid);">${item.problem || item.category}</span>
+            <br><span style="font-size:0.70rem; color:var(--text-mid);">${item.problem || item.category}</span>
           </td>
           <td>
-            <button type="button" class="btn btn-ghost btn-switch-cam" data-bus="${busId}" style="padding:2px 8px; font-size:0.75rem; cursor:pointer;" title="Switch camera to this bus">
+            <button type="button" class="btn btn-ghost btn-switch-cam" data-bus="${busId}" style="padding:2px 6px; font-size:0.68rem; cursor:pointer;" title="Switch camera to this bus">
               🎥 ${busId}
             </button>
           </td>
           <td>
-            <div class="mono" style="font-size:0.75rem; color:var(--alert); font-weight:700;">
+            <div class="mono" style="font-size:0.70rem; color:var(--alert); font-weight:700;">
               W: ${dim.widthMm}mm · D: ${dim.depthMm}mm
             </div>
-            <div class="mono" style="font-size:0.72rem; color:var(--text-low);">
-              📏 Dist from Cam: <strong>${dim.distanceM}m</strong>
+            <div class="mono" style="font-size:0.68rem; color:var(--text-low);">
+              📏 Dist: <strong>${dim.distanceM}m</strong>
             </div>
           </td>
-          <td class="mono" style="font-size:0.75rem;">
+          <td class="mono" style="font-size:0.70rem;">
             ${lat}° N, ${lng}° E
-            <br><span style="color:var(--text-low); font-size:0.7rem;">${item.location}</span>
-            <br><a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="gmaps-link" style="display:inline-flex; align-items:center; gap:4px; margin-top:3px; color:#4285F4; text-decoration:none; font-size:0.7rem; font-weight:600;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            <br><span style="color:var(--text-low); font-size:0.66rem;">${item.location}</span>
+            <br><a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="gmaps-link" style="display:inline-flex; align-items:center; gap:3px; margin-top:2px; color:#4285F4; text-decoration:none; font-size:0.66rem; font-weight:600;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
               Google Maps ↗
             </a>
           </td>
           <td>
-            <span class="status-pill status-ontime" style="font-size:0.7rem; margin-bottom:3px;">● ${sol.status || 'Active'}</span>
-            <div style="font-size:0.74rem; color:var(--text-mid); line-height:1.3;">
+            <span class="status-pill status-ontime" style="font-size:0.64rem; margin-bottom:2px;">● ${sol.status || 'Active'}</span>
+            <div style="font-size:0.68rem; color:var(--text-mid); line-height:1.25;">
               ${sol.action}
             </div>
-            <div class="mono" style="font-size:0.68rem; color:var(--route);">
+            <div class="mono" style="font-size:0.64rem; color:var(--route);">
               Ref: ${sol.workOrder || 'WO-LIVE'}
             </div>
           </td>
           <td>
-            <button class="btn btn-solid btn-inspect-det" data-idx="${idx}" style="padding:5px 12px; font-size:0.74rem; cursor:pointer; background:linear-gradient(135deg,#FF7A45,#FF5470); border-color:#FF7A45; display:inline-flex; align-items:center; gap:4px;" type="button">
+            <button class="btn btn-solid btn-inspect-det" data-idx="${idx}" style="padding:4px 8px; font-size:0.68rem; cursor:pointer; background:linear-gradient(135deg,#FF7A45,#FF5470); border-color:#FF7A45; display:inline-flex; align-items:center; gap:3px;" type="button">
               🔍 Trinethra AI
             </button>
           </td>
@@ -1218,6 +1388,20 @@
     var tbody = document.getElementById('routes-body');
     if (!tbody) return;
     var list = routes || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().routes : []);
+    var q = searchRoutesInput ? (searchRoutesInput.value || '').toLowerCase().trim() : '';
+    if (q) {
+      list = list.filter(function(r){
+        return (r.route && r.route.toLowerCase().indexOf(q) !== -1) ||
+               (r.name && r.name.toLowerCase().indexOf(q) !== -1) ||
+               (r.status && r.status.toLowerCase().indexOf(q) !== -1);
+      });
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:16px; color:var(--text-low);">No routes found matching query.</td></tr>';
+      return;
+    }
+
     var rows = '';
     list.forEach(function(r){
       var delay = Math.max(1, +(r.delay + (Math.random()*0.4 - 0.2)).toFixed(1));
@@ -1248,14 +1432,27 @@
     if (!tbody) return;
 
     var list = fleetList || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().fleetStatus : []);
+    var q = searchFleetInput ? (searchFleetInput.value || '').toLowerCase().trim() : '';
+    if (q) {
+      list = list.filter(function(bus){
+        return (bus.id && bus.id.toLowerCase().indexOf(q) !== -1) ||
+               (bus.route && bus.route.toLowerCase().indexOf(q) !== -1) ||
+               (bus.location && bus.location.toLowerCase().indexOf(q) !== -1) ||
+               (bus.model && bus.model.toLowerCase().indexOf(q) !== -1);
+      });
+    }
+
     if (countLabel) countLabel.textContent = list.length + ' vehicles active with 4-angle edge camera rigs';
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:16px; color:var(--text-low);">No fleet vehicles found matching query.</td></tr>';
+      return;
+    }
 
     var rows = '';
     list.forEach(function(bus){
       var cams = bus.cameras || [true, true, true, true];
       var camsOk = cams.every(Boolean);
-      var status = camsOk ? 'Online' : 'Degraded';
-      var statusCls = camsOk ? 'status-ontime' : 'status-delayed';
       var dots = cams.map(function(ok){ return '<span class="cam-dot '+(ok?'cam-ok':'cam-down')+'" title="'+(ok?'Cam OK':'Degraded')+'"></span>'; }).join('');
       rows += `
         <tr style="cursor:pointer;" class="fleet-bus-row" data-bus="${bus.id}">
@@ -1264,7 +1461,7 @@
           <td><div class="cam-dots">${dots}</div></td>
           <td class="mono">${bus.location || 'GPS Active'} (${bus.lat.toFixed(4)}° N)</td>
           <td>
-            <button type="button" class="btn btn-solid btn-view-bus-cam" data-bus="${bus.id}" style="padding:4px 10px; font-size:0.72rem; cursor:pointer;">🎥 View Cam</button>
+            <button type="button" class="btn btn-solid btn-view-bus-cam" data-bus="${bus.id}" style="padding:3px 8px; font-size:0.68rem; cursor:pointer;">🎥 View</button>
           </td>
         </tr>
       `;
@@ -2258,6 +2455,24 @@
   if (btnCapture) {
     btnCapture.addEventListener('click', function(){
       captureSnapshot();
+    });
+  }
+
+  // Horizontal Scroll Left / Right One-by-One Buttons
+  var btnSnapScrollLeft = document.getElementById('btnSnapScrollLeft');
+  var btnSnapScrollRight = document.getElementById('btnSnapScrollRight');
+  if (btnSnapScrollLeft && snapDeck) {
+    btnSnapScrollLeft.addEventListener('click', function(){
+      var firstCard = snapDeck.querySelector('.snap-card');
+      var cardWidth = firstCard ? (firstCard.offsetWidth + 8) : 170;
+      snapDeck.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    });
+  }
+  if (btnSnapScrollRight && snapDeck) {
+    btnSnapScrollRight.addEventListener('click', function(){
+      var firstCard = snapDeck.querySelector('.snap-card');
+      var cardWidth = firstCard ? (firstCard.offsetWidth + 8) : 170;
+      snapDeck.scrollBy({ left: cardWidth, behavior: 'smooth' });
     });
   }
 
