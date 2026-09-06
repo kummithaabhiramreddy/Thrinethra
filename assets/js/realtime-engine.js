@@ -223,25 +223,25 @@
           dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
           solution: {
             action: 'Cold-mix polymer asphalt patch & 2-ton vibratory compaction',
-            workOrder: 'WO-RD-8841',
+            workOrder: 'WO-MG-8841',
             advisory: 'Downstream speed limit reduced to 20 km/h · Warning broadcasted',
             status: 'Work Order Dispatched'
           },
           severity: 3,
           busId: 'KA-05-AB-1147',
-          location: 'MG Road Jn. (km 3.2)',
+          location: 'MG Road Jn. (Corridor Km 3.2)',
           lat: 12.9716, lng: 77.5946,
           cam: 'Front AI'
         },
         {
           type: 'INCIDENT',
           category: 'Tailgating Proximity',
-          title: 'High-Speed Tailgating Vehicle',
-          problem: 'Approaching vehicle following at critical 2.1m separation below safety braking distance',
-          dimensions: { widthMm: 1780, lengthMm: 4200, depthMm: 0, distanceM: 2.1 },
+          title: 'Commercial SUV Tailgating',
+          problem: 'Commercial SUV KA 04 MM 4910 operating at excessive speed and 2.8m proximity',
+          dimensions: { widthMm: 1880, lengthMm: 4600, depthMm: 0, distanceM: 2.8 },
           solution: {
-            action: 'Automatic e-Challan citation issued with OCR plate timestamp & radar speed log',
-            workOrder: 'CH-TR-10492',
+            action: 'Radar speed log & e-Challan citation dispatched',
+            workOrder: 'CH-IN-20914',
             advisory: 'Rear strobe collision avoidance alert activated on bus tailgate',
             status: 'Citation Generated'
           },
@@ -250,66 +250,67 @@
           location: 'Indiranagar 100ft Rd',
           lat: 12.9784, lng: 77.6408,
           cam: 'Rear OCR',
-          plate: 'MH 02 EE ' + Math.floor(1000 + Math.random() * 9000)
+          plate: 'KA 04 MM 4910'
         },
         {
           type: 'HAZARD',
-          category: 'Waterlogging Puddle',
-          title: 'Standing Stormwater Depression',
-          problem: 'Blocked stormwater curb grate causing 110mm deep standing water pool across lane',
-          dimensions: { widthMm: 1400, lengthMm: 2800, depthMm: 110, distanceM: 18.2 },
+          category: 'Terminal Congestion',
+          title: 'Terminal Congestion & Lane Bottleneck',
+          problem: 'Unauthorized auto parking blocking transit entry corridor',
+          dimensions: { widthMm: 2400, lengthMm: 5200, depthMm: 0, distanceM: 6.5 },
           solution: {
-            action: 'Rapid drain pump suction and silt clearing team alerted for immediate clearance',
-            workOrder: 'WO-SW-3319',
-            advisory: 'Fleet lane detour advisory around curb pool enabled',
-            status: 'Drain Crew Assigned'
+            action: 'Traffic marshal dispatch & immediate tow alert',
+            workOrder: 'WO-SH-4421',
+            advisory: 'Fleet lane detour advisory enabled',
+            status: 'Marshal Dispatched'
           },
-          severity: 3,
+          severity: 4,
           busId: 'KA-01-FL-3390',
           location: 'Shivajinagar Bus Station',
           lat: 12.9856, lng: 77.6057,
           cam: 'Front AI'
         },
         {
-          type: 'SAFETY',
-          category: 'Blindspot Conflict',
-          title: 'Two-Wheeler in Blindspot Zone',
-          problem: 'Motorcyclist overtaking on left curb side within 0.45m of rear wheel axle',
-          dimensions: { widthMm: 750, lengthMm: 1950, depthMm: 0, distanceM: 0.45 },
+          type: 'HAZARD',
+          category: 'Construction Debris',
+          title: 'Road Construction Debris & Steel Hazard',
+          problem: 'Fallen aggregate debris and exposed steel rod on flyover lane',
+          dimensions: { widthMm: 420, lengthMm: 1100, depthMm: 85, distanceM: 15.0 },
           solution: {
-            action: 'Driver audio blindspot warning buzzer triggered & side LED illumination pulsed',
-            workOrder: 'EV-BL-7712',
-            advisory: 'Bus steering left-turn lockout engaged until cyclist clears zone',
-            status: 'Lockout Active'
+            action: 'Highway debris sweeper & warning cone placement',
+            workOrder: 'WO-SB-6672',
+            advisory: 'Flyover right lane speed advisory active',
+            status: 'Sweeper Dispatched'
           },
           severity: 3,
           busId: 'KA-41-BQ-0512',
           location: 'Silk Board Jn.',
           lat: 12.9279, lng: 77.6271,
-          cam: 'Side Blindspot'
+          cam: 'Front AI'
         },
         {
-          type: 'SAFETY',
-          category: 'Cabin Density Surge',
-          title: 'Passenger Overcrowding at Doorway',
-          problem: 'Platform boarding surge blocking front egress stairwell and driver mirror sightline',
-          dimensions: { widthMm: 950, lengthMm: 1600, depthMm: 0, distanceM: 3.2 },
+          type: 'HAZARD',
+          category: 'Pedestrian Crosswalk',
+          title: 'Unmarked Pedestrian Crossing Zone',
+          problem: 'Pedestrian crowd crossing without signal priority near botanical garden',
+          dimensions: { widthMm: 1200, lengthMm: 4500, depthMm: 0, distanceM: 11.2 },
           solution: {
-            action: 'Automated passenger chime: "Please move inward" & trailing relief bus dispatched',
-            workOrder: 'OPS-CB-5510',
-            advisory: 'Relief Bus Route 335E assigned at next stop in 4 mins',
-            status: 'Relief Dispatched'
+            action: 'Crosswalk speed restriction 20 km/h & yellow blinker active',
+            workOrder: 'WO-LB-7734',
+            advisory: 'Pedestrian awareness beacon triggered',
+            status: 'Speed Restricted'
           },
           severity: 2,
           busId: 'KA-09-DP-6119',
           location: 'Lalbagh West Gate',
           lat: 12.9463, lng: 77.5801,
-          cam: 'Cabin Sensor'
+          cam: 'Front AI'
         }
       ];
 
       setInterval(() => {
         const tmpl = hazardTemplates[Math.floor(Math.random() * hazardTemplates.length)];
+        const busObj = this.getBus(tmpl.busId) || tmpl;
         this.addDetection({
           type: tmpl.type,
           category: tmpl.category,
@@ -318,8 +319,8 @@
           dimensions: tmpl.dimensions,
           solution: tmpl.solution,
           location: tmpl.location,
-          lat: +(tmpl.lat + (Math.random() - 0.5) * 0.0005).toFixed(5),
-          lng: +(tmpl.lng + (Math.random() - 0.5) * 0.0005).toFixed(5),
+          lat: +(busObj.lat || tmpl.lat),
+          lng: +(busObj.lng || tmpl.lng),
           severity: tmpl.severity,
           busId: tmpl.busId,
           bus: `${tmpl.busId} (${tmpl.cam})`,
@@ -336,6 +337,8 @@
     addDetection(det) {
       const d = new Date();
       const timeStr = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+      const busId = det.busId || 'KA-05-AB-1147';
+      const busObj = this.getBus(busId) || this.state.fleetStatus[0];
 
       const dimensions = det.dimensions || {
         widthMm: Math.floor(450 + Math.random() * 500),
@@ -360,12 +363,12 @@
         problem: det.problem || 'Detected road surface irregularity or safety conflict',
         dimensions: dimensions,
         solution: solution,
-        location: det.location || 'Fleet Corridor GPS Active',
-        lat: det.lat || (12.9716 + (Math.random() - 0.5) * 0.02).toFixed(5),
-        lng: det.lng || (77.5946 + (Math.random() - 0.5) * 0.02).toFixed(5),
+        location: det.location || busObj.location || 'Fleet Corridor GPS Active',
+        lat: det.lat !== undefined ? det.lat : busObj.lat,
+        lng: det.lng !== undefined ? det.lng : busObj.lng,
         severity: det.severity || 3,
-        busId: det.busId || 'KA-05-AB-1147',
-        bus: det.bus || 'KA-05-AB-1147 (FRONT AI)',
+        busId: busId,
+        bus: det.bus || `${busId} (FRONT AI)`,
         plate: det.plate || null,
         conf: det.conf || +(92 + Math.random() * 7).toFixed(1),
         status: 'Active',

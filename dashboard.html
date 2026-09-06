@@ -1523,7 +1523,7 @@
   var scanDirection = 1;
   var snapshots = [];
 
-  // Bus Fleet Metadata & Specifications
+  // Bus Fleet Metadata & Detailed Multi-Angle Mode Profiles
   var fleetMap = {
     'KA-05-AB-1147': {
       id: 'KA-05-AB-1147',
@@ -1531,13 +1531,50 @@
       name: 'Bus KA-05-AB-1147 (Route 42B)',
       route: 'Route 42B (MG Road → Indiranagar)',
       location: 'MG Road Jn.',
+      address: 'Mahatma Gandhi Rd, Ashok Nagar, Bengaluru, Karnataka 560001',
       lat: 12.9716,
       lng: 77.5946,
       baseSpeed: 38.4,
-      driver: 'Ramesh K. (Depot 04)',
-      hazards: [
-        { type: 'POTHOLE', title: 'Pothole (Depth 45mm)', plate: 'KA-03-MN-8821', dist: '18m', conf: 97.4, sev: 3 }
-      ],
+      driver: 'Ramesh Kumar (Depot 04)',
+      depot: 'Depot 04 (Central Majestic)',
+      modes: {
+        front: {
+          title: 'Severe Asphalt Pothole Crater',
+          category: 'Road Hazard',
+          problem: 'Sub-grade gravel washout causing road crater with sharp asphalt rim edge',
+          dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
+          solution: { action: 'Cold-mix polymer patch & 2-ton vibratory compaction', workOrder: 'WO-MG-8841', status: 'Work Order Dispatched' },
+          severity: 3,
+          plate: 'KA-05-AB-1147'
+        },
+        rear: {
+          title: 'Tailgating Private Vehicle',
+          category: 'Incident',
+          problem: 'Vehicle MH 02 EE 1984 operating below minimum safe stopping headway (2.1m)',
+          dimensions: { widthMm: 1780, lengthMm: 4200, depthMm: 0, distanceM: 2.1 },
+          solution: { action: 'Automated e-Challan citation issued & rear strobe flash', workOrder: 'CH-MG-10492', status: 'Citation Generated' },
+          severity: 4,
+          plate: 'MH 02 EE 1984'
+        },
+        side: {
+          title: 'Two-Wheeler in Left Blindspot Zone',
+          category: 'Safety',
+          problem: 'Motorcyclist overtaking on left curb side within 0.45m of rear axle',
+          dimensions: { widthMm: 750, lengthMm: 1950, depthMm: 0, distanceM: 0.45 },
+          solution: { action: 'Driver blindspot buzzer & left-turn lockout engaged', workOrder: 'EV-MG-7712', status: 'Lockout Active' },
+          severity: 3,
+          plate: 'KA 05 MN 8821'
+        },
+        cabin: {
+          title: 'Aisle Density Approaching 88%',
+          category: 'Safety',
+          problem: 'Peak morning boarding load nearing maximum aisle clearance threshold',
+          dimensions: { widthMm: 900, lengthMm: 1400, depthMm: 0, distanceM: 2.5 },
+          solution: { action: 'Inward movement passenger audio chime activated', workOrder: 'OPS-MG-5510', status: 'Chime Active' },
+          severity: 2,
+          plate: 'KA-05-AB-1147'
+        }
+      },
       cars: [
         { x: 460, y: 220, w: 90, h: 70, plate: 'MH 02 EE 1984', type: 'CAR', dist: '12m' },
         { x: 190, y: 250, w: 120, h: 90, plate: 'KA 03 MN 8821', type: 'BUS', dist: '24m' }
@@ -1549,13 +1586,50 @@
       name: 'Bus KA-03-CJ-8820 (Route 17A)',
       route: 'Route 17A (Indiranagar → Marathahalli)',
       location: 'Indiranagar 100ft Rd',
+      address: '100 Feet Rd, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka 560038',
       lat: 12.9784,
       lng: 77.6408,
       baseSpeed: 42.1,
-      driver: 'Suresh V. (Depot 07)',
-      hazards: [
-        { type: 'WATERLOG', title: 'Waterlogged Puddle 60mm', plate: 'KA-51-AB-3310', dist: '14m', conf: 95.8, sev: 2 }
-      ],
+      driver: 'Suresh Varma (Depot 07)',
+      depot: 'Depot 07 (Indiranagar East)',
+      modes: {
+        front: {
+          title: 'Standing Stormwater Depression',
+          category: 'Road Hazard',
+          problem: 'Blocked stormwater curb grate causing 110mm deep standing water pool across lane',
+          dimensions: { widthMm: 1400, lengthMm: 2800, depthMm: 110, distanceM: 18.2 },
+          solution: { action: 'Rapid drain pump suction & silt clearing crew assigned', workOrder: 'WO-IN-3319', status: 'Drain Crew Assigned' },
+          severity: 3,
+          plate: 'KA-03-CJ-8820'
+        },
+        rear: {
+          title: 'Commercial SUV Tailgating',
+          category: 'Incident',
+          problem: 'Commercial SUV KA 04 MM 4910 operating at excessive speed and 2.8m proximity',
+          dimensions: { widthMm: 1880, lengthMm: 4600, depthMm: 0, distanceM: 2.8 },
+          solution: { action: 'Radar speed log & e-Challan citation dispatched', workOrder: 'CH-IN-20914', status: 'Citation Generated' },
+          severity: 4,
+          plate: 'KA 04 MM 4910'
+        },
+        side: {
+          title: 'Delivery Scooter in Blindspot',
+          category: 'Safety',
+          problem: 'Delivery scooter riding in curb blindspot during lane shift',
+          dimensions: { widthMm: 700, lengthMm: 1800, depthMm: 0, distanceM: 0.60 },
+          solution: { action: 'Side perimeter LED illumination & warning strobe active', workOrder: 'EV-IN-4481', status: 'Strobe Active' },
+          severity: 3,
+          plate: 'KA 03 DL 4410'
+        },
+        cabin: {
+          title: 'Gangway Luggage Obstruction',
+          category: 'Safety',
+          problem: 'Excess baggage blocking rear egress passage',
+          dimensions: { widthMm: 650, lengthMm: 1200, depthMm: 0, distanceM: 3.0 },
+          solution: { action: 'Conductor luggage rearrangement advisory', workOrder: 'OPS-IN-1120', status: 'Advisory Active' },
+          severity: 2,
+          plate: 'KA-03-CJ-8820'
+        }
+      },
       cars: [
         { x: 430, y: 215, w: 95, h: 72, plate: 'KA 04 MM 4910', type: 'SUV', dist: '15m' },
         { x: 170, y: 240, w: 110, h: 85, plate: 'DL 1C BB 9021', type: 'TAXI', dist: '21m' }
@@ -1567,13 +1641,50 @@
       name: 'Bus KA-01-FL-3390 (Route 9C)',
       route: 'Route 9C (Shivajinagar → Majestic)',
       location: 'Shivajinagar Bus Station',
+      address: 'Shivajinagar Bus Terminal, Shivaji Nagar, Bengaluru, Karnataka 560051',
       lat: 12.9856,
       lng: 77.6057,
       baseSpeed: 28.5,
-      driver: 'Anand M. (Depot 01)',
-      hazards: [
-        { type: 'CONGESTION', title: 'Heavy Congestion Bottleneck', plate: 'KA-01-EE-7712', dist: '8m', conf: 98.2, sev: 4 }
-      ],
+      driver: 'Anand Mohan (Depot 01)',
+      depot: 'Depot 01 (Shivajinagar)',
+      modes: {
+        front: {
+          title: 'Terminal Congestion & Lane Bottleneck',
+          category: 'Road Hazard',
+          problem: 'Unauthorized auto parking blocking transit entry corridor',
+          dimensions: { widthMm: 2400, lengthMm: 5200, depthMm: 0, distanceM: 6.5 },
+          solution: { action: 'Traffic marshal dispatch & immediate tow alert', workOrder: 'WO-SH-4421', status: 'Marshal Dispatched' },
+          severity: 4,
+          plate: 'KA-01-FL-3390'
+        },
+        rear: {
+          title: 'Auto-Rickshaw Critical Proximity',
+          category: 'Incident',
+          problem: 'Auto-rickshaw KA 01 TR 2291 tailgating at 1.8m in transit ramp',
+          dimensions: { widthMm: 1300, lengthMm: 2600, depthMm: 0, distanceM: 1.8 },
+          solution: { action: 'Tailgate acoustic warning horn & e-Challan recorded', workOrder: 'CH-SH-31802', status: 'Citation Generated' },
+          severity: 4,
+          plate: 'KA 01 TR 2291'
+        },
+        side: {
+          title: 'Pedestrian Stepping Off Curb in Blindspot',
+          category: 'Safety',
+          problem: 'Pedestrian stepped into bus clearance turning sweep',
+          dimensions: { widthMm: 480, lengthMm: 1700, depthMm: 0, distanceM: 0.50 },
+          solution: { action: 'Acoustic directional horn alert sounded', workOrder: 'EV-SH-8829', status: 'Horn Active' },
+          severity: 3,
+          plate: 'PED-SH-91'
+        },
+        cabin: {
+          title: 'Peak Terminal Entry Load 94%',
+          category: 'Safety',
+          problem: 'Front door boarding surge blocking operator left sightline',
+          dimensions: { widthMm: 980, lengthMm: 1500, depthMm: 0, distanceM: 2.2 },
+          solution: { action: 'Automated boarding gate restriction & crowd control', workOrder: 'OPS-SH-9901', status: 'Gate Paused' },
+          severity: 3,
+          plate: 'KA-01-FL-3390'
+        }
+      },
       cars: [
         { x: 480, y: 230, w: 85, h: 65, plate: 'KA 01 TR 2291', type: 'AUTO', dist: '6m' },
         { x: 210, y: 255, w: 130, h: 95, plate: 'KA 53 N 9928', type: 'TRUCK', dist: '19m' }
@@ -1585,13 +1696,50 @@
       name: 'Bus KA-41-BQ-0512 (Route 52)',
       route: 'Route 52 (Koramangala → Electronic City)',
       location: 'Silk Board Jn.',
+      address: 'Central Silk Board Flyover, BTM 2nd Stage, Bengaluru, Karnataka 560068',
       lat: 12.9279,
       lng: 77.6271,
       baseSpeed: 46.2,
-      driver: 'Prakash N. (Depot 12)',
-      hazards: [
-        { type: 'DEBRIS', title: 'Road Construction Debris', plate: 'KA-41-XY-1004', dist: '22m', conf: 96.1, sev: 3 }
-      ],
+      driver: 'Prakash Narayana (Depot 12)',
+      depot: 'Depot 12 (Koramangala South)',
+      modes: {
+        front: {
+          title: 'Road Construction Debris & Steel Hazard',
+          category: 'Road Hazard',
+          problem: 'Fallen aggregate debris and exposed steel rod on flyover lane',
+          dimensions: { widthMm: 420, lengthMm: 1100, depthMm: 85, distanceM: 15.0 },
+          solution: { action: 'Highway debris sweeper & warning cone placement', workOrder: 'WO-SB-6672', status: 'Sweeper Dispatched' },
+          severity: 3,
+          plate: 'KA-41-BQ-0512'
+        },
+        rear: {
+          title: 'Heavy Interstate Bus Tailgating',
+          category: 'Incident',
+          problem: 'Interstate carrier TN 07 CB 3341 failing to maintain highway headway (3.2m)',
+          dimensions: { widthMm: 2500, lengthMm: 12000, depthMm: 0, distanceM: 3.2 },
+          solution: { action: 'Highway commercial vehicle penalty citation issued', workOrder: 'CH-SB-40192', status: 'Citation Generated' },
+          severity: 4,
+          plate: 'TN 07 CB 3341'
+        },
+        side: {
+          title: 'Electric Scooter in Curb Margin',
+          category: 'Safety',
+          problem: 'EV scooter riding silent in blindspot during flyover merge',
+          dimensions: { widthMm: 680, lengthMm: 1850, depthMm: 0, distanceM: 0.40 },
+          solution: { action: 'Side ultrasonic warning tone & steering assist active', workOrder: 'EV-SB-1109', status: 'Assist Active' },
+          severity: 3,
+          plate: 'KA 41 EV 1004'
+        },
+        cabin: {
+          title: 'Nominal Express Transit Density 62%',
+          category: 'Safety',
+          problem: 'Seated passenger balance maintained with clear gangway',
+          dimensions: { widthMm: 880, lengthMm: 1600, depthMm: 0, distanceM: 2.8 },
+          solution: { action: 'Nominal HVAC climate control & status logged', workOrder: 'OPS-SB-2210', status: 'Nominal' },
+          severity: 1,
+          plate: 'KA-41-BQ-0512'
+        }
+      },
       cars: [
         { x: 440, y: 225, w: 90, h: 68, plate: 'TN 07 CB 3341', type: 'CAR', dist: '18m' },
         { x: 180, y: 245, w: 115, h: 88, plate: 'KA 41 M 8001', type: 'BUS', dist: '30m' }
@@ -1603,17 +1751,79 @@
       name: 'Bus KA-09-DP-6119 (Route 335E)',
       route: 'Route 335E (Lalbagh → Whitefield)',
       location: 'Lalbagh West Gate',
+      address: 'Rashtriya Vidyalaya Rd, Mavalli, Bengaluru, Karnataka 560004',
       lat: 12.9463,
       lng: 77.5801,
       baseSpeed: 34.0,
-      driver: 'Manjunath G. (Depot 09)',
-      hazards: [
-        { type: 'PEDESTRIAN', title: 'Pedestrian Crossing Zone', plate: 'KA-09-ZZ-5511', dist: '11m', conf: 99.0, sev: 2 }
-      ],
+      driver: 'Manjunath Gowda (Depot 09)',
+      depot: 'Depot 09 (Lalbagh Gate)',
+      modes: {
+        front: {
+          title: 'Unmarked Pedestrian Crossing Zone',
+          category: 'Road Hazard',
+          problem: 'Pedestrian crowd crossing without signal priority near botanical garden',
+          dimensions: { widthMm: 1200, lengthMm: 4500, depthMm: 0, distanceM: 11.2 },
+          solution: { action: 'Crosswalk speed restriction 20 km/h & yellow blinker active', workOrder: 'WO-LB-7734', status: 'Speed Restricted' },
+          severity: 2,
+          plate: 'KA-09-DP-6119'
+        },
+        rear: {
+          title: 'Delivery Van Tailgating Incident',
+          category: 'Incident',
+          problem: 'Delivery Van KA 09 BK 7890 operating in bus deceleration buffer zone (2.4m)',
+          dimensions: { widthMm: 1820, lengthMm: 4400, depthMm: 0, distanceM: 2.4 },
+          solution: { action: 'Rear strobe warning & automated citation recorded', workOrder: 'CH-LB-55201', status: 'Citation Generated' },
+          severity: 3,
+          plate: 'KA 09 BK 7890'
+        },
+        side: {
+          title: 'Commuter Cyclist in Blindspot',
+          category: 'Safety',
+          problem: 'Bicycle commuter riding in driver left blindspot margin',
+          dimensions: { widthMm: 600, lengthMm: 1750, depthMm: 0, distanceM: 0.55 },
+          solution: { action: 'Blindspot dashboard visual indicator active', workOrder: 'EV-LB-3390', status: 'Visual Alert' },
+          severity: 2,
+          plate: 'CYC-LB-44'
+        },
+        cabin: {
+          title: 'Stairwell Obstruction at Entrance (82%)',
+          category: 'Safety',
+          problem: 'Passengers standing on lower stairwell step impeding sensor beam',
+          dimensions: { widthMm: 920, lengthMm: 1500, depthMm: 0, distanceM: 2.4 },
+          solution: { action: 'Passenger advisory chime & relief bus Route 335E dispatched', workOrder: 'OPS-LB-6612', status: 'Relief Dispatched' },
+          severity: 2,
+          plate: 'KA-09-DP-6119'
+        }
+      },
       cars: [
         { x: 470, y: 220, w: 88, h: 70, plate: 'KA 09 AA 1234', type: 'CAR', dist: '14m' },
         { x: 200, y: 250, w: 110, h: 85, plate: 'KA 09 BK 7890', type: 'VAN', dist: '25m' }
       ]
+    },
+    'WEBCAM': {
+      id: 'WEBCAM',
+      routeNo: 'HQ',
+      name: 'Operator Hardware WebCam',
+      route: 'Fleet Command Terminal (Station 01)',
+      location: 'Central Command HQ',
+      address: 'Central Traffic Operations Command, Infantry Rd, Bengaluru, Karnataka 560001',
+      lat: 12.9716,
+      lng: 77.5946,
+      baseSpeed: 0.0,
+      driver: 'Command Duty Officer',
+      depot: 'Central HQ Operations',
+      modes: {
+        front: {
+          title: 'Operator Desk Biometric Scan',
+          category: 'Safety',
+          problem: 'Active duty officer biometric session verified with safety compliance',
+          dimensions: { widthMm: 220, lengthMm: 450, depthMm: 0, distanceM: 0.8 },
+          solution: { action: 'Biometric Authenticated Session Active', workOrder: 'AUTH-HQ-001', status: 'Verified' },
+          severity: 1,
+          plate: 'COMMAND-HQ'
+        }
+      },
+      cars: []
     }
   };
 
@@ -1744,8 +1954,13 @@
       camSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Trigger initial snapshot for this newly inspected bus
-    captureSnapshot('Inspected Vehicle Baseline Scan', 'Road Hazard', 1);
+    // Trigger initial snapshot for this newly inspected bus matching its exact front mode
+    var initialModeData = (info.modes && info.modes.front) || (info.modes && info.modes[currentMode]);
+    if (initialModeData) {
+      captureSnapshot(initialModeData.title, initialModeData.category, initialModeData.severity, initialModeData.plate);
+    } else {
+      captureSnapshot();
+    }
   };
 
   // Reset / Clear search back to Standby
@@ -1985,6 +2200,13 @@
     var w = canvas.width;
     var h = canvas.height;
     var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    var modeData = (busInfo.modes && busInfo.modes.front) || {
+      title: 'Road Hazard Detected',
+      problem: 'Road surface sub-base degradation',
+      dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
+      solution: { action: 'Cold-mix asphalt patch (WO-RD-8841)' },
+      severity: 3
+    };
 
     // Sky & Horizon
     var skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
@@ -2028,8 +2250,7 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Pothole / Hazard on Road
-    var hz = busInfo.hazards[0] || { type: 'POTHOLE', title: 'Severe Asphalt Pothole Crater', conf: 97.4, sev: 3 };
+    // Road Hazard / Anomaly on Road (Specific to active bus)
     var px = 360 + Math.sin(time * 0.0005) * 10;
     var py = 320;
     ctx.fillStyle = '#06090c';
@@ -2040,12 +2261,12 @@
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    drawBoundingBox(px, py, 110, 50, 'ROAD HAZARD: POTHOLE CRATER', '#FF7A45', hz.conf, true, {
-      widthMm: 680,
-      depthMm: 54,
-      lengthMm: 920,
-      distanceM: 12.4,
-      solution: { action: 'Cold-mix polymer patch (WO-8841)' }
+    drawBoundingBox(px, py, 110, 50, modeData.title.toUpperCase(), '#FF7A45', '97.4', true, {
+      widthMm: modeData.dimensions.widthMm,
+      depthMm: modeData.dimensions.depthMm,
+      lengthMm: modeData.dimensions.lengthMm,
+      distanceM: modeData.dimensions.distanceM,
+      solution: modeData.solution
     });
 
     // Dynamic Traffic Vehicles
@@ -2065,7 +2286,7 @@
         depthMm: 0,
         lengthMm: 4100,
         distanceM: idx === 0 ? 14.8 : 24.5,
-        solution: { action: 'Safe Following Distance Maintained' }
+        solution: { action: 'Safe Headway Maintained' }
       });
     });
 
@@ -2077,7 +2298,7 @@
       depthMm: 0,
       lengthMm: 1720,
       distanceM: 14.2,
-      solution: { action: 'Crosswalk speed advisory 20 km/h' }
+      solution: { action: 'Crosswalk speed advisory active' }
     });
   }
 
@@ -2086,6 +2307,13 @@
     var w = canvas.width;
     var h = canvas.height;
     var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    var modeData = (busInfo.modes && busInfo.modes.rear) || {
+      title: 'Tailgating Vehicle',
+      problem: 'Proximity violation',
+      plate: (busInfo.cars[0] ? busInfo.cars[0].plate : 'MH 02 EE 1984'),
+      dimensions: { widthMm: 1780, depthMm: 0, lengthMm: 4200, distanceM: 2.1 },
+      solution: { action: 'Citation generated' }
+    };
 
     ctx.fillStyle = '#0b1118';
     ctx.fillRect(0, 0, w, h);
@@ -2115,7 +2343,7 @@
     // License Plate
     var plateX = carX + 65;
     var plateY = carY + 120;
-    var plateNumber = busInfo.cars[0] ? busInfo.cars[0].plate : 'MH 02 EE 1984';
+    var plateNumber = modeData.plate || (busInfo.cars[0] ? busInfo.cars[0].plate : 'MH 02 EE 1984');
 
     ctx.fillStyle = '#fff';
     ctx.fillRect(plateX, plateY, 110, 30);
@@ -2129,15 +2357,15 @@
     drawBoundingBox(plateX - 8, plateY - 8, 126, 46, 'OCR PLATE: ' + plateNumber, '#FF5470', '98.9', true, {
       widthMm: 520,
       depthMm: 0,
-      distanceM: 2.1,
-      solution: { action: 'e-Challan Citation Generated (CH-10492)' }
+      distanceM: modeData.dimensions.distanceM,
+      solution: modeData.solution
     });
-    drawBoundingBox(carX - 10, carY - 10, carW + 20, carH + 20, 'TAILGATING INCIDENT', '#FF7A45', '96.2', true, {
-      widthMm: 1820,
+    drawBoundingBox(carX - 10, carY - 10, carW + 20, carH + 20, modeData.title.toUpperCase(), '#FF7A45', '96.2', true, {
+      widthMm: modeData.dimensions.widthMm,
       depthMm: 0,
-      lengthMm: 4400,
-      distanceM: 2.1,
-      solution: { action: 'Rear strobe collision warning active' }
+      lengthMm: modeData.dimensions.lengthMm,
+      distanceM: modeData.dimensions.distanceM,
+      solution: modeData.solution
     });
   }
 
@@ -2145,6 +2373,13 @@
   function renderSimSide(time) {
     var w = canvas.width;
     var h = canvas.height;
+    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    var modeData = (busInfo.modes && busInfo.modes.side) || {
+      title: 'Two-Wheeler in Blindspot',
+      dimensions: { widthMm: 750, depthMm: 0, lengthMm: 1950, distanceM: 0.45 },
+      solution: { action: 'Blindspot buzzer active' }
+    };
+
     ctx.fillStyle = '#080d14';
     ctx.fillRect(0, 0, w, h);
 
@@ -2175,12 +2410,12 @@
     ctx.fillStyle = '#34D399';
     ctx.fillRect(bikeX + 45, bikeY + 10, 12, 12);
 
-    drawBoundingBox(bikeX, bikeY - 10, bikeW, bikeH, 'TWO-WHEELER IN BLINDSPOT', '#FF5470', '97.8', true, {
-      widthMm: 750,
+    drawBoundingBox(bikeX, bikeY - 10, bikeW, bikeH, modeData.title.toUpperCase(), '#FF5470', '97.8', true, {
+      widthMm: modeData.dimensions.widthMm,
       depthMm: 0,
-      lengthMm: 1950,
-      distanceM: 0.45,
-      solution: { action: 'Driver audio buzzer & left-turn lockout active' }
+      lengthMm: modeData.dimensions.lengthMm,
+      distanceM: modeData.dimensions.distanceM,
+      solution: modeData.solution
     });
     drawBoundingBox(30, 240, 110, 80, 'CURB CLEARANCE', '#4FA3D1', '99.1', false, {
       widthMm: 450,
@@ -2194,6 +2429,13 @@
   function renderSimCabin(time) {
     var w = canvas.width;
     var h = canvas.height;
+    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    var modeData = (busInfo.modes && busInfo.modes.cabin) || {
+      title: 'Cabin Density: 82%',
+      dimensions: { widthMm: 900, depthMm: 0, distanceM: 2.5 },
+      solution: { action: 'Normal operation' }
+    };
+
     ctx.fillStyle = '#0d131a';
     ctx.fillRect(0, 0, w, h);
 
@@ -2234,10 +2476,10 @@
     ctx.strokeRect(w - 240, 20, 220, 50);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.fillText('CABIN DENSITY: 82% (26 / 32)', w - 225, 42);
+    ctx.fillText(modeData.title.toUpperCase(), w - 225, 42);
     ctx.fillStyle = '#34D399';
     ctx.font = '10px JetBrains Mono, monospace';
-    ctx.fillText('STATUS: NORMAL CAPACITY', w - 225, 58);
+    ctx.fillText('STATUS: AI MONITORING', w - 225, 58);
   }
 
   // Laser Scan Line
@@ -2316,34 +2558,33 @@
       }, 80);
     }
 
+    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    var modeKey = currentMode === 'webcam' ? 'front' : currentMode;
+    var modeData = (busInfo.modes && busInfo.modes[modeKey]) || (busInfo.modes && busInfo.modes.front) || {
+      title: 'Inspected Road Anomaly',
+      problem: 'Road surface sub-base degradation',
+      category: 'Road Hazard',
+      severity: 3,
+      dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
+      solution: { action: 'Cold-mix asphalt patch (WO-RD-8841)', workOrder: 'WO-RD-8841', status: 'Work Order Dispatched' }
+    };
+
     var dataUrl = canvas.toDataURL('image/png');
     var d = new Date();
     var timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
     var dateStr = d.toISOString().split('T')[0];
-    var snapId = 'SNAP-' + Math.floor(1000 + Math.random() * 9000);
-    
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var itemTitle = title || (currentMode === 'rear' ? 'High-Speed Tailgating Incident' : 
-                              currentMode === 'side' ? 'Blindspot Two-Wheeler Conflict' : 
-                              currentMode === 'cabin' ? 'Cabin Overcrowding Egress Hazard' : 'Severe Asphalt Pothole Crater');
-    var itemCat = category || (currentMode === 'rear' ? 'Incident' : currentMode === 'side' ? 'Safety' : 'Road Hazard');
-    var itemPlate = plate || (busInfo && busInfo.cars && busInfo.cars[0] ? busInfo.cars[0].plate : (currentBusId || 'KA-05-AB-1147'));
+    var snapId = 'SNAP-' + (currentBusId.replace(/[^A-Za-z0-9]/g,'') || 'BUS') + '-' + Math.floor(1000 + Math.random() * 9000);
 
-    var dimensions = {
-      widthMm: currentMode === 'rear' ? 1820 : (currentMode === 'side' ? 750 : 680),
-      lengthMm: currentMode === 'rear' ? 4400 : (currentMode === 'side' ? 1950 : 920),
-      depthMm: currentMode === 'front' ? 54 : 0,
-      distanceM: currentMode === 'rear' ? 2.1 : (currentMode === 'side' ? 0.45 : 12.4)
-    };
-
-    var solution = {
-      action: currentMode === 'rear' ? 'Automatic e-Challan citation issued & rear strobe collision flash' :
-              (currentMode === 'side' ? 'Driver blindspot buzzer & steering left-turn lockout engaged' :
-              (currentMode === 'cabin' ? 'Passenger inward boarding chime & relief bus dispatched' : 'Cold-mix asphalt patch & 2-ton compaction (WO-RD-8841)')),
-      workOrder: 'WO-' + (currentMode.toUpperCase()) + '-' + Math.floor(1000 + Math.random() * 9000),
-      advisory: 'Downstream fleet advisory issued · Speed target 20 km/h',
-      status: currentMode === 'rear' ? 'Citation Generated' : 'Work Order Dispatched'
-    };
+    var itemTitle = title || modeData.title;
+    var itemCat = category || modeData.category;
+    var itemSev = severity || modeData.severity || 3;
+    var itemPlate = plate || modeData.plate || (busInfo && busInfo.cars && busInfo.cars[0] ? busInfo.cars[0].plate : currentBusId);
+    var itemProb = modeData.problem;
+    var itemDim = modeData.dimensions;
+    var itemSol = modeData.solution;
+    var lat = busInfo.lat;
+    var lng = busInfo.lng;
+    var locationStr = busInfo.location + ' (GPS: ' + lat + '° N, ' + lng + '° E)';
 
     var snapshotObj = {
       id: snapId,
@@ -2351,17 +2592,16 @@
       time: timeStr,
       date: dateStr,
       title: itemTitle,
-      problem: currentMode === 'rear' ? 'Tailgating vehicle operating below minimum safe stopping distance' :
-               (currentMode === 'side' ? 'Two-wheeler overtaking in blindspot curb zone' :
-               (currentMode === 'cabin' ? 'Doorway stairwell obstruction during peak boarding' : 'Sub-grade base washout causing road crater with sharp asphalt rim edge')),
+      problem: itemProb,
       category: itemCat,
-      severity: severity || 3,
+      severity: itemSev,
       plate: itemPlate,
-      dimensions: dimensions,
-      solution: solution,
-      lat: (busInfo ? busInfo.lat : 12.9716),
-      lng: (busInfo ? busInfo.lng : 77.5946),
-      location: (busInfo ? busInfo.location : 'MG Road Jn.') + ' (GPS: ' + (busInfo ? busInfo.lat : 12.9716) + '° N, ' + (busInfo ? busInfo.lng : 77.5946) + '° E)',
+      dimensions: itemDim,
+      solution: itemSol,
+      lat: lat,
+      lng: lng,
+      location: locationStr,
+      address: busInfo.address || locationStr,
       dataUrl: dataUrl
     };
 
@@ -2376,13 +2616,13 @@
         type: itemCat === 'Incident' ? 'INCIDENT' : itemCat === 'Safety' ? 'SAFETY' : 'HAZARD',
         category: itemCat,
         title: itemTitle,
-        problem: snapshotObj.problem,
-        dimensions: dimensions,
-        solution: solution,
-        location: snapshotObj.location,
-        lat: snapshotObj.lat,
-        lng: snapshotObj.lng,
-        severity: snapshotObj.severity,
+        problem: itemProb,
+        dimensions: itemDim,
+        solution: itemSol,
+        location: busInfo.location,
+        lat: lat,
+        lng: lng,
+        severity: itemSev,
         busId: currentBusId,
         bus: currentBusId + ' (' + currentMode.toUpperCase() + ')',
         plate: itemPlate,
@@ -2478,25 +2718,18 @@
 
   // Automatic periodic detections & auto-capture
   setInterval(function(){
-    if (!isBusLoaded) return;
+    if (!isBusLoaded || !currentBusId) return;
     if (autoCapture && Math.random() > 0.4) {
-      var busKeys = Object.keys(fleetMap);
-      var randomBus = busKeys[Math.floor(Math.random() * busKeys.length)];
-      var targetBusInfo = fleetMap[randomBus];
-      
-      if (randomBus === currentBusId) {
-        if (currentMode === 'rear') {
-          captureSnapshot('High-Speed Tailgating Violation', 'Incident', 4, targetBusInfo.cars[0].plate);
-        } else if (currentMode === 'side') {
-          captureSnapshot('Side Blindspot Proximity Conflict', 'Safety', 3);
-        } else if (currentMode === 'cabin') {
-          captureSnapshot('Cabin Passenger Density Spike 82%', 'Traffic', 2);
-        } else {
-          captureSnapshot(targetBusInfo.hazards[0].title, 'Road Hazard', targetBusInfo.hazards[0].sev);
+      var targetBusInfo = fleetMap[currentBusId];
+      if (targetBusInfo && targetBusInfo.modes) {
+        var modeKey = currentMode === 'webcam' ? 'front' : currentMode;
+        var modeData = targetBusInfo.modes[modeKey] || targetBusInfo.modes.front;
+        if (modeData) {
+          captureSnapshot(modeData.title, modeData.category, modeData.severity, modeData.plate);
         }
       }
     }
-  }, 10000);
+  }, 12000);
 
   // Live Modal 1-Second GPS Tracking Loop & Radar Renderer
   var modalLiveInterval = null;
