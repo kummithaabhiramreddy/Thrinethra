@@ -160,21 +160,63 @@
   .cmd-badge.locked{ background:rgba(255,122,69,0.14); color:var(--alert); border:1px solid rgba(255,122,69,0.3); }
   .cmd-badge.unlocked{ background:rgba(52,211,153,0.14); color:var(--live); border:1px solid rgba(52,211,153,0.3); }
 
-  .user-nav-chip{
-    display:flex; align-items:center; gap:9px; padding:4px 10px 4px 5px;
-    background:var(--bg-800); border:1px solid var(--line); border-radius:999px;
+  /* Compact User Profile Button in Header */
+  .user-avatar-btn{
+    position:relative; width:34px; height:34px; border-radius:50%;
+    padding:0; border:2px solid var(--alert); background:var(--bg-800);
+    cursor:pointer; outline:none; transition:transform .15s ease, box-shadow .15s ease;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
   }
-  .user-nav-avatar{ width:26px; height:26px; border-radius:50%; object-fit:cover; border:1px solid var(--alert); }
-  .user-nav-name{ font-size:0.82rem; font-weight:600; color:var(--text-hi); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .btn-logout-mini{ background:none; border:none; color:var(--text-low); font-size:0.76rem; cursor:pointer; padding:2px 4px; }
-  .btn-logout-mini:hover{ color:var(--danger); }
+  .user-avatar-btn:hover{ transform:scale(1.05); box-shadow:0 0 12px rgba(255,122,69,0.35); }
+  .user-avatar-btn img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; }
+  .user-avatar-btn .online-dot{
+    position:absolute; bottom:-1px; right:-1px; width:9px; height:9px;
+    border-radius:50%; background:var(--live); border:2px solid var(--bg-900);
+  }
 
-  .mobile-user-row{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px; background:var(--bg-800); border-radius:10px; border:1px solid var(--line);
-    margin-bottom:12px;
+  /* Floating User Account Card Popup */
+  .user-profile-popup{
+    position:fixed; top:64px; right:18px; width:310px; max-width:calc(100vw - 32px);
+    background:#161B22; border:1px solid var(--line); border-radius:16px;
+    box-shadow:0 20px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,122,69,0.15);
+    padding:18px; z-index:1000; animation:popupFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family:'Inter',sans-serif; display:none;
   }
-  .mobile-user-info{ display:flex; align-items:center; gap:10px; }
+  .user-profile-popup.open{ display:block; }
+  @keyframes popupFadeIn{
+    from{ opacity:0; transform:translateY(-8px) scale(0.96); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .upp-head{ display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--line-soft); }
+  .upp-avatar{ width:42px; height:42px; border-radius:50%; border:2px solid var(--alert); object-fit:cover; flex-shrink:0; }
+  .upp-name{ font-size:0.92rem; font-weight:600; color:#fff; line-height:1.2; }
+  .upp-role{ font-size:0.75rem; color:var(--alert); font-weight:500; margin-top:2px; }
+  .upp-body{ padding:12px 0; border-bottom:1px solid var(--line-soft); display:flex; flex-direction:column; gap:8px; }
+  .upp-row{ display:flex; flex-direction:column; gap:1px; }
+  .upp-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:600; }
+  .upp-val{ font-size:0.82rem; color:var(--text-hi); word-break:break-all; }
+  .upp-actions{ padding-top:12px; display:flex; flex-direction:column; gap:8px; }
+  .upp-btn-cmd{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    background:var(--alert); color:#141414; padding:10px; border-radius:8px;
+    font-size:0.86rem; font-weight:600; border:none; text-decoration:none; text-align:center;
+    box-sizing:border-box;
+  }
+  .upp-btn-cmd:hover{ background:#ff8b5c; }
+  .upp-btn-ghost{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    background:var(--bg-800); color:var(--text-hi); padding:9px; border-radius:8px;
+    font-size:0.82rem; font-weight:500; border:1px solid var(--line); text-decoration:none;
+    box-sizing:border-box;
+  }
+  .upp-btn-ghost:hover{ background:var(--bg-700); }
+  .upp-btn-logout{
+    width:100%; background:transparent; color:var(--danger); border:1px solid rgba(255,84,112,0.3);
+    padding:8px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; margin-top:4px;
+    box-sizing:border-box;
+  }
+  .upp-btn-logout:hover{ background:rgba(255,84,112,0.12); }
+
 
 
 
@@ -587,6 +629,37 @@
   </div>
 </nav>
 
+<!-- Floating User Profile Card -->
+<div id="userProfilePopup" class="user-profile-popup" role="dialog" aria-modal="true" aria-label="Account details">
+  <div class="upp-head">
+    <img src="logo.png" id="uppAvatar" class="upp-avatar" alt="User avatar">
+    <div style="min-width:0; flex:1;">
+      <div id="uppName" class="upp-name">Active Officer</div>
+      <div id="uppRole" class="upp-role">Fleet Director</div>
+    </div>
+    <button type="button" id="uppCloseBtn" style="background:transparent; border:none; color:var(--text-low); font-size:1.1rem; cursor:pointer; padding:2px 6px; line-height:1;" aria-label="Close">✕</button>
+  </div>
+  <div class="upp-body">
+    <div class="upp-row">
+      <span class="upp-lbl">Account Address</span>
+      <span id="uppEmail" class="upp-val">officer@thrinethra.gov.in</span>
+    </div>
+    <div class="upp-row">
+      <span class="upp-lbl">Site / Organization</span>
+      <span id="uppOrg" class="upp-val">Urban Fleet Command · Hub 01</span>
+    </div>
+    <div class="upp-row">
+      <span class="upp-lbl">Access Level</span>
+      <span id="uppLevel" class="upp-val" style="color:var(--live); font-weight:600;">● Live Verified</span>
+    </div>
+  </div>
+  <div class="upp-actions">
+    <a href="dashboard.html" class="upp-btn-cmd">Launch Command Center →</a>
+    <a href="reports.html" class="upp-btn-ghost">Fleet Reports & Exports</a>
+    <button type="button" id="uppLogoutBtn" class="upp-btn-logout">Log Out</button>
+  </div>
+</div>
+
 <header class="hero">
   <div class="hero-grid-bg"></div>
   <div class="wrap hero-inner">
@@ -986,6 +1059,43 @@
     var mmUserRow = document.getElementById('mmUserRow');
     var menuBtn = document.getElementById('menuBtn');
 
+    var userProfilePopup = document.getElementById('userProfilePopup');
+    var uppAvatar = document.getElementById('uppAvatar');
+    var uppName = document.getElementById('uppName');
+    var uppRole = document.getElementById('uppRole');
+    var uppEmail = document.getElementById('uppEmail');
+    var uppOrg = document.getElementById('uppOrg');
+    var uppCloseBtn = document.getElementById('uppCloseBtn');
+    var uppLogoutBtn = document.getElementById('uppLogoutBtn');
+
+    if (uppCloseBtn && userProfilePopup) {
+      uppCloseBtn.addEventListener('click', function(){
+        userProfilePopup.classList.remove('open');
+      });
+    }
+
+    if (uppLogoutBtn) {
+      uppLogoutBtn.addEventListener('click', function(){
+        window.ThrinethraAuth.logout('index.html');
+      });
+    }
+
+    // Close floating profile popup on click outside or Escape key
+    document.addEventListener('click', function(e) {
+      if (userProfilePopup && userProfilePopup.classList.contains('open')) {
+        var userAvatarBtn = document.getElementById('userAvatarBtn');
+        if (!userProfilePopup.contains(e.target) && (!userAvatarBtn || !userAvatarBtn.contains(e.target))) {
+          userProfilePopup.classList.remove('open');
+        }
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && userProfilePopup && userProfilePopup.classList.contains('open')) {
+        userProfilePopup.classList.remove('open');
+      }
+    });
+
     function updateNavForUser(user) {
       if (user) {
         // User is authenticated
@@ -998,11 +1108,18 @@
           mmCmdBadge.className = 'cmd-badge unlocked';
         }
 
+        // Populate Floating User Profile Card
+        if (uppAvatar) uppAvatar.src = user.avatar || 'logo.png';
+        if (uppName) uppName.textContent = user.name || 'Active Officer';
+        if (uppRole) uppRole.textContent = user.role || 'Fleet Operations Officer';
+        if (uppEmail) uppEmail.textContent = user.email || 'officer@thrinethra.gov.in';
+        if (uppOrg) uppOrg.textContent = user.org || 'Urban Transit Control · Sector 04';
+
         if (mmUserRow) {
           mmUserRow.innerHTML = `
             <div class="mobile-user-row">
               <div class="mobile-user-info">
-                <img src="${user.avatar}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--alert); object-fit:cover;" alt="${user.name}">
+                <img src="${user.avatar || 'logo.png'}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--alert); object-fit:cover;" alt="${user.name}">
                 <div>
                   <div style="font-size:0.9rem; font-weight:600; color:#fff;">${user.name}</div>
                   <div style="font-size:0.75rem; color:var(--text-mid);">${user.role || 'Officer'} · ${user.org || 'Transport Authority'}</div>
@@ -1012,28 +1129,27 @@
           `;
         }
 
-        // Desktop CTA
+        // Header CTA: Clean & Minimal (Small Avatar Logo Button + Hamburger Menu)
         if (navCtaContainer) {
           navCtaContainer.innerHTML = `
-            <div class="user-nav-chip hide-mobile">
-              <img src="${user.avatar}" class="user-nav-avatar" alt="${user.name}">
-              <span class="user-nav-name">${user.firstName || user.name}</span>
-              <button type="button" id="btnLogoutNav" class="btn-logout-mini" title="Log out">✕</button>
-            </div>
-            <a class="btn btn-solid hide-mobile" href="dashboard.html">Command Center →</a>
+            <button class="user-avatar-btn" id="userAvatarBtn" type="button" aria-label="Account details" title="View Account Details">
+              <img src="${user.avatar || 'logo.png'}" alt="${user.name}">
+              <span class="online-dot"></span>
+            </button>
             <button class="hamburger" id="menuBtnDynamic" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
           `;
+          var userAvatarBtn = document.getElementById('userAvatarBtn');
+          if (userAvatarBtn && userProfilePopup) {
+            userAvatarBtn.addEventListener('click', function(e){
+              e.stopPropagation();
+              userProfilePopup.classList.toggle('open');
+            });
+          }
           var dynMenuBtn = document.getElementById('menuBtnDynamic');
           if (dynMenuBtn && menuBtn) {
             dynMenuBtn.addEventListener('click', function(e){
               e.stopPropagation();
               menuBtn.click();
-            });
-          }
-          var btnLogout = document.getElementById('btnLogoutNav');
-          if (btnLogout) {
-            btnLogout.addEventListener('click', function(){
-              window.ThrinethraAuth.logout('index.html');
             });
           }
         }
@@ -1055,6 +1171,7 @@
         }
       } else {
         // User is logged out
+        if (userProfilePopup) userProfilePopup.classList.remove('open');
         if (navCmdBadge) {
           navCmdBadge.textContent = '🔒 Locked';
           navCmdBadge.className = 'cmd-badge locked';
