@@ -87,8 +87,62 @@
     display:flex; align-items:center; gap:8px; font-size:0.78rem; color:var(--text-mid);
     border:1px solid var(--line); border-radius:999px; padding:6px 12px;
   }
-  .avatar{ width:34px; height:34px; border-radius:50%; overflow:hidden; border:1px solid var(--line); flex-shrink:0; }
-  .avatar img{ width:100%; height:100%; object-fit:cover; }
+  /* Compact User Profile Button in Header */
+  .user-avatar-btn{
+    position:relative; width:36px; height:36px; border-radius:50%;
+    padding:0; border:2px solid var(--alert); background:var(--bg-800);
+    cursor:pointer; outline:none; transition:transform .15s ease, box-shadow .15s ease;
+    flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+  }
+  .user-avatar-btn:hover{ transform:scale(1.05); box-shadow:0 0 12px rgba(255,122,69,0.4); }
+  .user-avatar-btn img{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:block; pointer-events:none; }
+  .user-avatar-btn .online-dot{
+    position:absolute; bottom:-1px; right:-1px; width:9px; height:9px;
+    border-radius:50%; background:var(--live); border:2px solid var(--bg-900); pointer-events:none;
+  }
+
+  /* Floating User Account Card Popup (Shows ONLY on avatar click) */
+  .user-profile-popup{
+    position:fixed; top:68px; right:24px; width:310px; max-width:calc(100vw - 32px);
+    background:#161B22; border:1px solid var(--line); border-radius:16px;
+    box-shadow:0 20px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,122,69,0.2);
+    padding:18px; z-index:99999; animation:popupFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family:'Inter',sans-serif; display:none;
+  }
+  .user-profile-popup.open{ display:block !important; }
+  @keyframes popupFadeIn{
+    from{ opacity:0; transform:translateY(-8px) scale(0.96); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .upp-head{ display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--line-soft); }
+  .upp-avatar{ width:42px; height:42px; border-radius:50%; border:2px solid var(--alert); object-fit:cover; flex-shrink:0; }
+  .upp-name{ font-size:0.92rem; font-weight:600; color:#fff; line-height:1.2; }
+  .upp-role{ font-size:0.75rem; color:var(--alert); font-weight:500; margin-top:2px; }
+  .upp-body{ padding:12px 0; border-bottom:1px solid var(--line-soft); display:flex; flex-direction:column; gap:8px; }
+  .upp-row{ display:flex; flex-direction:column; gap:1px; }
+  .upp-lbl{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-low); font-weight:600; }
+  .upp-val{ font-size:0.82rem; color:var(--text-hi); word-break:break-all; }
+  .upp-actions{ padding-top:12px; display:flex; flex-direction:column; gap:8px; }
+  .upp-btn-cmd{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    background:var(--alert); color:#141414; padding:10px; border-radius:8px;
+    font-size:0.86rem; font-weight:600; border:none; text-decoration:none; text-align:center;
+    box-sizing:border-box;
+  }
+  .upp-btn-cmd:hover{ background:#ff8b5c; }
+  .upp-btn-ghost{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    background:var(--bg-800); color:var(--text-hi); padding:9px; border-radius:8px;
+    font-size:0.82rem; font-weight:500; border:1px solid var(--line); text-decoration:none;
+    box-sizing:border-box;
+  }
+  .upp-btn-ghost:hover{ background:var(--bg-700); }
+  .upp-btn-logout{
+    width:100%; background:transparent; color:var(--danger); border:1px solid rgba(255,84,112,0.3);
+    padding:8px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; margin-top:4px;
+    box-sizing:border-box;
+  }
+  .upp-btn-logout:hover{ background:rgba(255,84,112,0.12); }
 
   .dash-content{ padding:26px 28px 60px; display:flex; flex-direction:column; gap:24px; max-width:1360px; width:100%; }
   .table-responsive{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -241,17 +295,43 @@
       </div>
       <div class="topbar-right">
         <div class="live-pill"><span class="pulse-dot"></span> Live Telemetry</div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div class="avatar"><img id="userAvatarImg" src="logo.png" alt="User Avatar"></div>
-          <div style="font-size:0.82rem;" class="hide-mobile">
-            <div style="font-weight:600; color:#fff;" id="topbarUserName">Officer</div>
-            <div style="font-size:0.72rem; color:var(--text-mid);" id="topbarUserRole">Command Operator</div>
-          </div>
-        </div>
-        <a class="btn btn-ghost" href="index.html">Site</a>
-        <button class="btn btn-solid" id="dashLogoutBtn" style="cursor:pointer;" type="button">Log Out</button>
+        <button class="user-avatar-btn" id="userAvatarBtn" type="button" aria-label="Account details" title="View Account Details">
+          <img id="userAvatarImg" src="logo.png" alt="User Avatar">
+          <span class="online-dot"></span>
+        </button>
       </div>
     </header>
+
+    <!-- Floating User Profile Card (Opens ONLY when clicking small user logo) -->
+    <div id="userProfilePopup" class="user-profile-popup" role="dialog" aria-modal="true" aria-label="Account details">
+      <div class="upp-head">
+        <img src="logo.png" id="uppAvatar" class="upp-avatar" alt="User avatar">
+        <div style="min-width:0; flex:1;">
+          <div id="uppName" class="upp-name">Active Officer</div>
+          <div id="uppRole" class="upp-role">Command Operator</div>
+        </div>
+        <button type="button" id="uppCloseBtn" style="background:transparent; border:none; color:var(--text-low); font-size:1.2rem; cursor:pointer; padding:2px 6px; line-height:1;" aria-label="Close">✕</button>
+      </div>
+      <div class="upp-body">
+        <div class="upp-row">
+          <span class="upp-lbl">Account Address</span>
+          <span id="uppEmail" class="upp-val">officer@thrinethra.gov.in</span>
+        </div>
+        <div class="upp-row">
+          <span class="upp-lbl">Site / Organization</span>
+          <span id="uppOrg" class="upp-val">Urban Fleet Command · Hub 01</span>
+        </div>
+        <div class="upp-row">
+          <span class="upp-lbl">Status</span>
+          <span id="uppLevel" class="upp-val" style="color:var(--live); font-weight:600;">● Active Live Session</span>
+        </div>
+      </div>
+      <div class="upp-actions">
+        <a href="index.html" class="upp-btn-ghost">Site Overview (Home)</a>
+        <a href="reports.html" class="upp-btn-ghost">Fleet Reports & Exports</a>
+        <button type="button" id="uppLogoutBtn" class="upp-btn-logout">Log Out</button>
+      </div>
+    </div>
 
     <main class="dash-content">
 
@@ -442,24 +522,60 @@
   }
 
   var currentUser = window.ThrinethraAuth.getCurrentUser();
-  if (currentUser) {
-    var nameEl = document.getElementById('topbarUserName');
-    var roleEl = document.getElementById('topbarUserRole');
-    var orgEl = document.getElementById('dashOrgSub');
-    var avatarEl = document.getElementById('userAvatarImg');
+  var userProfilePopup = document.getElementById('userProfilePopup');
+  var userAvatarBtn = document.getElementById('userAvatarBtn');
+  var userAvatarImg = document.getElementById('userAvatarImg');
+  var uppAvatar = document.getElementById('uppAvatar');
+  var uppName = document.getElementById('uppName');
+  var uppRole = document.getElementById('uppRole');
+  var uppEmail = document.getElementById('uppEmail');
+  var uppOrg = document.getElementById('uppOrg');
+  var uppCloseBtn = document.getElementById('uppCloseBtn');
+  var uppLogoutBtn = document.getElementById('uppLogoutBtn');
 
-    if (nameEl) nameEl.textContent = currentUser.name;
-    if (roleEl) roleEl.textContent = currentUser.role || 'Command Operator';
+  if (currentUser) {
+    var orgEl = document.getElementById('dashOrgSub');
     if (orgEl) orgEl.textContent = (currentUser.org || 'Urban Transport Authority') + ' · Live Operations Command';
-    if (avatarEl && currentUser.avatar) avatarEl.src = currentUser.avatar;
+    if (userAvatarImg) userAvatarImg.src = currentUser.avatar || 'logo.png';
+    if (uppAvatar) uppAvatar.src = currentUser.avatar || 'logo.png';
+    if (uppName) uppName.textContent = currentUser.name || 'Active Officer';
+    if (uppRole) uppRole.textContent = currentUser.role || 'Command Operator';
+    if (uppEmail) uppEmail.textContent = currentUser.email || 'officer@thrinethra.gov.in';
+    if (uppOrg) uppOrg.textContent = currentUser.org || 'Urban Transport Authority';
   }
 
-  var logoutBtn = document.getElementById('dashLogoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function(){
+  if (userAvatarBtn && userProfilePopup) {
+    userAvatarBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      userProfilePopup.classList.toggle('open');
+    });
+  }
+
+  if (uppCloseBtn && userProfilePopup) {
+    uppCloseBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      userProfilePopup.classList.remove('open');
+    });
+  }
+
+  if (uppLogoutBtn) {
+    uppLogoutBtn.addEventListener('click', function(e){
+      e.stopPropagation();
       window.ThrinethraAuth.logout('index.html');
     });
   }
+
+  document.addEventListener('click', function(e){
+    if (userProfilePopup && !userProfilePopup.contains(e.target) && userAvatarBtn && !userAvatarBtn.contains(e.target)) {
+      userProfilePopup.classList.remove('open');
+    }
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && userProfilePopup) {
+      userProfilePopup.classList.remove('open');
+    }
+  });
 })();
 </script>
 
