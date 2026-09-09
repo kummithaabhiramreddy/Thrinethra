@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register — THRINETHRA</title>
 <link rel="icon" href="assets/favicon.ico">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -151,7 +152,6 @@
   .switch-row a{ color:var(--alert); font-weight:600; }
   .switch-row a:hover{ text-decoration:underline; }
 
-  footer{ padding:20px 0; border-top:1px solid var(--line-soft); text-align:center; font-size:0.8rem; color:var(--text-low); }
 </style>
 </head>
 <body>
@@ -229,14 +229,32 @@
 
 <footer>© 2026 Thrinethra. Built for city transport authorities.</footer>
 
+<script src="assets/js/neon-db.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
   (function(){
     var notice = document.getElementById('regNotice');
-    function showMsg(text, type){
+    function showMsg(text, type, showLoginLink){
       if(!notice) return;
-      notice.textContent = text;
+      notice.innerHTML = '';
+      var span = document.createElement('span');
+      span.textContent = text;
+      notice.appendChild(span);
+
+      if (showLoginLink || text.toLowerCase().includes('already') || text.toLowerCase().includes('log in')) {
+        var a = document.createElement('a');
+        a.href = 'login.html';
+        a.textContent = ' Log in here →';
+        a.style.cssText = 'color:#fff; font-weight:700; text-decoration:underline; margin-left:6px; cursor:pointer;';
+        notice.appendChild(a);
+      }
+
       notice.className = 'notice-banner ' + type;
+    }
+
+    // Check Neon connection
+    if (window.location.protocol === 'file:') {
+      showMsg('Browser Notice: Running directly from file:// restricts database fetch in modern browsers. Please double-click "start-server.bat" or open http://localhost:3000/register.html.', 'error');
     }
 
     function routeToDashboard(userName){
@@ -246,13 +264,13 @@
       }, 700);
     }
 
-    // Google register
+    // Google register (isRegister: true writes user to Neon DB)
     var regGoogleBtn = document.getElementById('regGoogleBtn');
     if (regGoogleBtn) {
       regGoogleBtn.addEventListener('click', async function(){
         try {
           regGoogleBtn.disabled = true;
-          var user = await window.ThrinethraAuth.loginWithGoogle();
+          var user = await window.ThrinethraAuth.loginWithGoogle({ isRegister: true });
           routeToDashboard(user.name);
         } catch(err) {
           regGoogleBtn.disabled = false;
@@ -261,13 +279,13 @@
       });
     }
 
-    // Apple register
+    // Apple register (isRegister: true writes user to Neon DB)
     var regAppleBtn = document.getElementById('regAppleBtn');
     if (regAppleBtn) {
       regAppleBtn.addEventListener('click', async function(){
         try {
           regAppleBtn.disabled = true;
-          var user = await window.ThrinethraAuth.loginWithApple();
+          var user = await window.ThrinethraAuth.loginWithApple({ isRegister: true });
           routeToDashboard(user.name);
         } catch(err) {
           regAppleBtn.disabled = false;
@@ -276,7 +294,7 @@
       });
     }
 
-    // Form submit register
+    // Form submit register (creates user in Neon DB)
     var form = document.getElementById('registerForm');
     var submitBtn = document.getElementById('submitRegBtn');
     if (form) {
@@ -306,7 +324,7 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create authority account';
           }
-          showMsg(err.message || 'Registration failed.', 'error');
+          showMsg(err.message || 'Registration failed.', 'error', true);
         }
       });
     }

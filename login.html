@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Log in — THRINETHRA</title>
 <link rel="icon" href="assets/favicon.ico">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -146,8 +147,6 @@
   .quick-creds{
     background:var(--card-bg-2); border:1px solid var(--line-soft);
     border-radius:10px; padding:12px 14px; margin-top:18px; font-size:0.78rem; color:var(--text-low);
-  }
-  .quick-creds code{ color:var(--text-mid); font-family:monospace; }
 </style>
 </head>
 <body>
@@ -198,9 +197,10 @@
     </form>
 
     <div class="quick-creds">
-      <div><strong>Quick Demo Account:</strong></div>
+      <div><strong>Verified Authority Demo Account:</strong></div>
       <div>Email: <code>admin@thrinethra.gov</code></div>
-      <div>Pass: <code>Thrinethra2026!</code> (or enter any valid work email)</div>
+      <div>Pass: <code>Thrinethra2026!</code></div>
+      <div style="margin-top:6px; font-size:0.75rem; color:#8899A6;">New users must register on the Create Account page before logging in.</div>
     </div>
   </div>
 
@@ -208,6 +208,7 @@
   <div class="switch-row">New to Thrinethra? <a href="register.html">Create an authority account</a></div>
 </div>
 
+<script src="assets/js/neon-db.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
   (function(){
@@ -216,14 +217,40 @@
     var reason = urlParams.get('reason');
 
     var banner = document.getElementById('noticeBanner');
-    function showNotice(text, type){
+    function showNotice(text, type, linkMode){
       if(!banner) return;
-      banner.textContent = text;
+      banner.innerHTML = '';
+      var span = document.createElement('span');
+      span.textContent = text;
+      banner.appendChild(span);
+
+      var lower = (text || '').toLowerCase();
+      var isPwError = linkMode === 'forgot' || lower.includes('incorrect password') || (lower.includes('password') && (lower.includes('reset') || lower.includes('verify') || lower.includes('incorrect')));
+      var isRegError = linkMode === 'register' || (!isPwError && (lower.includes('create an account') || lower.includes('not registered') || lower.includes('registration page') || lower.includes('no registered account') || lower.includes('register')));
+
+      if (isPwError) {
+        var a = document.createElement('a');
+        a.href = 'forgot-password.html';
+        a.textContent = ' Forgot Password? →';
+        a.style.cssText = 'color:#fff; font-weight:700; text-decoration:underline; margin-left:8px; cursor:pointer;';
+        banner.appendChild(a);
+      } else if (isRegError) {
+        var a = document.createElement('a');
+        a.href = 'register.html';
+        a.textContent = ' Create Account →';
+        a.style.cssText = 'color:#fff; font-weight:700; text-decoration:underline; margin-left:8px; cursor:pointer;';
+        banner.appendChild(a);
+      }
+
       banner.className = 'notice-banner ' + type;
     }
 
     if (reason === 'auth_required') {
       showNotice('Please log in to access the Command Center and live city intelligence feeds.', 'warn');
+    }
+
+    if (window.location.protocol === 'file:') {
+      showNotice('Browser Security Notice: Direct file:// access blocks cloud database fetch. Run "start-server.bat" or open http://localhost:3000 for full Neon integration.', 'warn');
     }
 
     // If user is already authenticated and has no explicit logout request
@@ -243,37 +270,45 @@
       }, 600);
     }
 
-    // Google OAuth Handler
+    // Google OAuth Handler (isRegister = false: strictly checks Neon database)
     var googleBtn = document.getElementById('googleBtn');
     if (googleBtn) {
       googleBtn.addEventListener('click', async function(){
         try {
           googleBtn.disabled = true;
-          var user = await window.ThrinethraAuth.loginWithGoogle();
+          var user = await window.ThrinethraAuth.loginWithGoogle({ isRegister: false });
           handleSuccess(user);
         } catch(err) {
           googleBtn.disabled = false;
-          if (err && err.message) showNotice(err.message, 'error');
+          if (err && err.message) {
+            var msg = err.message;
+            var isReg = msg.toLowerCase().includes('not registered') || msg.toLowerCase().includes('register');
+            showNotice(msg, 'error', isReg ? 'register' : null);
+          }
         }
       });
     }
 
-    // Apple OAuth Handler
+    // Apple OAuth Handler (isRegister = false: strictly checks Neon database)
     var appleBtn = document.getElementById('appleBtn');
     if (appleBtn) {
       appleBtn.addEventListener('click', async function(){
         try {
           appleBtn.disabled = true;
-          var user = await window.ThrinethraAuth.loginWithApple();
+          var user = await window.ThrinethraAuth.loginWithApple({ isRegister: false });
           handleSuccess(user);
         } catch(err) {
           appleBtn.disabled = false;
-          if (err && err.message) showNotice(err.message, 'error');
+          if (err && err.message) {
+            var msg = err.message;
+            var isReg = msg.toLowerCase().includes('not registered') || msg.toLowerCase().includes('register');
+            showNotice(msg, 'error', isReg ? 'register' : null);
+          }
         }
       });
     }
 
-    // Email/Password Form Handler
+    // Email/Password Form Handler (strictly checks Neon database)
     var emailForm = document.getElementById('emailForm');
     var emailBtn = document.getElementById('emailBtn');
     if (emailForm) {
@@ -294,7 +329,10 @@
             emailBtn.disabled = false;
             emailBtn.textContent = 'Continue to Command Center';
           }
-          showNotice(err.message || 'Login failed. Please check credentials.', 'error');
+          var msg = (err && err.message) ? err.message : 'Login failed. Please check credentials.';
+          var isPw = msg.toLowerCase().includes('password') || msg.toLowerCase().includes('incorrect');
+          var isReg = msg.toLowerCase().includes('not registered') || msg.toLowerCase().includes('register') || msg.toLowerCase().includes('no registered account');
+          showNotice(msg, 'error', isPw ? 'forgot' : (isReg ? 'register' : null));
         }
       });
     }

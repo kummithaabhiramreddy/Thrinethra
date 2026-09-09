@@ -1,0 +1,12 @@
+{
+  "name": "thrinethra",
+  "version": "1.0.0",
+  "description": "Thrinethra - Autonomous City Transport Intelligence & Command Center",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["transit", "command-center", "traffic", "neon-database"],
+  "author": "Thrinethra",
+  "license": "ISC"
+}
