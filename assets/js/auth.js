@@ -285,80 +285,6 @@
       }
     }
 
-    _promptDeviceGoogleEmail(isRegister, err, resolve, reject) {
-      const modal = document.createElement('div');
-      modal.id = 'thri-google-auth-dialog';
-      modal.style.cssText = `
-        position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
-        display:flex; align-items:center; justify-content:center; z-index:99999;
-        font-family:'Inter',sans-serif; animation:oauthFadeIn 0.2s ease-out;
-      `;
-
-      modal.innerHTML = `
-        <div style="background:#ffffff; color:#202124; width:390px; border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,0.5); overflow:hidden; padding:24px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <svg width="24" height="24" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.3 35.9 26.8 37 24 37c-5.2 0-9.6-3.5-11.2-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.2 5.2C40.4 36.5 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
-            <div>
-              <div style="font-weight:600; font-size:16px; color:#202124;">${isRegister ? 'Register with Google' : 'Sign in with Google'}</div>
-              <div style="font-size:12px; color:#5f6368;">Device Google Authentication</div>
-            </div>
-          </div>
-          <p style="font-size:13px; color:#3c4043; margin-bottom:14px; line-height:1.4;">
-            ${isRegister 
-              ? 'Enter your device Google account to register your authority credentials:' 
-              : 'Enter your device Google email to verify your authority account:'}
-          </p>
-          <div id="gPromptError" style="display:none; font-size:12px; color:#d93025; margin-bottom:10px;"></div>
-          ${isRegister ? '<input type="text" id="gDevName" placeholder="Full Name (e.g. Officer Name)" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:6px; border:1px solid #dadce0; font-size:13px; margin-bottom:10px; font-family:inherit;">' : ''}
-          <input type="email" id="gDevEmail" placeholder="your.google.account@gmail.com" autofocus style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:6px; border:1px solid #dadce0; font-size:13px; margin-bottom:14px; font-family:inherit;">
-          <div style="display:flex; gap:10px;">
-            <button type="button" id="gDevSubmit" style="flex:1; background:#1a73e8; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; font-size:13px; cursor:pointer;">${isRegister ? 'Create Account' : 'Sign In'}</button>
-            <button type="button" id="gDevCancel" style="background:#f1f3f4; color:#3c4043; border:none; padding:10px 16px; border-radius:6px; font-weight:500; font-size:13px; cursor:pointer;">Cancel</button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      const cleanup = () => {
-        if (modal.parentNode) modal.parentNode.removeChild(modal);
-      };
-
-      const submitBtn = modal.querySelector('#gDevSubmit');
-      const cancelBtn = modal.querySelector('#gDevCancel');
-      const emailInput = modal.querySelector('#gDevEmail');
-      const nameInput = modal.querySelector('#gDevName');
-      const errBox = modal.querySelector('#gPromptError');
-
-      submitBtn.addEventListener('click', async () => {
-        const email = (emailInput.value || '').trim();
-        if (!email || !email.includes('@')) {
-          errBox.textContent = 'Please enter a valid Google email address.';
-          errBox.style.display = 'block';
-          return;
-        }
-
-        const name = (nameInput && nameInput.value.trim()) || email.split('@')[0];
-        try {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Verifying…';
-          const user = await this._processGoogleProfile({ email: email, name: name }, isRegister);
-          cleanup();
-          resolve(user);
-        } catch (err) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = isRegister ? 'Create Account' : 'Sign In';
-          errBox.textContent = err.message || 'Google authentication failed.';
-          errBox.style.display = 'block';
-        }
-      });
-
-      cancelBtn.addEventListener('click', () => {
-        cleanup();
-        reject(new Error('Google sign-in was cancelled.'));
-      });
-    }
-
     /**
      * Dynamic Google OAuth Login / Registration
      * Integrates with Google Identity Services (GSI) to display the device's
@@ -398,9 +324,9 @@
                 if (finished) return;
                 if (tokenResponse.error) {
                   if (tokenResponse.error === 'popup_closed_by_user') {
-                    fail(new Error('Google sign-in was cancelled.'));
+                    fail(new Error('Google sign-in was closed.'));
                   } else {
-                    fail(new Error('Google authentication error: ' + (tokenResponse.error_description || tokenResponse.error)));
+                    fail(new Error('Google authentication: ' + (tokenResponse.error_description || tokenResponse.error)));
                   }
                   return;
                 }
@@ -423,7 +349,11 @@
               },
               error_callback: (err) => {
                 console.warn('Google OAuth error_callback:', err);
-                this._promptDeviceGoogleEmail(isRegister, err, complete, fail);
+                if (err && (err.type === 'popup_closed' || err.type === 'popup_failed_to_open')) {
+                  fail(new Error('Google sign-in was closed.'));
+                } else {
+                  fail(new Error('Google authentication: ' + (err?.message || err?.type || 'Authentication failed.')));
+                }
               }
             });
 
@@ -431,14 +361,12 @@
             tokenClient.requestAccessToken({ prompt: 'select_account' });
             return;
           } catch (initErr) {
-            console.warn('Google Token Client init error:', initErr);
-            this._promptDeviceGoogleEmail(isRegister, initErr, complete, fail);
+            fail(new Error('Google authentication error: ' + (initErr.message || 'initialization failed')));
             return;
           }
         }
 
-        // Fallback if Google Identity SDK is blocked or offline
-        this._promptDeviceGoogleEmail(isRegister, null, complete, fail);
+        fail(new Error('Google Identity Services SDK is not available. Please verify internet connection.'));
       });
     }
 

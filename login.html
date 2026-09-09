@@ -147,6 +147,7 @@
   .quick-creds{
     background:var(--card-bg-2); border:1px solid var(--line-soft);
     border-radius:10px; padding:12px 14px; margin-top:18px; font-size:0.78rem; color:var(--text-low);
+  }
 </style>
 </head>
 <body>
@@ -247,10 +248,6 @@
 
     if (reason === 'auth_required') {
       showNotice('Please log in to access the Command Center and live city intelligence feeds.', 'warn');
-    }
-
-    if (window.location.protocol === 'file:') {
-      showNotice('Browser Security Notice: Direct file:// access blocks cloud database fetch. Run "start-server.bat" or open http://localhost:3000 for full Neon integration.', 'warn');
     }
 
     // If user is already authenticated and has no explicit logout request

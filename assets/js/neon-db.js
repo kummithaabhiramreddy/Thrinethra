@@ -108,15 +108,23 @@
 
         // 3. Fall back to direct Neon endpoint
         if (!response) {
-          response = await fetch(this.endpoint, {
-            method: 'POST',
-            headers: {
-              'Neon-Connection-String': this.connectionString,
-              'Neon-Raw-Text-Output': 'true',
-              'Neon-Array-Mode': 'true'
-            },
-            body: JSON.stringify(body)
-          });
+          try {
+            response = await fetch(this.endpoint, {
+              method: 'POST',
+              headers: {
+                'Neon-Connection-String': this.connectionString,
+                'Neon-Raw-Text-Output': 'true',
+                'Neon-Array-Mode': 'true'
+              },
+              body: JSON.stringify(body)
+            });
+          } catch (netErr) {
+            response = null;
+          }
+        }
+
+        if (!response) {
+          return [];
         }
 
         if (!response.ok) {

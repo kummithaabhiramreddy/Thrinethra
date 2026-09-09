@@ -252,11 +252,6 @@
       notice.className = 'notice-banner ' + type;
     }
 
-    // Check Neon connection
-    if (window.location.protocol === 'file:') {
-      showMsg('Browser Notice: Running directly from file:// restricts database fetch in modern browsers. Please double-click "start-server.bat" or open http://localhost:3000/register.html.', 'error');
-    }
-
     function routeToDashboard(userName){
       showMsg('Account created for ' + userName + '! Launching Command Center…', 'success');
       setTimeout(function(){
