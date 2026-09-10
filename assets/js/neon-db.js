@@ -1,7 +1,7 @@
 /**
  * THRINETHRA - Neon PostgreSQL Database Client
  * Direct serverless HTTP connection to Neon database for user authentication,
- * registration verification, and audit logging.
+ * bus registration, real-time AI hazard logging, GIS telemetry, and audit reporting.
  */
 
 (function (global) {
@@ -51,7 +51,8 @@
     async _getProxyEndpoint() {
       if (typeof window !== 'undefined') {
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        if (isLocalhost && window.location.port) {
+        // Only use relative /api/neon-sql if we are actually on port 3000 (server.js)
+        if (isLocalhost && (window.location.port === '3000' || !window.location.port)) {
           return '/api/neon-sql';
         }
       }
@@ -80,33 +81,48 @@
         let response = null;
         const proxy = await this._getProxyEndpoint();
 
-        // 1. If running on local server (e.g. http://localhost:3000), use proxy
+        // 1. If running on local server (port 3000), use proxy
         if (proxy) {
           try {
-            response = await fetch(proxy, {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3000);
+            const res = await fetch(proxy, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body)
+              body: JSON.stringify(body),
+              signal: controller.signal
             });
+            clearTimeout(timer);
+            // If proxy is not supporting POST or endpoint is missing (404/405), don't treat as valid response
+            if (res.ok) {
+              response = res;
+            }
           } catch (e) {
             response = null;
           }
         }
 
-        // 2. If on file:// or other port, try http://localhost:3000/api/neon-sql
-        if (!response && typeof window !== 'undefined' && window.location.protocol === 'file:') {
+        // 2. If on file:// or another port (like Live Server 5500), try http://localhost:3000/api/neon-sql if running
+        if (!response && typeof window !== 'undefined' && window.location.port !== '3000') {
           try {
-            response = await fetch('http://localhost:3000/api/neon-sql', {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 1500);
+            const localRes = await fetch('http://localhost:3000/api/neon-sql', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body)
+              body: JSON.stringify(body),
+              signal: controller.signal
             });
-          } catch (e) {
-            response = null;
+            clearTimeout(timer);
+            if (localRes.ok) {
+              response = localRes;
+            }
+          } catch (localErr) {
+            // port 3000 not running, continue to direct Neon endpoint
           }
         }
 
-        // 3. Fall back to direct Neon endpoint
+        // 3. Fallback to direct Neon SQL endpoint over HTTPS (CORS supported)
         if (!response) {
           try {
             response = await fetch(this.endpoint, {
@@ -114,11 +130,13 @@
               headers: {
                 'Neon-Connection-String': this.connectionString,
                 'Neon-Raw-Text-Output': 'true',
-                'Neon-Array-Mode': 'true'
+                'Neon-Array-Mode': 'true',
+                'Content-Type': 'application/json'
               },
               body: JSON.stringify(body)
             });
           } catch (netErr) {
+            console.warn('Direct Neon SQL connection attempt failed:', netErr);
             response = null;
           }
         }
@@ -128,8 +146,31 @@
         }
 
         if (!response.ok) {
-          const errData = await response.json().catch(() => ({ message: response.statusText }));
-          throw new Error(errData.message || `Neon SQL error (status ${response.status})`);
+          // If response is 404 or 405 from a static server, try direct Neon as final emergency fallback
+          if (response.status === 404 || response.status === 405) {
+            try {
+              const directRes = await fetch(this.endpoint, {
+                method: 'POST',
+                headers: {
+                  'Neon-Connection-String': this.connectionString,
+                  'Neon-Raw-Text-Output': 'true',
+                  'Neon-Array-Mode': 'true',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+              });
+              if (directRes.ok) {
+                response = directRes;
+              }
+            } catch (err2) {
+              // ignore
+            }
+          }
+        }
+
+        if (!response || !response.ok) {
+          const errData = response ? await response.json().catch(() => ({ message: response.statusText })) : { message: 'Database connection failed' };
+          throw new Error(errData.message || `Neon SQL error (status ${response ? response.status : 'unknown'})`);
         }
 
         const data = await response.json();
@@ -149,18 +190,12 @@
         });
       } catch (err) {
         console.error('Neon Database Query Error:', err);
-        if (err.message && err.message.toLowerCase().includes('failed to fetch')) {
-          if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
-            throw new Error('Browser blocked database fetch from file://. Please double-click "start-server.bat" or run "npm start" (http://localhost:3000) for full Neon database connectivity.');
-          }
-          throw new Error('Cannot reach Neon Database. Please verify your connection or start the local server via start-server.bat.');
-        }
         throw err;
       }
     }
 
     /**
-     * Ensure users table exists and seed initial demo accounts
+     * Ensure database schemas exist
      */
     async initSchema() {
       if (this._initialized) return true;
@@ -168,6 +203,7 @@
 
       this._initPromise = (async () => {
         try {
+          // 1. Users Table
           await this.query(`
             CREATE TABLE IF NOT EXISTS users (
               id VARCHAR(100) PRIMARY KEY,
@@ -182,6 +218,80 @@
               password_hash TEXT,
               created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
               last_login TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+          `);
+
+          // 2. Buses Table (Registered Bus Fleet & Attached Cameras)
+          await this.query(`
+            CREATE TABLE IF NOT EXISTS buses (
+              id VARCHAR(100) PRIMARY KEY,
+              registration_number VARCHAR(50) UNIQUE NOT NULL,
+              model VARCHAR(100),
+              depot VARCHAR(100),
+              route_id VARCHAR(50),
+              route_name VARCHAR(150),
+              driver_name VARCHAR(100),
+              driver_phone VARCHAR(50),
+              driver_badge VARCHAR(50),
+              driver_license VARCHAR(100),
+              current_lat DOUBLE PRECISION DEFAULT 12.9716,
+              current_lng DOUBLE PRECISION DEFAULT 77.5946,
+              speed DOUBLE PRECISION DEFAULT 35.0,
+              bearing DOUBLE PRECISION DEFAULT 90.0,
+              status VARCHAR(50) DEFAULT 'Active',
+              camera_front_status VARCHAR(50) DEFAULT 'Online',
+              camera_rear_status VARCHAR(50) DEFAULT 'Online',
+              camera_side_status VARCHAR(50) DEFAULT 'Online',
+              camera_cabin_status VARCHAR(50) DEFAULT 'Online',
+              created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+          `);
+
+          // 3. Hazards Table (Real-Time AI Detections & Problem Reports)
+          await this.query(`
+            CREATE TABLE IF NOT EXISTS hazards (
+              id VARCHAR(100) PRIMARY KEY,
+              bus_id VARCHAR(100),
+              camera_channel VARCHAR(50) DEFAULT 'Front AI',
+              type VARCHAR(50) NOT NULL,
+              category VARCHAR(100) NOT NULL,
+              title VARCHAR(200),
+              problem_description TEXT,
+              confidence DOUBLE PRECISION DEFAULT 95.0,
+              severity INT DEFAULT 3,
+              latitude DOUBLE PRECISION NOT NULL,
+              longitude DOUBLE PRECISION NOT NULL,
+              address TEXT,
+              google_maps_url TEXT,
+              depth_mm INT DEFAULT 0,
+              width_mm INT DEFAULT 0,
+              length_mm INT DEFAULT 0,
+              distance_m DOUBLE PRECISION DEFAULT 0.0,
+              offending_plate VARCHAR(50),
+              screenshot_base64 TEXT,
+              solution_action TEXT,
+              work_order_id VARCHAR(50),
+              status VARCHAR(50) DEFAULT 'Reported',
+              detected_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+          `);
+
+          // 4. Traffic Telemetry Table
+          await this.query(`
+            CREATE TABLE IF NOT EXISTS traffic_telemetry (
+              id VARCHAR(100) PRIMARY KEY,
+              bus_id VARCHAR(100),
+              latitude DOUBLE PRECISION,
+              longitude DOUBLE PRECISION,
+              vehicle_count INT DEFAULT 0,
+              cars_count INT DEFAULT 0,
+              buses_count INT DEFAULT 0,
+              trucks_count INT DEFAULT 0,
+              two_wheelers_count INT DEFAULT 0,
+              pedestrians_count INT DEFAULT 0,
+              bottleneck_level VARCHAR(50) DEFAULT 'Normal',
+              recorded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
             );
           `);
 
@@ -212,11 +322,10 @@
       return this._initPromise;
     }
 
-    /**
-     * Find a user by email address (case-insensitive)
-     * @param {string} email
-     * @returns {Promise<Object|null>}
-     */
+    // ==========================================
+    // USER AUTHENTICATION METHODS
+    // ==========================================
+
     async findUserByEmail(email) {
       await this.initSchema();
       const cleanEmail = (email || '').trim().toLowerCase();
@@ -231,7 +340,6 @@
       );
 
       if (rows.length === 0) return null;
-
       const r = rows[0];
       return {
         id: r.id,
@@ -249,11 +357,6 @@
       };
     }
 
-    /**
-     * Create a new user in Neon database
-     * @param {Object} u - User data object
-     * @returns {Promise<Object>} The created user record
-     */
     async createUser(u) {
       await this.initSchema();
       const cleanEmail = (u.email || '').trim().toLowerCase();
@@ -288,46 +391,283 @@
       };
     }
 
-    /**
-     * Update user's last login timestamp in Neon
-     * @param {string} userId
-     */
     async updateLastLogin(userId) {
       try {
-        await this.query(
-          `UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1;`,
-          [userId]
-        );
+        await this.query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1;`, [userId]);
       } catch (e) {
         console.warn('Failed to update last_login timestamp:', e);
       }
     }
 
-    /**
-     * Update a user's password in Neon database
-     * @param {string} email
-     * @param {string} newPassword
-     * @returns {Promise<boolean>}
-     */
     async updatePassword(email, newPassword) {
       await this.initSchema();
       const cleanEmail = (email || '').trim().toLowerCase();
       const user = await this.findUserByEmail(cleanEmail);
-      if (!user) {
-        throw new Error('No registered account found with email ' + cleanEmail);
-      }
+      if (!user) throw new Error('No registered account found with email ' + cleanEmail);
 
-      await this.query(
-        `UPDATE users SET password_hash = $1 WHERE LOWER(email) = LOWER($2);`,
-        [newPassword, cleanEmail]
-      );
+      await this.query(`UPDATE users SET password_hash = $1 WHERE LOWER(email) = LOWER($2);`, [newPassword, cleanEmail]);
+      return true;
+    }
+
+    // ==========================================
+    // BUS FLEET REGISTRATION & TELEMETRY METHODS
+    // ==========================================
+
+    /**
+     * Register a new bus unit account in Neon DB
+     */
+    async registerBus(bus) {
+      await this.initSchema();
+      const id = bus.id || bus.registration_number || ('BUS-' + Date.now().toString(36).toUpperCase());
+      const reg = (bus.registration_number || id).trim().toUpperCase();
+
+      await this.query(`
+        INSERT INTO buses (
+          id, registration_number, model, depot, route_id, route_name,
+          driver_name, driver_phone, driver_badge, driver_license,
+          current_lat, current_lng, speed, bearing, status,
+          camera_front_status, camera_rear_status, camera_side_status, camera_cabin_status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        ON CONFLICT (registration_number) DO UPDATE SET
+          model = EXCLUDED.model,
+          depot = EXCLUDED.depot,
+          route_id = EXCLUDED.route_id,
+          route_name = EXCLUDED.route_name,
+          driver_name = EXCLUDED.driver_name,
+          driver_phone = EXCLUDED.driver_phone,
+          driver_badge = EXCLUDED.driver_badge,
+          driver_license = EXCLUDED.driver_license,
+          current_lat = EXCLUDED.current_lat,
+          current_lng = EXCLUDED.current_lng,
+          updated_at = CURRENT_TIMESTAMP;
+      `, [
+        id, reg, bus.model || 'Electric Low Floor Transit 12M', bus.depot || 'Central Transport Depot',
+        bus.route_id || 'Route 1', bus.route_name || 'Corridor Transit Express',
+        bus.driver_name || 'Assigned Operator', bus.driver_phone || '+91 90000 00000',
+        bus.driver_badge || 'DRV-1001', bus.driver_license || 'DL-KA-2020-001',
+        bus.current_lat || 12.9716, bus.current_lng || 77.5946,
+        bus.speed || 35.0, bus.bearing || 90.0, bus.status || 'Active',
+        bus.camera_front_status || 'Online', bus.camera_rear_status || 'Online',
+        bus.camera_side_status || 'Online', bus.camera_cabin_status || 'Online'
+      ]);
+
+      return await this.getBusById(id);
+    }
+
+    /**
+     * Retrieve all registered buses from Neon DB
+     */
+    async getAllBuses() {
+      await this.initSchema();
+      const rows = await this.query(`
+        SELECT id, registration_number, model, depot, route_id, route_name,
+               driver_name, driver_phone, driver_badge, driver_license,
+               current_lat, current_lng, speed, bearing, status,
+               camera_front_status, camera_rear_status, camera_side_status, camera_cabin_status,
+               created_at, updated_at
+        FROM buses
+        ORDER BY registration_number ASC;
+      `);
+
+      return rows.map(r => ({
+        id: r.id,
+        registrationNumber: r.registration_number,
+        model: r.model,
+        depot: r.depot,
+        routeId: r.route_id,
+        routeName: r.route_name,
+        driver: {
+          name: r.driver_name,
+          phone: r.driver_phone,
+          badge: r.driver_badge,
+          license: r.driver_license
+        },
+        lat: parseFloat(r.current_lat) || 12.9716,
+        lng: parseFloat(r.current_lng) || 77.5946,
+        speed: parseFloat(r.speed) || 35.0,
+        bearing: parseFloat(r.bearing) || 90.0,
+        status: r.status,
+        cameras: {
+          front: r.camera_front_status,
+          rear: r.camera_rear_status,
+          side: r.camera_side_status,
+          cabin: r.camera_cabin_status
+        },
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
+      }));
+    }
+
+    /**
+     * Get a specific registered bus by ID
+     */
+    async getBusById(id) {
+      await this.initSchema();
+      const rows = await this.query(`
+        SELECT * FROM buses WHERE id = $1 OR registration_number = $1 LIMIT 1;
+      `, [id]);
+      if (rows.length === 0) return null;
+      const r = rows[0];
+      return {
+        id: r.id,
+        registrationNumber: r.registration_number,
+        model: r.model,
+        depot: r.depot,
+        routeId: r.route_id,
+        routeName: r.route_name,
+        driver: {
+          name: r.driver_name,
+          phone: r.driver_phone,
+          badge: r.driver_badge,
+          license: r.driver_license
+        },
+        lat: parseFloat(r.current_lat),
+        lng: parseFloat(r.current_lng),
+        speed: parseFloat(r.speed),
+        bearing: parseFloat(r.bearing),
+        status: r.status,
+        cameras: {
+          front: r.camera_front_status,
+          rear: r.camera_rear_status,
+          side: r.camera_side_status,
+          cabin: r.camera_cabin_status
+        }
+      };
+    }
+
+    /**
+     * Update bus GPS position and kinematic telemetry in Neon DB
+     */
+    async updateBusLocation(id, lat, lng, speed = 35.0, bearing = 90.0) {
+      try {
+        await this.query(`
+          UPDATE buses SET current_lat = $1, current_lng = $2, speed = $3, bearing = $4, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $5 OR registration_number = $5;
+        `, [lat, lng, speed, bearing, id]);
+      } catch (e) {
+        // Non-blocking telemetry warning
+      }
+    }
+
+    // ==========================================
+    // REAL-TIME AI HAZARD & DETECTION METHODS
+    // ==========================================
+
+    /**
+     * Record a genuine AI detected road hazard or incident into Neon DB
+     */
+    async recordHazard(h) {
+      await this.initSchema();
+      const id = h.id || ('HAZ-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase());
+      const gmapsUrl = h.google_maps_url || `https://www.google.com/maps?q=${h.latitude},${h.longitude}`;
+
+      await this.query(`
+        INSERT INTO hazards (
+          id, bus_id, camera_channel, type, category, title, problem_description,
+          confidence, severity, latitude, longitude, address, google_maps_url,
+          depth_mm, width_mm, length_mm, distance_m, offending_plate, screenshot_base64,
+          solution_action, work_order_id, status, detected_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, CURRENT_TIMESTAMP);
+      `, [
+        id, h.bus_id || 'KA-05-AB-1147', h.camera_channel || 'Front Optical 4K AI',
+        h.type || 'ROAD_DEFECT', h.category || 'Road Anomaly',
+        h.title || 'Road Hazard Detected', h.problem_description || 'Surface defect identified by AI',
+        h.confidence || 95.0, h.severity || 3,
+        h.latitude, h.longitude, h.address || 'Corridor GPS Fix', gmapsUrl,
+        h.depth_mm || 0, h.width_mm || 0, h.length_mm || 0, h.distance_m || 0.0,
+        h.offending_plate || null, h.screenshot_base64 || null,
+        h.solution_action || 'Inspection dispatched', h.work_order_id || ('WO-' + Math.floor(1000 + Math.random() * 9000)),
+        h.status || 'Reported'
+      ]);
+
+      return {
+        id,
+        ...h,
+        google_maps_url: gmapsUrl,
+        detected_at: new Date().toISOString()
+      };
+    }
+
+    /**
+     * Get all detected hazards from Neon DB
+     */
+    async getAllHazards(limit = 60) {
+      await this.initSchema();
+      const rows = await this.query(`
+        SELECT id, bus_id, camera_channel, type, category, title, problem_description,
+               confidence, severity, latitude, longitude, address, google_maps_url,
+               depth_mm, width_mm, length_mm, distance_m, offending_plate, screenshot_base64,
+               solution_action, work_order_id, status, detected_at
+        FROM hazards
+        ORDER BY detected_at DESC
+        LIMIT $1;
+      `, [limit]);
+
+      return rows.map(r => ({
+        id: r.id,
+        busId: r.bus_id,
+        camera: r.camera_channel,
+        type: r.type,
+        category: r.category,
+        title: r.title,
+        problem: r.problem_description,
+        conf: parseFloat(r.confidence) || 95.0,
+        severity: parseInt(r.severity) || 3,
+        lat: parseFloat(r.latitude),
+        lng: parseFloat(r.longitude),
+        location: r.address,
+        googleMapsUrl: r.google_maps_url || `https://www.google.com/maps?q=${r.latitude},${r.longitude}`,
+        dimensions: {
+          depthMm: parseInt(r.depth_mm) || 0,
+          widthMm: parseInt(r.width_mm) || 0,
+          lengthMm: parseInt(r.length_mm) || 0,
+          distanceM: parseFloat(r.distance_m) || 0.0
+        },
+        plate: r.offending_plate,
+        snapshot: r.screenshot_base64,
+        solution: {
+          action: r.solution_action,
+          workOrder: r.work_order_id,
+          status: r.status
+        },
+        status: r.status,
+        detectedAt: r.detected_at,
+        time: new Date(r.detected_at).toLocaleTimeString()
+      }));
+    }
+
+    /**
+     * Update hazard resolution status in Neon DB
+     */
+    async updateHazardStatus(hazardId, status) {
+      await this.initSchema();
+      await this.query(`UPDATE hazards SET status = $1 WHERE id = $2;`, [status, hazardId]);
       return true;
     }
 
     /**
-     * Check if Neon connection is operational
-     * @returns {Promise<boolean>}
+     * Record live vehicle traffic telemetry
      */
+    async recordTrafficTelemetry(t) {
+      try {
+        const id = 'TEL-' + Date.now().toString(36);
+        await this.query(`
+          INSERT INTO traffic_telemetry (
+            id, bus_id, latitude, longitude, vehicle_count,
+            cars_count, buses_count, trucks_count, two_wheelers_count, pedestrians_count,
+            bottleneck_level, recorded_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP);
+        `, [
+          id, t.bus_id, t.latitude, t.longitude, t.vehicle_count || 0,
+          t.cars_count || 0, t.buses_count || 0, t.trucks_count || 0,
+          t.two_wheelers_count || 0, t.pedestrians_count || 0,
+          t.bottleneck_level || 'Normal'
+        ]);
+      } catch (e) {
+        // Non-blocking telemetry
+      }
+    }
+
     async testConnection() {
       try {
         const res = await this.query('SELECT 1 as connected;');
@@ -341,7 +681,6 @@
   // Export singleton to global namespace
   global.NeonDB = new NeonDBClient();
 
-  // Run initial schema verification in background
   if (typeof window !== 'undefined') {
     global.NeonDB.initSchema().catch(err => {
       console.warn('Neon initial sync:', err.message);

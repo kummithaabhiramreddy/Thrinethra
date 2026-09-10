@@ -7,6 +7,11 @@
 <link rel="icon" href="assets/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <style>
   :root{
     --bg-900:#070A0E; --bg-800:#0C1118; --bg-700:#121822; --bg-card:#0E141D;
@@ -202,8 +207,8 @@
     border-radius:8px; overflow:hidden; border:1px solid var(--line);
     display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);
   }
-  .cam-video{ width:100%; height:100%; object-fit:cover; display:block; }
-  .cam-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .cam-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; z-index:1; }
+  .cam-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:2; pointer-events:none; }
   .cam-hud-top{
     position:absolute; top:8px; left:10px; right:10px; display:flex;
     justify-content:space-between; align-items:center; pointer-events:none; z-index:5;
@@ -470,6 +475,16 @@
   .trend{ font-size:0.68rem; }
   .trend.up{ color:var(--danger); }
   .trend.down{ color:var(--live); }
+
+  /* Leaflet GIS Map Styling */
+  #gisMap { background: #070A0E; z-index: 1; font-family: 'Inter', sans-serif; }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #0E141D !important; color: #EDF2F7 !important; border: 1px solid #1B2430; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  .leaflet-popup-content { margin: 10px 12px; font-size: 0.76rem; line-height: 1.4; }
+  .gis-popup-head { font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 8px; }
+  .gis-popup-img { width: 100%; height: 110px; object-fit: cover; border-radius: 4px; border: 1px solid #1B2430; margin: 6px 0; }
+  .custom-bus-icon { transition: transform 0.3s ease; }
+  .custom-hazard-icon { transition: transform 0.2s ease; cursor: pointer; }
+  .custom-hazard-icon:hover { transform: scale(1.18); }
 </style>
 </head>
 <body>
@@ -639,83 +654,89 @@
           </div>
         </div>
         <div class="panel-body">
-          <!-- Bus Number Search Gateway -->
-          <div class="bus-search-bar">
-            <div class="bus-search-input-wrap">
-              <svg class="bus-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="busSearchInput" class="bus-search-input" placeholder="Query Vehicle Number (e.g. KA-05-AB-1147, KA-03-CJ-8820, Route 42B)..." autocomplete="off" />
+          <!-- Road Sensing Stream & Hardware Camera Controls -->
+          <div style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; background:rgba(16,22,31,0.7); padding:10px 14px; border-radius:8px; border:1px solid var(--line);">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:0.7rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">Live Sensor Stream:</span>
+              <button class="btn btn-solid btn-sm active" id="btnFeedWebcam" type="button" onclick="window.switchVideoFeed('webcam')" style="background:var(--live); border-color:var(--live); color:#0a0e14; font-weight:700;">
+                📹 Live Device Camera
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnFeedScreen" type="button" onclick="window.startScreenShare()" title="Stream any screen, window, road video or phone camera with zero hardware lock" style="border-color:var(--route); color:var(--route); font-weight:700;">
+                🖥️ Share Road Screen / Window
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnFlipCam" type="button" onclick="window.flipCamera()" style="display:none;" title="Flip between User and Road-facing Camera">
+                🔄 Flip Camera
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnFeedUrban" type="button" onclick="window.switchVideoFeed('urban')">
+                🛣️ Urban Road Feed
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnFeedDaylight" type="button" onclick="window.switchVideoFeed('daylight')">
+                🚗 Daylight City Feed
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnTriggerUploadVideo" type="button" onclick="document.getElementById('dashcamFileInput').click()" style="border-color:var(--alert); color:var(--alert);">
+                📂 Upload Road Video
+              </button>
+              <input type="file" id="dashcamFileInput" accept="video/*" style="display:none;" />
             </div>
-            <button class="btn btn-solid" id="btnSearchBus" type="button">
-              🔍 Inspect Bus Camera
-            </button>
-            <button class="btn btn-ghost" id="btnResetBusSearch" type="button" style="display:none;">
-              ✕ Reset
-            </button>
-          </div>
 
-          <!-- Quick Active Vehicle Selector Chips -->
-          <div style="margin-bottom:8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span style="font-size:0.62rem; color:var(--text-low); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">Quick Query:</span>
-            <div style="display:inline-flex; gap:4px; flex-wrap:wrap;" id="busSelectorList">
-              <button class="bus-chip" data-bus="KA-05-AB-1147" type="button">🚌 KA-05-AB-1147 (42B)</button>
-              <button class="bus-chip" data-bus="KA-03-CJ-8820" type="button">🚌 KA-03-CJ-8820 (17A)</button>
-              <button class="bus-chip" data-bus="KA-01-FL-3390" type="button">🚌 KA-01-FL-3390 (9C)</button>
-              <button class="bus-chip" data-bus="KA-41-BQ-0512" type="button">🚌 KA-41-BQ-0512 (52)</button>
-              <button class="bus-chip" data-bus="KA-09-DP-6119" type="button">🚌 KA-09-DP-6119 (335E)</button>
-              <button class="bus-chip" data-bus="WEBCAM" type="button" style="border-color:var(--route); color:var(--route);">📹 Operator WebCam</button>
-            </div>
-          </div>
-
-          <!-- STANDBY STATE -->
-          <div id="busStandbyState" class="bus-standby-card">
-            <div class="bus-standby-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
-            </div>
-            <div class="bus-standby-title">Awaiting Bus Number Entry</div>
-            <div class="bus-standby-sub">
-              Enter any registered fleet vehicle number (e.g. <strong>KA-05-AB-1147</strong> or route <strong>42B</strong>) above or click a quick fleet chip to reveal its 4-angle live cameras, AI road detections, GPS telemetry, driver credentials, and 3D photogrammetry.
-            </div>
-            <div class="bus-standby-quick">
-              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-05-AB-1147')">Query Bus KA-05-AB-1147</button>
-              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-03-CJ-8820')">Query Bus KA-03-CJ-8820</button>
-              <button class="btn btn-ghost btn-sm" onclick="window.switchBusCamera('KA-01-FL-3390')">Query Bus KA-01-FL-3390</button>
+            <!-- Camera Hardware Device Dropdown -->
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.64rem; color:var(--text-low); font-weight:600; text-transform:uppercase;">Input:</span>
+              <select id="camDeviceSelector" class="form-select" onchange="window.selectCameraDevice(this.value)" style="font-size:0.7rem; padding:3px 8px; background:var(--bg-900); color:var(--text-high); border:1px solid var(--line); border-radius:4px; max-width:180px;">
+                <option value="">Default Camera</option>
+              </select>
             </div>
           </div>
 
-          <!-- ACTIVE BUS DATA SUITE -->
-          <div id="busDataSuite" style="display:none;">
-            <!-- Micro Vehicle Dossier Telemetry Bar -->
+          <!-- Camera Diagnostic Recovery Banner (Displayed if device camera is locked by another program) -->
+          <div id="camDiagBanner" style="display:none; margin-bottom:12px; background:rgba(255,84,112,0.12); border:1px solid rgba(255,84,112,0.35); border-radius:6px; padding:10px 14px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+              <div>
+                <div style="font-size:0.75rem; font-weight:700; color:#FF5470;" id="camDiagTitle">⚠️ Camera Hardware Busy / Could Not Start Video Source</div>
+                <div style="font-size:0.68rem; color:var(--text-mid); margin-top:2px;" id="camDiagDesc">The physical camera is currently in use or locked by another app (e.g. Windows Camera, Teams, Zoom, or another browser tab). You can retry, share any screen/window without hardware locks, or run the local 1080p road video feed.</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button class="btn btn-solid btn-sm" type="button" onclick="window.startWebcam()" style="background:#FF5470; border-color:#FF5470;">🔄 Retry Camera</button>
+                <button class="btn btn-ghost btn-sm" type="button" onclick="window.startScreenShare()" style="border-color:var(--route); color:var(--route);">🖥️ Share Screen / Window</button>
+                <button class="btn btn-ghost btn-sm" type="button" onclick="window.switchVideoFeed('urban')">🛣️ Play Urban Road Feed</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVE ROAD SENSING SUITE (Always active by default) -->
+          <div id="busDataSuite" style="display:block;">
+            <!-- Mobile Sensing Telemetry Bar -->
             <div class="bus-dossier-bar" id="busDossierBar">
               <div class="dossier-item">
-                <span class="dossier-lbl">Active Vehicle ID</span>
-                <span class="dossier-val mono" id="dossierBusId" style="color:var(--alert);">KA-05-AB-1147</span>
+                <span class="dossier-lbl">Active Sensing Unit</span>
+                <span class="dossier-val mono" id="dossierBusId" style="color:var(--alert);">SENSING-UNIT-01 (ONBOARD)</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Assigned Route</span>
-                <span class="dossier-val" id="dossierRoute">Route 42B (MG Road → Indiranagar)</span>
+                <span class="dossier-lbl">Vision Pipeline</span>
+                <span class="dossier-val" id="dossierRoute">TensorFlow.js (COCO-SSD) + Optical CV</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Duty Officer / Driver</span>
-                <span class="dossier-val" id="dossierDriver">Ramesh K. (Depot 04)</span>
+                <span class="dossier-lbl">Scanner Mode</span>
+                <span class="dossier-val" id="dossierDriver">Live Road Defect &amp; Hazard Radar</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Live GPS &amp; Location</span>
-                <span class="dossier-val mono" id="dossierLocation">MG Road Jn. (12.9716° N)</span>
+                <span class="dossier-lbl">GPS Heading</span>
+                <span class="dossier-val mono" id="dossierLocation">12.9716° N, 77.5946° E</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">Vehicle Velocity</span>
-                <span class="dossier-val mono" id="dossierSpeed" style="color:var(--live);">38.4 KM/H</span>
+                <span class="dossier-lbl">Telemetry</span>
+                <span class="dossier-val mono" id="dossierSpeed" style="color:var(--live);">REALTIME SCAN</span>
               </div>
               <div class="dossier-item">
-                <span class="dossier-lbl">4-Cam Vision Sensors</span>
+                <span class="dossier-lbl">Active Detection Models</span>
                 <span class="dossier-val" id="dossierCams" style="color:var(--live);">
                   <span class="cam-dots">
-                    <span class="cam-dot cam-ok" title="Front AI"></span>
-                    <span class="cam-dot cam-ok" title="Rear OCR"></span>
-                    <span class="cam-dot cam-ok" title="Side Blindspot"></span>
-                    <span class="cam-dot cam-ok" title="Cabin Occupancy"></span>
+                    <span class="cam-dot cam-ok" title="Potholes & Cracks"></span>
+                    <span class="cam-dot cam-ok" title="Waterlogging"></span>
+                    <span class="cam-dot cam-ok" title="Dividers & Crossings"></span>
+                    <span class="cam-dot cam-ok" title="Vehicles & Tailgating"></span>
                   </span>
-                  All Online
+                  All Models Online
                 </span>
               </div>
             </div>
@@ -723,23 +744,24 @@
             <div class="cam-grid">
               <div>
                 <div class="cam-viewport" id="camViewport">
-                  <video id="cameraVideo" class="cam-video" autoplay playsinline muted style="display:none;"></video>
+                  <video id="cameraVideo" class="cam-video" autoplay playsinline muted></video>
                   <canvas id="cameraCanvas" class="cam-canvas" width="800" height="450"></canvas>
                   <div class="cam-hud-top">
-                    <span class="cam-badge" id="camSourceBadge">SOURCE: BUS 42B (KA-05-AB-1147) · FRONT CAM</span>
-                    <span class="cam-badge" id="camModelBadge">YOLOv9-INT8 · 30 FPS · 14ms</span>
+                    <span class="cam-badge" id="camSourceBadge">SOURCE: MOBILE SENSING UNIT #01 · FRONT ROAD CAM</span>
+                    <span class="cam-badge" id="camModelBadge">COCO-SSD + OPTICAL-CV · 30 FPS</span>
                   </div>
                   <div class="cam-hud-bottom">
                     <span class="cam-badge" id="camGpsBadge">GPS: 12.9716° N, 77.5946° E</span>
-                    <span class="cam-badge" id="camSpeedBadge">SPEED: 38.4 KM/H</span>
+                    <span class="cam-badge" id="camSpeedBadge">SPEED: ACTIVE SCAN</span>
                   </div>
                 </div>
-                <div class="cam-ctrls">
-                  <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Front AI</button>
-                  <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Rear OCR</button>
-                  <button class="cam-ctrl-btn" id="btnModeSide" type="button">🔍 Side Blindspot</button>
-                  <button class="cam-ctrl-btn" id="btnModeCabin" type="button">👥 Cabin Density</button>
+                <div class="cam-ctrls" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                  <button class="cam-ctrl-btn active" id="btnModeFront" type="button">👁️ Road Surface AI</button>
+                  <button class="cam-ctrl-btn" id="btnModeRear" type="button">🚗 Vehicles &amp; Tailgating</button>
+                  <button class="cam-ctrl-btn" id="btnModeSide" type="button">🚶 Vulnerable Pedestrians</button>
+                  <button class="cam-ctrl-btn" id="btnModeCabin" type="button">🛑 Signs &amp; Obstacles</button>
                   <button class="cam-ctrl-btn" id="btnToggleBoxes" type="button">🟩 Boxes: ON</button>
+                  <button class="cam-ctrl-btn" id="btnCaptureSnapshot" type="button" style="border-color:var(--alert); color:var(--alert); font-weight:700;">📸 Capture Evidence</button>
                 </div>
               </div>
 
@@ -791,36 +813,16 @@
               <span><i style="background:#FF5470"></i>Incident</span>
             </div>
           </div>
-          <div class="panel-body" style="padding:0;">
-            <svg viewBox="0 0 900 420" width="100%" height="auto">
-              <rect width="900" height="420" fill="#0F151C"/>
-              <g stroke="#1E2733" stroke-width="1">
-                <line x1="0" y1="84" x2="900" y2="84"/>
-                <line x1="0" y1="168" x2="900" y2="168"/>
-                <line x1="0" y1="252" x2="900" y2="252"/>
-                <line x1="0" y1="336" x2="900" y2="336"/>
-                <line x1="150" y1="0" x2="150" y2="420"/>
-                <line x1="330" y1="0" x2="330" y2="420"/>
-                <line x1="510" y1="0" x2="510" y2="420"/>
-                <line x1="690" y1="0" x2="690" y2="420"/>
-              </g>
-              <ellipse cx="330" cy="168" rx="76" ry="50" fill="#4FA3D1" opacity="0.18"/>
-              <ellipse cx="600" cy="270" rx="96" ry="58" fill="#4FA3D1" opacity="0.14"/>
-              <ellipse cx="150" cy="336" rx="58" ry="40" fill="#4FA3D1" opacity="0.12"/>
-              <path d="M20 380 L150 380 L150 252 L330 252 L330 84 L510 84 L510 168 L690 168 L690 46 L870 46" stroke="#33404D" stroke-width="2" fill="none"/>
-              <path d="M20 70 L200 70 L200 230 L400 230 L400 380 L620 380 L620 300 L860 300" stroke="#242E3A" stroke-width="2" fill="none"/>
-              <circle cx="330" cy="252" r="5.5" fill="#FF7A45"/>
-              <circle cx="510" cy="84" r="5.5" fill="#FF5470"/>
-              <circle cx="200" cy="230" r="5.5" fill="#34D399"/>
-              <circle cx="600" cy="270" r="5.5" fill="#4FA3D1"/>
-              <circle cx="690" cy="168" r="5.5" fill="#FF7A45"/>
-              <circle cx="150" cy="336" r="5.5" fill="#4FA3D1"/>
-              <circle cx="400" cy="380" r="5.5" fill="#34D399"/>
-              <circle cx="620" cy="300" r="5.5" fill="#FF5470"/>
-              <text x="338" y="248" fill="#5E6B78" font-size="11" font-family="JetBrains Mono">JN-14</text>
-              <text x="518" y="80" fill="#5E6B78" font-size="11" font-family="JetBrains Mono">JN-07</text>
-              <text x="628" y="296" fill="#5E6B78" font-size="11" font-family="JetBrains Mono">JN-22</text>
-            </svg>
+          <div class="panel-body" style="padding:0; position:relative;">
+            <div id="gisMap" style="height:420px; width:100%; border-radius:0 0 6px 6px;"></div>
+            <div style="position:absolute; top:10px; right:10px; z-index:1000; display:flex; gap:6px;">
+              <button type="button" class="btn btn-ghost btn-sm" id="btnToggleHeatmap" style="background:rgba(12,17,24,0.85); backdrop-filter:blur(6px); font-size:0.68rem;">
+                🔥 Congestion Heatmap
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnRecenterMap" style="background:rgba(12,17,24,0.85); backdrop-filter:blur(6px); font-size:0.68rem;">
+                🎯 Bengaluru Focus
+              </button>
+            </div>
           </div>
         </div>
 
@@ -952,6 +954,9 @@
         else{ sections[tid].classList.add('tab-hidden'); }
       }
     });
+    if ((id === 'map' || id === 'overview') && window.gisMap) {
+      setTimeout(function(){ window.gisMap.invalidateSize(); }, 150);
+    }
     links.forEach(function(a){
       var target = a.getAttribute('href').slice(1);
       a.classList.toggle('active', target === id);
@@ -1231,7 +1236,9 @@
   var hazardList = document.getElementById('hazard-list');
   function renderHazards(detections){
     if (!hazardList) return;
-    var list = detections || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().recentDetections : []);
+    var list = (Array.isArray(detections)) ? detections :
+               ((window.ThrinethraRealtimeEngine && window.ThrinethraRealtimeEngine.getState() && Array.isArray(window.ThrinethraRealtimeEngine.getState().recentDetections)) ? window.ThrinethraRealtimeEngine.getState().recentDetections : []);
+    if (!Array.isArray(list)) list = [];
     var hazardCategories = {
       'Potholes / Sub-base Failure': 0,
       'Waterlogging / Drainage Block': 0,
@@ -1388,7 +1395,16 @@
   function renderRoutes(routes){
     var tbody = document.getElementById('routes-body');
     if (!tbody) return;
-    var list = routes || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().routes : []);
+    var defaultRoutes = [
+      { route: 'Route 500-D', name: 'Silk Board ⇄ Hebbal ORR', delay: 7.2, baseline: 4.5, status: 'Delayed' },
+      { route: 'Route 335-E', name: 'Kempegowda BS ⇄ Whitefield', delay: 4.1, baseline: 4.0, status: 'On time' },
+      { route: 'Route KIA-8', name: 'Electronic City ⇄ Airport Terminal', delay: 9.4, baseline: 6.0, status: 'Severe' },
+      { route: 'Route 201-R', name: 'Banashankari ⇄ Domlur Flyover', delay: 3.5, baseline: 3.8, status: 'On time' },
+      { route: 'Route G-4', name: 'Brigade Road ⇄ Bannerghatta National Park', delay: 6.0, baseline: 5.2, status: 'Delayed' }
+    ];
+    var list = (Array.isArray(routes) && routes.length > 0) ? routes :
+               ((window.ThrinethraRealtimeEngine && window.ThrinethraRealtimeEngine.getState() && Array.isArray(window.ThrinethraRealtimeEngine.getState().routes)) ? window.ThrinethraRealtimeEngine.getState().routes : defaultRoutes);
+    if (!Array.isArray(list)) list = defaultRoutes;
     var q = searchRoutesInput ? (searchRoutesInput.value || '').toLowerCase().trim() : '';
     if (q) {
       list = list.filter(function(r){
@@ -1432,7 +1448,9 @@
     var countLabel = document.getElementById('fleet-count-label');
     if (!tbody) return;
 
-    var list = fleetList || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().fleetStatus : []);
+    var list = (Array.isArray(fleetList) && fleetList.length > 0) ? fleetList :
+               ((window.ThrinethraRealtimeEngine && window.ThrinethraRealtimeEngine.getState() && Array.isArray(window.ThrinethraRealtimeEngine.getState().fleetStatus)) ? window.ThrinethraRealtimeEngine.getState().fleetStatus : []);
+    if (!Array.isArray(list)) list = [];
     var q = searchFleetInput ? (searchFleetInput.value || '').toLowerCase().trim() : '';
     if (q) {
       list = list.filter(function(bus){
@@ -1514,8 +1532,8 @@
 
   var ctx = canvas.getContext('2d');
   var currentMode = 'front'; // 'front' | 'rear' | 'side' | 'cabin' | 'webcam'
-  var currentBusId = null;   // null until user queries/enters a bus number
-  var isBusLoaded = false;
+  var currentBusId = 'SENSING-UNIT-01'; // Default active sensing unit
+  var isBusLoaded = true; // Always active by default
   var showBoundingBoxes = true;
   var autoCapture = true;
   var webcamStream = null;
@@ -1524,20 +1542,20 @@
   var scanDirection = 1;
   var snapshots = [];
 
-  // Bus Fleet Metadata & Detailed Multi-Angle Mode Profiles
+  // Active Sensing Unit Metadata Profile
   var fleetMap = {
     'KA-05-AB-1147': {
       id: 'KA-05-AB-1147',
-      routeNo: '42B',
-      name: 'Bus KA-05-AB-1147 (Route 42B)',
-      route: 'Route 42B (MG Road → Indiranagar)',
-      location: 'MG Road Jn.',
-      address: 'Mahatma Gandhi Rd, Ashok Nagar, Bengaluru, Karnataka 560001',
+      routeNo: '500-D',
+      name: 'Tata Starbus EV Ultra 12M',
+      route: 'Silk Board ⇄ Hebbal Outer Ring Road',
+      location: 'Silk Board - Hebbal ORR Corridor',
+      address: 'Outer Ring Road, Bengaluru, Karnataka',
       lat: 12.9716,
       lng: 77.5946,
-      baseSpeed: 38.4,
-      driver: 'Ramesh Kumar (Depot 04)',
-      depot: 'Depot 04 (Central Majestic)',
+      baseSpeed: 38.5,
+      driver: 'Ramesh Kumar (ID #8821)',
+      depot: 'Depot-25 (Hennur)',
       modes: {
         front: {
           title: 'Severe Asphalt Pothole Crater',
@@ -1547,272 +1565,147 @@
           solution: { action: 'Cold-mix polymer patch & 2-ton vibratory compaction', workOrder: 'WO-MG-8841', status: 'Work Order Dispatched' },
           severity: 3,
           plate: 'KA-05-AB-1147'
-        },
-        rear: {
-          title: 'Tailgating Private Vehicle',
-          category: 'Incident',
-          problem: 'Vehicle MH 02 EE 1984 operating below minimum safe stopping headway (2.1m)',
-          dimensions: { widthMm: 1780, lengthMm: 4200, depthMm: 0, distanceM: 2.1 },
-          solution: { action: 'Automated e-Challan citation issued & rear strobe flash', workOrder: 'CH-MG-10492', status: 'Citation Generated' },
-          severity: 4,
-          plate: 'MH 02 EE 1984'
-        },
-        side: {
-          title: 'Two-Wheeler in Left Blindspot Zone',
-          category: 'Safety',
-          problem: 'Motorcyclist overtaking on left curb side within 0.45m of rear axle',
-          dimensions: { widthMm: 750, lengthMm: 1950, depthMm: 0, distanceM: 0.45 },
-          solution: { action: 'Driver blindspot buzzer & left-turn lockout engaged', workOrder: 'EV-MG-7712', status: 'Lockout Active' },
-          severity: 3,
-          plate: 'KA 05 MN 8821'
-        },
-        cabin: {
-          title: 'Aisle Density Approaching 88%',
-          category: 'Safety',
-          problem: 'Peak morning boarding load nearing maximum aisle clearance threshold',
-          dimensions: { widthMm: 900, lengthMm: 1400, depthMm: 0, distanceM: 2.5 },
-          solution: { action: 'Inward movement passenger audio chime activated', workOrder: 'OPS-MG-5510', status: 'Chime Active' },
-          severity: 2,
-          plate: 'KA-05-AB-1147'
         }
       },
-      cars: [
-        { x: 460, y: 220, w: 90, h: 70, plate: 'MH 02 EE 1984', type: 'CAR', dist: '12m' },
-        { x: 190, y: 250, w: 120, h: 90, plate: 'KA 03 MN 8821', type: 'BUS', dist: '24m' }
-      ]
+      cars: [{ plate: 'KA-05-MJ-4412' }]
     },
     'KA-03-CJ-8820': {
       id: 'KA-03-CJ-8820',
-      routeNo: '17A',
-      name: 'Bus KA-03-CJ-8820 (Route 17A)',
-      route: 'Route 17A (Indiranagar → Marathahalli)',
-      location: 'Indiranagar 100ft Rd',
-      address: '100 Feet Rd, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka 560038',
-      lat: 12.9784,
-      lng: 77.6408,
-      baseSpeed: 42.1,
-      driver: 'Suresh Varma (Depot 07)',
-      depot: 'Depot 07 (Indiranagar East)',
+      routeNo: '335-E',
+      name: 'Ashok Leyland Switch EV',
+      route: 'Kempegowda Bus Station ⇄ Whitefield',
+      location: 'Whitefield Main Road Corridor',
+      address: 'ITPL Main Rd, Whitefield, Bengaluru',
+      lat: 12.9698,
+      lng: 77.7499,
+      baseSpeed: 42.0,
+      driver: 'Suresh Babu (ID #4512)',
+      depot: 'Depot-18 (Whitefield)',
       modes: {
         front: {
-          title: 'Standing Stormwater Depression',
+          title: 'Deep Waterlogging & Puddle Accumulation',
           category: 'Road Hazard',
-          problem: 'Blocked stormwater curb grate causing 110mm deep standing water pool across lane',
-          dimensions: { widthMm: 1400, lengthMm: 2800, depthMm: 110, distanceM: 18.2 },
-          solution: { action: 'Rapid drain pump suction & silt clearing crew assigned', workOrder: 'WO-IN-3319', status: 'Drain Crew Assigned' },
+          problem: 'Monsoon drainage failure creating 180mm storm water pool across two lanes',
+          dimensions: { widthMm: 1200, lengthMm: 2400, depthMm: 180, distanceM: 18.2 },
+          solution: { action: 'Mobile dewatering pump unit deployed & drainage grate cleared', workOrder: 'WO-WL-2209', status: 'In Progress' },
           severity: 3,
-          plate: 'KA-03-CJ-8820'
-        },
-        rear: {
-          title: 'Commercial SUV Tailgating',
-          category: 'Incident',
-          problem: 'Commercial SUV KA 04 MM 4910 operating at excessive speed and 2.8m proximity',
-          dimensions: { widthMm: 1880, lengthMm: 4600, depthMm: 0, distanceM: 2.8 },
-          solution: { action: 'Radar speed log & e-Challan citation dispatched', workOrder: 'CH-IN-20914', status: 'Citation Generated' },
-          severity: 4,
-          plate: 'KA 04 MM 4910'
-        },
-        side: {
-          title: 'Delivery Scooter in Blindspot',
-          category: 'Safety',
-          problem: 'Delivery scooter riding in curb blindspot during lane shift',
-          dimensions: { widthMm: 700, lengthMm: 1800, depthMm: 0, distanceM: 0.60 },
-          solution: { action: 'Side perimeter LED illumination & warning strobe active', workOrder: 'EV-IN-4481', status: 'Strobe Active' },
-          severity: 3,
-          plate: 'KA 03 DL 4410'
-        },
-        cabin: {
-          title: 'Gangway Luggage Obstruction',
-          category: 'Safety',
-          problem: 'Excess baggage blocking rear egress passage',
-          dimensions: { widthMm: 650, lengthMm: 1200, depthMm: 0, distanceM: 3.0 },
-          solution: { action: 'Conductor luggage rearrangement advisory', workOrder: 'OPS-IN-1120', status: 'Advisory Active' },
-          severity: 2,
           plate: 'KA-03-CJ-8820'
         }
       },
-      cars: [
-        { x: 430, y: 215, w: 95, h: 72, plate: 'KA 04 MM 4910', type: 'SUV', dist: '15m' },
-        { x: 170, y: 240, w: 110, h: 85, plate: 'DL 1C BB 9021', type: 'TAXI', dist: '21m' }
-      ]
+      cars: [{ plate: 'KA-03-NB-8819' }]
     },
     'KA-01-FL-3390': {
       id: 'KA-01-FL-3390',
-      routeNo: '9C',
-      name: 'Bus KA-01-FL-3390 (Route 9C)',
-      route: 'Route 9C (Shivajinagar → Majestic)',
-      location: 'Shivajinagar Bus Station',
-      address: 'Shivajinagar Bus Terminal, Shivaji Nagar, Bengaluru, Karnataka 560051',
-      lat: 12.9856,
-      lng: 77.6057,
-      baseSpeed: 28.5,
-      driver: 'Anand Mohan (Depot 01)',
-      depot: 'Depot 01 (Shivajinagar)',
+      routeNo: 'KIA-8',
+      name: 'Volvo 8400 B9R Transit',
+      route: 'Electronic City ⇄ Kempegowda Airport',
+      location: 'Airport Expressway Corridor',
+      address: 'Bellary Rd, Airport Expressway, Bengaluru',
+      lat: 13.1986,
+      lng: 77.7066,
+      baseSpeed: 55.4,
+      driver: 'Anil Gowda (ID #7719)',
+      depot: 'Depot-07 (Subhash Nagar)',
       modes: {
         front: {
-          title: 'Terminal Congestion & Lane Bottleneck',
+          title: 'Missing Median Divider Barricade',
           category: 'Road Hazard',
-          problem: 'Unauthorized auto parking blocking transit entry corridor',
-          dimensions: { widthMm: 2400, lengthMm: 5200, depthMm: 0, distanceM: 6.5 },
-          solution: { action: 'Traffic marshal dispatch & immediate tow alert', workOrder: 'WO-SH-4421', status: 'Marshal Dispatched' },
+          problem: 'Impact damage removed 4m section of high-speed steel median barrier',
+          dimensions: { widthMm: 450, lengthMm: 4000, depthMm: 0, distanceM: 25.0 },
+          solution: { action: 'Emergency retroreflective cone corridor & barrier re-installation', workOrder: 'WO-MD-7714', status: 'Dispatched' },
           severity: 4,
-          plate: 'KA-01-FL-3390'
-        },
-        rear: {
-          title: 'Auto-Rickshaw Critical Proximity',
-          category: 'Incident',
-          problem: 'Auto-rickshaw KA 01 TR 2291 tailgating at 1.8m in transit ramp',
-          dimensions: { widthMm: 1300, lengthMm: 2600, depthMm: 0, distanceM: 1.8 },
-          solution: { action: 'Tailgate acoustic warning horn & e-Challan recorded', workOrder: 'CH-SH-31802', status: 'Citation Generated' },
-          severity: 4,
-          plate: 'KA 01 TR 2291'
-        },
-        side: {
-          title: 'Pedestrian Stepping Off Curb in Blindspot',
-          category: 'Safety',
-          problem: 'Pedestrian stepped into bus clearance turning sweep',
-          dimensions: { widthMm: 480, lengthMm: 1700, depthMm: 0, distanceM: 0.50 },
-          solution: { action: 'Acoustic directional horn alert sounded', workOrder: 'EV-SH-8829', status: 'Horn Active' },
-          severity: 3,
-          plate: 'PED-SH-91'
-        },
-        cabin: {
-          title: 'Peak Terminal Entry Load 94%',
-          category: 'Safety',
-          problem: 'Front door boarding surge blocking operator left sightline',
-          dimensions: { widthMm: 980, lengthMm: 1500, depthMm: 0, distanceM: 2.2 },
-          solution: { action: 'Automated boarding gate restriction & crowd control', workOrder: 'OPS-SH-9901', status: 'Gate Paused' },
-          severity: 3,
           plate: 'KA-01-FL-3390'
         }
       },
-      cars: [
-        { x: 480, y: 230, w: 85, h: 65, plate: 'KA 01 TR 2291', type: 'AUTO', dist: '6m' },
-        { x: 210, y: 255, w: 130, h: 95, plate: 'KA 53 N 9928', type: 'TRUCK', dist: '19m' }
-      ]
+      cars: [{ plate: 'KA-01-EQ-9011' }]
     },
     'KA-41-BQ-0512': {
       id: 'KA-41-BQ-0512',
-      routeNo: '52',
-      name: 'Bus KA-41-BQ-0512 (Route 52)',
-      route: 'Route 52 (Koramangala → Electronic City)',
-      location: 'Silk Board Jn.',
-      address: 'Central Silk Board Flyover, BTM 2nd Stage, Bengaluru, Karnataka 560068',
-      lat: 12.9279,
-      lng: 77.6271,
-      baseSpeed: 46.2,
-      driver: 'Prakash Narayana (Depot 12)',
-      depot: 'Depot 12 (Koramangala South)',
+      routeNo: '201-R',
+      name: 'Tata Starbus Urban 12M',
+      route: 'Banashankari ⇄ Domlur Flyover',
+      location: 'Banashankari Metro Corridor',
+      address: 'Outer Ring Rd, Banashankari, Bengaluru',
+      lat: 12.9250,
+      lng: 77.5838,
+      baseSpeed: 31.2,
+      driver: 'Manjunath Reddy (ID #3310)',
+      depot: 'Depot-14 (Jayanagar)',
       modes: {
         front: {
-          title: 'Road Construction Debris & Steel Hazard',
+          title: 'Severe Asphalt Corrugation & Rutting',
           category: 'Road Hazard',
-          problem: 'Fallen aggregate debris and exposed steel rod on flyover lane',
-          dimensions: { widthMm: 420, lengthMm: 1100, depthMm: 85, distanceM: 15.0 },
-          solution: { action: 'Highway debris sweeper & warning cone placement', workOrder: 'WO-SB-6672', status: 'Sweeper Dispatched' },
-          severity: 3,
-          plate: 'KA-41-BQ-0512'
-        },
-        rear: {
-          title: 'Heavy Interstate Bus Tailgating',
-          category: 'Incident',
-          problem: 'Interstate carrier TN 07 CB 3341 failing to maintain highway headway (3.2m)',
-          dimensions: { widthMm: 2500, lengthMm: 12000, depthMm: 0, distanceM: 3.2 },
-          solution: { action: 'Highway commercial vehicle penalty citation issued', workOrder: 'CH-SB-40192', status: 'Citation Generated' },
-          severity: 4,
-          plate: 'TN 07 CB 3341'
-        },
-        side: {
-          title: 'Electric Scooter in Curb Margin',
-          category: 'Safety',
-          problem: 'EV scooter riding silent in blindspot during flyover merge',
-          dimensions: { widthMm: 680, lengthMm: 1850, depthMm: 0, distanceM: 0.40 },
-          solution: { action: 'Side ultrasonic warning tone & steering assist active', workOrder: 'EV-SB-1109', status: 'Assist Active' },
-          severity: 3,
-          plate: 'KA 41 EV 1004'
-        },
-        cabin: {
-          title: 'Nominal Express Transit Density 62%',
-          category: 'Safety',
-          problem: 'Seated passenger balance maintained with clear gangway',
-          dimensions: { widthMm: 880, lengthMm: 1600, depthMm: 0, distanceM: 2.8 },
-          solution: { action: 'Nominal HVAC climate control & status logged', workOrder: 'OPS-SB-2210', status: 'Nominal' },
-          severity: 1,
+          problem: 'Heavy vehicle brake rutting exceeding 40mm along intersection approach',
+          dimensions: { widthMm: 800, lengthMm: 1500, depthMm: 42, distanceM: 10.5 },
+          solution: { action: 'Cold milling & high-modulus asphalt overlay work order scheduled', workOrder: 'WO-RT-4102', status: 'Scheduled' },
+          severity: 2,
           plate: 'KA-41-BQ-0512'
         }
       },
-      cars: [
-        { x: 440, y: 225, w: 90, h: 68, plate: 'TN 07 CB 3341', type: 'CAR', dist: '18m' },
-        { x: 180, y: 245, w: 115, h: 88, plate: 'KA 41 M 8001', type: 'BUS', dist: '30m' }
-      ]
+      cars: [{ plate: 'KA-41-ZZ-1204' }]
     },
     'KA-09-DP-6119': {
       id: 'KA-09-DP-6119',
-      routeNo: '335E',
-      name: 'Bus KA-09-DP-6119 (Route 335E)',
-      route: 'Route 335E (Lalbagh → Whitefield)',
-      location: 'Lalbagh West Gate',
-      address: 'Rashtriya Vidyalaya Rd, Mavalli, Bengaluru, Karnataka 560004',
-      lat: 12.9463,
-      lng: 77.5801,
-      baseSpeed: 34.0,
-      driver: 'Manjunath Gowda (Depot 09)',
-      depot: 'Depot 09 (Lalbagh Gate)',
+      routeNo: 'G-4',
+      name: 'Eicher Skyline Pro EV',
+      route: 'Brigade Road ⇄ Bannerghatta National Park',
+      location: 'Bannerghatta Road Corridor',
+      address: 'Bannerghatta Main Rd, Bengaluru',
+      lat: 12.8010,
+      lng: 77.5770,
+      baseSpeed: 46.8,
+      driver: 'Praveen Kumar (ID #9014)',
+      depot: 'Depot-22 (Bannerghatta)',
       modes: {
         front: {
-          title: 'Unmarked Pedestrian Crossing Zone',
-          category: 'Road Hazard',
-          problem: 'Pedestrian crowd crossing without signal priority near botanical garden',
-          dimensions: { widthMm: 1200, lengthMm: 4500, depthMm: 0, distanceM: 11.2 },
-          solution: { action: 'Crosswalk speed restriction 20 km/h & yellow blinker active', workOrder: 'WO-LB-7734', status: 'Speed Restricted' },
-          severity: 2,
-          plate: 'KA-09-DP-6119'
-        },
-        rear: {
-          title: 'Delivery Van Tailgating Incident',
-          category: 'Incident',
-          problem: 'Delivery Van KA 09 BK 7890 operating in bus deceleration buffer zone (2.4m)',
-          dimensions: { widthMm: 1820, lengthMm: 4400, depthMm: 0, distanceM: 2.4 },
-          solution: { action: 'Rear strobe warning & automated citation recorded', workOrder: 'CH-LB-55201', status: 'Citation Generated' },
+          title: 'Faded School Zone Pedestrian Crossing',
+          category: 'Safety',
+          problem: 'Zebra crossing markings worn below 25% visibility threshold near school',
+          dimensions: { widthMm: 3000, lengthMm: 8000, depthMm: 0, distanceM: 15.0 },
+          solution: { action: 'High-friction thermo-polymer zebra stripe re-application', workOrder: 'WO-ZC-6119', status: 'Dispatched' },
           severity: 3,
-          plate: 'KA 09 BK 7890'
-        },
-        side: {
-          title: 'Commuter Cyclist in Blindspot',
-          category: 'Safety',
-          problem: 'Bicycle commuter riding in driver left blindspot margin',
-          dimensions: { widthMm: 600, lengthMm: 1750, depthMm: 0, distanceM: 0.55 },
-          solution: { action: 'Blindspot dashboard visual indicator active', workOrder: 'EV-LB-3390', status: 'Visual Alert' },
-          severity: 2,
-          plate: 'CYC-LB-44'
-        },
-        cabin: {
-          title: 'Stairwell Obstruction at Entrance (82%)',
-          category: 'Safety',
-          problem: 'Passengers standing on lower stairwell step impeding sensor beam',
-          dimensions: { widthMm: 920, lengthMm: 1500, depthMm: 0, distanceM: 2.4 },
-          solution: { action: 'Passenger advisory chime & relief bus Route 335E dispatched', workOrder: 'OPS-LB-6612', status: 'Relief Dispatched' },
-          severity: 2,
           plate: 'KA-09-DP-6119'
         }
       },
-      cars: [
-        { x: 470, y: 220, w: 88, h: 70, plate: 'KA 09 AA 1234', type: 'CAR', dist: '14m' },
-        { x: 200, y: 250, w: 110, h: 85, plate: 'KA 09 BK 7890', type: 'VAN', dist: '25m' }
-      ]
+      cars: [{ plate: 'KA-09-AA-5533' }]
+    },
+    'SENSING-UNIT-01': {
+      id: 'SENSING-UNIT-01',
+      routeNo: 'AI-RADAR',
+      name: 'Mobile Urban Sensing Unit #01',
+      route: 'Live Road AI Scanning (Transit Corridor)',
+      location: 'Bengaluru Transit Sector',
+      address: 'Central Traffic Operations Command, Bengaluru, Karnataka 560001',
+      lat: 12.9716,
+      lng: 77.5946,
+      baseSpeed: 38.0,
+      driver: 'Onboard Edge-AI Vision Unit',
+      depot: 'Central Fleet Sensing Command',
+      modes: {
+        front: {
+          title: 'Severe Asphalt Pothole Crater',
+          category: 'Road Hazard',
+          problem: 'Sub-grade gravel washout causing road crater with sharp asphalt rim edge',
+          dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
+          solution: { action: 'Cold-mix polymer patch & 2-ton vibratory compaction', workOrder: 'WO-MG-8841', status: 'Work Order Dispatched' },
+          severity: 3,
+          plate: 'KA-05-AB-1147'
+        }
+      },
+      cars: [{ plate: 'KA-05-AB-1147' }]
     },
     'WEBCAM': {
       id: 'WEBCAM',
-      routeNo: 'HQ',
-      name: 'Operator Hardware WebCam',
-      route: 'Fleet Command Terminal (Station 01)',
-      location: 'Central Command HQ',
-      address: 'Central Traffic Operations Command, Infantry Rd, Bengaluru, Karnataka 560001',
+      routeNo: 'AI-WEBCAM',
+      name: 'Mobile Live Camera Sensing Unit',
+      route: 'Live Road Surface Scan (Mobile Unit)',
+      location: 'Live Camera Sector',
+      address: 'Field Operations Scanner Mount',
       lat: 12.9716,
       lng: 77.5946,
       baseSpeed: 0.0,
-      driver: 'Command Duty Officer',
-      depot: 'Central HQ Operations',
+      driver: 'Active Camera Operator',
+      depot: 'Field Operations',
       modes: {
         front: {
           title: 'Operator Desk Biometric Scan',
@@ -1872,6 +1765,7 @@
     if (!query) return null;
     var q = query.trim().toUpperCase().replace(/[\s-]/g, '');
     if (q === 'WEBCAM' || q === 'CAMERA' || q === 'OPERATOR') return 'WEBCAM';
+    if (q.indexOf('SENSING') !== -1 || q === 'UNIT01' || q === 'RADAR') return 'SENSING-UNIT-01';
 
     var keys = Object.keys(fleetMap);
     // 1. Exact match normalized
@@ -1879,22 +1773,132 @@
       var k = keys[i];
       if (k.replace(/[\s-]/g, '').toUpperCase() === q) return k;
     }
-    // 2. Route Number match (e.g. "42B", "17A", "9C", "52", "335E")
+    // 2. Route Number match (e.g. "500D", "335E", "KIA8", "201R", "G4", "42B")
     for (var j = 0; j < keys.length; j++) {
       var bus = fleetMap[keys[j]];
-      if (bus.routeNo.toUpperCase() === q || ('ROUTE' + bus.routeNo.toUpperCase()) === q) return keys[j];
+      if (bus && bus.routeNo) {
+        var rClean = bus.routeNo.toUpperCase().replace(/[\s-]/g, '');
+        if (rClean === q || ('ROUTE' + rClean) === q) return keys[j];
+      }
     }
     // 3. Substring match on Plate or Route
     for (var m = 0; m < keys.length; m++) {
       var bKey = keys[m];
       var bInfo = fleetMap[bKey];
       if (bKey.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1 ||
-          bInfo.route.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1) {
+          (bInfo.route && bInfo.route.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1) ||
+          (bInfo.name && bInfo.name.replace(/[\s-]/g, '').toUpperCase().indexOf(q) !== -1)) {
         return bKey;
       }
     }
+
+    // 4. Check dynamic RealtimeEngine fleetStatus
+    if (window.ThrinethraRealtimeEngine) {
+      var engineFleet = window.ThrinethraRealtimeEngine.getState().fleetStatus || [];
+      for (var f = 0; f < engineFleet.length; f++) {
+        var eBus = engineFleet[f];
+        var eId = (eBus.id || '').replace(/[\s-]/g, '').toUpperCase();
+        var eReg = (eBus.registrationNumber || '').replace(/[\s-]/g, '').toUpperCase();
+        var eRt = (eBus.route || '').replace(/[\s-]/g, '').toUpperCase();
+        if (eId === q || eReg === q || eRt === q || ('ROUTE' + eRt) === q || eId.indexOf(q) !== -1) {
+          if (!fleetMap[eBus.id]) {
+            fleetMap[eBus.id] = {
+              id: eBus.id,
+              routeNo: eBus.route || 'TRANSIT',
+              name: eBus.model || 'Electric Bus 12M',
+              route: eBus.routeName || eBus.location || 'Transit Corridor',
+              location: eBus.location || 'Transit Sector',
+              address: eBus.address || 'Bengaluru, Karnataka',
+              lat: eBus.lat || 12.9716,
+              lng: eBus.lng || 77.5946,
+              baseSpeed: eBus.speed || 38.0,
+              driver: (eBus.driver && eBus.driver.name) || 'Active Driver',
+              depot: eBus.depot || 'BMTC Depot',
+              modes: { front: { plate: eBus.id } },
+              cars: [{ plate: eBus.id }]
+            };
+          }
+          return eBus.id;
+        }
+      }
+    }
+
     return null;
   }
+
+  // Real Live Road Video Feeds (Genuine Dashcam Recordings & Highway Transit)
+  var roadVideoFeeds = {
+    'urban': 'assets/videos/dashcam-urban.webm',
+    'daylight': 'assets/videos/dashcam-daylight.webm',
+    'highway': 'https://upload.wikimedia.org/wikipedia/commons/transcoded/6/62/Volkswagen_Touareg_2004_2.5_R5_TDI_-_POV_Driving_on_Highway.webm/Volkswagen_Touareg_2004_2.5_R5_TDI_-_POV_Driving_on_Highway.webm.360p.vp9.webm'
+  };
+
+  function playRoadVideo(src) {
+    if (!video) return;
+    if (webcamStream) {
+      webcamStream.getTracks().forEach(function(t){ t.stop(); });
+      webcamStream = null;
+    }
+    video.srcObject = null;
+    video.crossOrigin = 'anonymous';
+    var target = src || roadVideoFeeds['urban'];
+    if (video.getAttribute('data-active-src') !== target || !video.src) {
+      video.setAttribute('data-active-src', target);
+      video.src = target;
+      video.loop = true;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.load();
+      video.play().catch(function(e){
+        console.warn('Video auto-play waiting for interaction:', e);
+      });
+    } else if (video.paused) {
+      video.play().catch(console.warn);
+    }
+  }
+
+  window.switchVideoFeed = function(feedType) {
+    var allFeedBtns = [
+      document.getElementById('btnFeedUrban'),
+      document.getElementById('btnFeedDaylight'),
+      document.getElementById('btnFeedWebcam'),
+      document.getElementById('btnFeedScreen')
+    ];
+    allFeedBtns.forEach(function(b){ if(b) b.classList.remove('active'); });
+
+    // Hide any previous diagnostic banner on user feed change
+    var diagBanner = document.getElementById('camDiagBanner');
+    if (diagBanner) diagBanner.style.display = 'none';
+
+    if (feedType === 'webcam') {
+      var wb = document.getElementById('btnFeedWebcam');
+      if (wb) wb.classList.add('active');
+      currentBusId = 'SENSING-UNIT-01';
+      if (dossierBusId) dossierBusId.textContent = 'SENSING-UNIT-01 (ONBOARD)';
+      if (dossierRoute) dossierRoute.textContent = 'TensorFlow.js (COCO-SSD) + Optical CV';
+      if (dossierDriver) dossierDriver.textContent = 'Live Road Defect & Hazard Radar';
+      if (dossierLocation) dossierLocation.textContent = '12.9716° N, 77.5946° E';
+      if (dossierSpeed) dossierSpeed.textContent = 'REALTIME SCAN';
+      setMode('webcam');
+    } else {
+      stopWebcam();
+      var btn = document.getElementById(feedType === 'daylight' ? 'btnFeedDaylight' : 'btnFeedUrban');
+      if (btn) btn.classList.add('active');
+      var src = roadVideoFeeds[feedType] || roadVideoFeeds['urban'];
+      playRoadVideo(src);
+      var sBadge = document.getElementById('camStreamStatusBadge');
+      if (sBadge) sBadge.innerHTML = '<i></i> LIVE ROAD FEED: ' + feedType.toUpperCase();
+      if (dossierBusId) dossierBusId.textContent = 'SENSING-UNIT-01 (DASHCAM)';
+      if (dossierRoute) dossierRoute.textContent = 'TensorFlow.js (COCO-SSD) + Optical CV';
+      if (dossierDriver) dossierDriver.textContent = 'Live Road Defect & Hazard Radar';
+      if (dossierLocation) dossierLocation.textContent = '12.9716° N, 77.5946° E';
+      if (dossierSpeed) dossierSpeed.textContent = '38.0 KM/H';
+      updateCameraHud();
+    }
+  };
 
   // Global Bus Loader & Camera Switcher
   window.switchBusCamera = function(busQuery) {
@@ -1902,8 +1906,12 @@
     var targetKey = findBusKey(busQuery);
 
     if (!targetKey) {
-      alert('Bus number "' + busQuery + '" not found in active fleet registry.\n\nAvailable fleet buses: KA-05-AB-1147, KA-03-CJ-8820, KA-01-FL-3390, KA-41-BQ-0512, KA-09-DP-6119, WEBCAM');
-      return;
+      console.warn('Bus number "' + busQuery + '" not found in registry. Defaulting to KA-05-AB-1147.');
+      targetKey = 'KA-05-AB-1147';
+    }
+
+    if (window.ThrinethraRealtimeEngine) {
+      window.ThrinethraRealtimeEngine.setActiveBus(targetKey);
     }
 
     currentBusId = targetKey;
@@ -1918,13 +1926,13 @@
     if (busDataSuite) busDataSuite.style.display = 'block';
 
     if (targetKey === 'WEBCAM') {
-      setMode('webcam');
-      if (dossierBusId) dossierBusId.textContent = 'OPERATOR DESK CAM';
-      if (dossierRoute) dossierRoute.textContent = 'Fleet Control Terminal';
-      if (dossierDriver) dossierDriver.textContent = 'Active Command Officer';
-      if (dossierLocation) dossierLocation.textContent = 'Central HQ (Station 01)';
-      if (dossierSpeed) dossierSpeed.textContent = 'STATIONARY';
-      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> OPERATOR WEBCAM LIVE';
+      window.switchVideoFeed('webcam');
+      if (dossierBusId) dossierBusId.textContent = 'LIVE ROAD WEBCAM';
+      if (dossierRoute) dossierRoute.textContent = 'Mobile Urban Sensing Unit (Active Onboard AI)';
+      if (dossierDriver) dossierDriver.textContent = 'Active Camera Operator';
+      if (dossierLocation) dossierLocation.textContent = 'Live Road / Area Scan';
+      if (dossierSpeed) dossierSpeed.textContent = 'LIVE SCAN';
+      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> 📹 LIVE DEVICE CAMERA ACTIVE';
     } else {
       if (currentMode === 'webcam') {
         stopWebcam();
@@ -1936,8 +1944,23 @@
       if (dossierDriver) dossierDriver.textContent = info.driver;
       if (dossierLocation) dossierLocation.textContent = info.location + ' (' + info.lat + '° N)';
       if (dossierSpeed) dossierSpeed.textContent = info.baseSpeed + ' KM/H';
-      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> LIVE STREAM: ' + info.id;
+      if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> LIVE ROAD FEED: ' + info.id;
       
+      // Select real road video stream based on bus profile
+      if (targetKey === 'KA-03-CJ-8820') {
+        playRoadVideo(roadVideoFeeds.daylight);
+        var b1 = document.getElementById('btnFeedDaylight'); if(b1) b1.classList.add('active');
+      } else if (targetKey === 'KA-01-FL-3390') {
+        playRoadVideo(roadVideoFeeds.highway);
+        var b2 = document.getElementById('btnFeedHighway'); if(b2) b2.classList.add('active');
+      } else if (targetKey === 'KA-09-DP-6119') {
+        playRoadVideo(roadVideoFeeds.daylight);
+        var b3 = document.getElementById('btnFeedDaylight'); if(b3) b3.classList.add('active');
+      } else {
+        playRoadVideo(roadVideoFeeds.urban);
+        var b4 = document.getElementById('btnFeedUrban'); if(b4) b4.classList.add('active');
+      }
+
       updateCameraHud();
     }
 
@@ -1953,14 +1976,6 @@
     if (camSection) {
       camSection.classList.remove('tab-hidden');
       camSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // Trigger initial snapshot for this newly inspected bus matching its exact front mode
-    var initialModeData = (info.modes && info.modes.front) || (info.modes && info.modes[currentMode]);
-    if (initialModeData) {
-      captureSnapshot(initialModeData.title, initialModeData.category, initialModeData.severity, initialModeData.plate);
-    } else {
-      captureSnapshot();
     }
   };
 
@@ -2021,10 +2036,10 @@
 
   function updateCameraHud() {
     if (!currentBusId) return;
-    if (currentBusId === 'WEBCAM') {
-      if (camSourceBadge) camSourceBadge.textContent = 'SOURCE: OPERATOR WEBCAM (LIVE HARDWARE FEED)';
-      if (camGpsBadge) camGpsBadge.textContent = 'GPS: CONTROL STATION (12.9716° N, 77.5946° E)';
-      if (camSpeedBadge) camSpeedBadge.textContent = 'STATUS: DESK OPERATOR MONITORING';
+    if (currentBusId === 'WEBCAM' || currentMode === 'webcam') {
+      if (camSourceBadge) camSourceBadge.textContent = 'SOURCE: LIVE ROAD CAMERA (MOBILE URBAN SENSING UNIT)';
+      if (camGpsBadge) camGpsBadge.textContent = 'GPS: MOBILE SENSING (12.9716° N, 77.5946° E)';
+      if (camSpeedBadge) camSpeedBadge.textContent = 'STATUS: ACTIVE SCANNING ON ROAD';
       return;
     }
 
@@ -2053,6 +2068,10 @@
     var allModeBtns = [btnFront, btnRear, btnSide, btnCabin];
     allModeBtns.forEach(function(b){ if (b) b.classList.remove('active'); });
 
+    if (window.ThrinethraRealtimeEngine) {
+      window.ThrinethraRealtimeEngine.setActiveCamera(mode);
+    }
+
     if (mode === 'webcam') {
       startWebcam();
     } else {
@@ -2078,37 +2097,268 @@
     });
   }
 
-  function startWebcam() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
-        .then(function(stream){
-          webcamStream = stream;
-          if (video) {
-            video.srcObject = stream;
-            video.play();
-          }
-        })
-        .catch(function(err){
-          console.warn('WebCam access denied or unavailable:', err);
-          alert('WebCam access not available or permission denied. Defaulting to simulated bus DashCam.');
-          window.switchBusCamera('KA-05-AB-1147');
-        });
-    } else {
-      alert('Camera mediaDevices API not supported on this browser. Defaulting to simulated bus DashCam.');
-      window.switchBusCamera('KA-05-AB-1147');
+  var currentFacingMode = 'user';
+
+  window.flipCamera = function() {
+    currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+    startWebcam();
+  };
+
+  // Hardware Device Enumeration
+  function refreshCameraDevices() {
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        var videoDevices = devices.filter(function(d){ return d.kind === 'videoinput'; });
+        var sel = document.getElementById('camDeviceSelector');
+        if (sel && videoDevices.length > 0) {
+          var curVal = sel.value;
+          sel.innerHTML = '<option value="">Default Camera</option>';
+          videoDevices.forEach(function(dev, idx) {
+            var opt = document.createElement('option');
+            opt.value = dev.deviceId;
+            opt.textContent = dev.label || ('Camera ' + (idx + 1));
+            if (dev.deviceId === curVal) opt.selected = true;
+            sel.appendChild(opt);
+          });
+        }
+      }).catch(console.warn);
     }
   }
 
-  function stopWebcam() {
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener('devicechange', function() {
+      console.log('Camera hardware device change detected, refreshing camera list...');
+      refreshCameraDevices();
+    });
+  }
+
+  window.selectCameraDevice = function(devId) {
+    startWebcam(devId);
+  };
+
+  // Screen / Window Road Stream (100% immune to webcam hardware lock)
+  window.startScreenShare = function() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      alert('Screen Capture API is not supported in this browser.');
+      return;
+    }
+    stopWebcam();
+    var diagBanner = document.getElementById('camDiagBanner');
+    if (diagBanner) diagBanner.style.display = 'none';
+
+    navigator.mediaDevices.getDisplayMedia({ video: true, audio: false })
+      .then(function(stream) {
+        webcamStream = stream;
+        stream.getVideoTracks()[0].onended = function() {
+          window.switchVideoFeed('urban');
+        };
+
+        if (video) {
+          video.pause();
+          video.removeAttribute('src');
+          video.removeAttribute('data-active-src');
+          video.src = '';
+          video.srcObject = stream;
+          video.muted = true;
+          video.defaultMuted = true;
+          video.playsInline = true;
+          video.setAttribute('muted', '');
+          video.setAttribute('playsinline', '');
+          video.onloadedmetadata = function() {
+            video.play().then(function(){
+              if (window.ThrinethraRealtimeEngine) {
+                window.ThrinethraRealtimeEngine.setActiveCamera('webcam');
+                window.ThrinethraRealtimeEngine.setActiveBus('SENSING-UNIT-01');
+              }
+              var sBadge = document.getElementById('camStreamStatusBadge');
+              if (sBadge) sBadge.innerHTML = '<i></i> 🖥️ ROAD SCREEN / WINDOW STREAM ACTIVE · SCANNING';
+              updateCameraHud();
+            }).catch(console.warn);
+          };
+          if (video.readyState >= 1) video.play().catch(console.warn);
+        }
+        var sBadge = document.getElementById('camStreamStatusBadge');
+        if (sBadge) sBadge.innerHTML = '<i></i> 🖥️ ROAD SCREEN / WINDOW STREAM ACTIVE · SCANNING';
+        updateCameraHud();
+      })
+      .catch(function(err) {
+        console.warn('Screen share cancelled:', err);
+      });
+  };
+
+  function startWebcam(explicitDeviceId) {
+    if (busStandbyState) busStandbyState.style.display = 'none';
+    if (busDataSuite) busDataSuite.style.display = 'block';
+    isBusLoaded = true;
+    currentMode = 'webcam';
+    currentBusId = 'SENSING-UNIT-01';
+
+    var diagBanner = document.getElementById('camDiagBanner');
+    if (diagBanner) diagBanner.style.display = 'none';
+
+    var flipBtn = document.getElementById('btnFlipCam');
+    if (flipBtn) flipBtn.style.display = 'inline-flex';
+
+    var sBadge = document.getElementById('camStreamStatusBadge');
+    if (sBadge) sBadge.innerHTML = '<i></i> 📹 CONNECTING CAMERA…';
+
     if (webcamStream) {
-      webcamStream.getTracks().forEach(function(t){ t.stop(); });
+      try {
+        webcamStream.getTracks().forEach(function(t){ t.stop(); });
+      } catch (e) {}
+      webcamStream = null;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (sBadge) sBadge.innerHTML = '<i></i> ⚠️ CAMERA API NOT SUPPORTED';
+      if (diagBanner) {
+        diagBanner.style.display = 'block';
+        document.getElementById('camDiagTitle').textContent = '⚠️ Camera MediaDevices API Not Supported';
+        document.getElementById('camDiagDesc').textContent = 'Please use Chrome, Edge, or Firefox on localhost:3000 to enable direct camera streams.';
+      }
+      return;
+    }
+
+    // Release any previous tracks to free hardware lock before new request
+    stopWebcam();
+
+    // Clean up video element to avoid conflicting src vs srcObject
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.removeAttribute('data-active-src');
+      video.src = '';
+      video.srcObject = null;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+    }
+
+    var selectedDevId = explicitDeviceId || (document.getElementById('camDeviceSelector') ? document.getElementById('camDeviceSelector').value : '');
+
+    // First enumerate all devices so we can try every available camera if default is busy/locked
+    var enumeratePromise = navigator.mediaDevices.enumerateDevices ? navigator.mediaDevices.enumerateDevices().catch(function(){ return []; }) : Promise.resolve([]);
+
+    enumeratePromise.then(function(allDevs) {
+      var videoInputs = (allDevs || []).filter(function(d){ return d.kind === 'videoinput'; });
+      
+      var constraintsAttempts = [];
+
+      // 1. If explicit device was selected, try it first
+      if (selectedDevId) {
+        constraintsAttempts.push({ video: { deviceId: { exact: selectedDevId } }, audio: false });
+        constraintsAttempts.push({ video: { deviceId: { ideal: selectedDevId }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      }
+
+      // 2. Try unconstrained video (lets OS pick default native camera format)
+      constraintsAttempts.push({ video: true, audio: false });
+
+      // 3. Try standard 720p and 480p (resolves Windows Media Foundation driver limits on Qualcomm/Intel cameras)
+      constraintsAttempts.push({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 } }, audio: false });
+      constraintsAttempts.push({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+
+      // 4. Try facingMode
+      constraintsAttempts.push({ video: { facingMode: { ideal: currentFacingMode } }, audio: false });
+
+      // 5. Try each enumerated video input device individually (e.g. external USB webcam if built-in is busy)
+      videoInputs.forEach(function(vDev) {
+        if (vDev.deviceId && vDev.deviceId !== selectedDevId) {
+          constraintsAttempts.push({ video: { deviceId: { exact: vDev.deviceId } }, audio: false });
+          constraintsAttempts.push({ video: { deviceId: { ideal: vDev.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        }
+      });
+
+      var lastErr = null;
+      function tryConstraints(idx) {
+        if (idx >= constraintsAttempts.length) {
+          return Promise.reject(lastErr || new Error('Could not start video source'));
+        }
+        return navigator.mediaDevices.getUserMedia(constraintsAttempts[idx])
+          .catch(function(err) {
+            lastErr = err;
+            console.warn('Webcam attempt ' + idx + ' failed:', err.name, err.message);
+            return tryConstraints(idx + 1);
+          });
+      }
+
+      return tryConstraints(0);
+    })
+    .then(function(stream) {
+      webcamStream = stream;
+      if (diagBanner) diagBanner.style.display = 'none';
+
+      if (video) {
+        video.srcObject = stream;
+        video.onloadedmetadata = function() {
+          video.play().then(function(){
+            if (window.ThrinethraRealtimeEngine) {
+              window.ThrinethraRealtimeEngine.setActiveCamera('webcam');
+              window.ThrinethraRealtimeEngine.setActiveBus('SENSING-UNIT-01');
+            }
+            if (sBadge) sBadge.innerHTML = '<i></i> 📹 LIVE DEVICE CAMERA ACTIVE · SCANNING ROAD';
+            updateCameraHud();
+            refreshCameraDevices();
+          }).catch(function(e){
+            console.warn('Webcam play error on loadedmetadata:', e);
+            if (sBadge) sBadge.innerHTML = '<i></i> 📹 LIVE CAMERA READY · CLICK SCREEN TO ACTIVATE';
+          });
+        };
+
+        if (video.readyState >= 1) {
+          video.play().catch(console.warn);
+        }
+      }
+      if (sBadge) sBadge.innerHTML = '<i></i> 📹 LIVE DEVICE CAMERA ACTIVE · SCANNING ROAD';
+      updateCameraHud();
+      refreshCameraDevices();
+    })
+    .catch(function(err) {
+      console.error('Webcam failed completely:', err);
+      if (sBadge) sBadge.innerHTML = '<i></i> ⚠️ CAMERA HARDWARE BUSY / LOCKED';
+      
+      // Show non-blocking diagnostic recovery banner with 1-click fallback options
+      if (diagBanner) {
+        diagBanner.style.display = 'block';
+        var titleEl = document.getElementById('camDiagTitle');
+        var descEl = document.getElementById('camDiagDesc');
+        if (titleEl) {
+          var isBusy = (err && (err.name === 'NotReadableError' || (err.message && err.message.toLowerCase().indexOf('not readable') !== -1) || (err.message && err.message.toLowerCase().indexOf('could not start video source') !== -1)));
+          titleEl.textContent = isBusy ? '⚠️ Camera Hardware Busy: In use by another application' : ('⚠️ Camera Hardware Notice: ' + ((err && err.name) || 'Could not access device camera'));
+        }
+        if (descEl) {
+          descEl.textContent = 'Your physical camera is currently held by another application (e.g. MS Teams, Windows Camera, Zoom, or another browser tab). Close the locking application, plug in your USB webcam and choose it from the "Input" dropdown, or click "Play Urban Road Feed" below to run genuine road AI sensing immediately.';
+        }
+      }
+    });
+  }
+
+  function stopWebcam() {
+    var flipBtn = document.getElementById('btnFlipCam');
+    if (flipBtn) flipBtn.style.display = 'none';
+    if (webcamStream) {
+      try {
+        webcamStream.getTracks().forEach(function(t){ t.stop(); });
+      } catch (e) {}
       webcamStream = null;
     }
     if (video) {
+      if (video.srcObject && video.srcObject.getTracks) {
+        try {
+          video.srcObject.getTracks().forEach(function(t){ t.stop(); });
+        } catch (e) {}
+      }
       video.pause();
       video.srcObject = null;
     }
   }
+
+  window.startWebcam = startWebcam;
+  window.stopWebcam = stopWebcam;
+
+  // Populate cameras on page load
+  refreshCameraDevices();
 
   // Draw Corner Accented Bounding Box with Photogrammetric 3D Dimensions & Solution Tag
   function drawBoundingBox(x, y, w, h, label, color, conf, isHazard, meta) {
@@ -2196,291 +2446,45 @@
     ctx.restore();
   }
 
-  // Front Dashcam Scene
-  function renderSimFront(time) {
+  // Authentic Sensor Optical Standby HUD (Never draws fake cartoon roads)
+  function renderSensorStandbyHUD(time) {
     var w = canvas.width;
     var h = canvas.height;
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var modeData = (busInfo.modes && busInfo.modes.front) || {
-      title: 'Road Hazard Detected',
-      problem: 'Road surface sub-base degradation',
-      dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
-      solution: { action: 'Cold-mix asphalt patch (WO-RD-8841)' },
-      severity: 3
-    };
+    ctx.fillStyle = '#070b10';
+    ctx.fillRect(0, 0, w, h);
 
-    // Sky & Horizon
-    var skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    skyGrad.addColorStop(0, '#0a1017');
-    skyGrad.addColorStop(1, '#16222f');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, w, h * 0.5);
-
-    // City Skyline
-    ctx.fillStyle = '#101720';
-    for (var i = 0; i < 16; i++) {
-      var bx = i * 55;
-      var bh = 40 + Math.sin(i * 1.5 + (currentBusId ? currentBusId.charCodeAt(3) : 0)) * 30 + (i % 3) * 25;
-      ctx.fillRect(bx, h * 0.5 - bh, 48, bh);
+    // Grid matrix
+    ctx.strokeStyle = 'rgba(79, 163, 209, 0.12)';
+    ctx.lineWidth = 1;
+    for (var x = 0; x < w; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (var y = 0; y < h; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
     }
 
-    // Road Surface
-    var roadGrad = ctx.createLinearGradient(0, h * 0.5, 0, h);
-    roadGrad.addColorStop(0, '#1a222c');
-    roadGrad.addColorStop(1, '#0e1318');
-    ctx.fillStyle = roadGrad;
-    ctx.fillRect(0, h * 0.5, w, h * 0.5);
-
-    // Road Perspective Lines
-    ctx.strokeStyle = '#2d3b4b';
+    // Optical Reticle
+    var cx = w * 0.5, cy = h * 0.5;
+    ctx.strokeStyle = 'rgba(255, 122, 69, 0.5)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(w * 0.5, h * 0.5); ctx.lineTo(0, h);
-    ctx.moveTo(w * 0.5, h * 0.5); ctx.lineTo(w, h);
+    ctx.arc(cx, cy, 64, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Moving Dashed Center Line
-    ctx.strokeStyle = '#FF7A45';
-    ctx.lineWidth = 4;
-    var dashOffset = (time * (busInfo.baseSpeed * 0.006)) % 60;
-    ctx.setLineDash([25, 25]);
-    ctx.lineDashOffset = -dashOffset;
     ctx.beginPath();
-    ctx.moveTo(w * 0.5, h * 0.5);
-    ctx.lineTo(w * 0.5, h);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Road Hazard / Anomaly on Road (Specific to active bus)
-    var px = 360 + Math.sin(time * 0.0005) * 10;
-    var py = 320;
-    ctx.fillStyle = '#06090c';
-    ctx.beginPath();
-    ctx.ellipse(px + 50, py + 25, 50, 22, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#FF7A45';
-    ctx.lineWidth = 1.5;
+    ctx.moveTo(cx - 85, cy); ctx.lineTo(cx + 85, cy);
+    ctx.moveTo(cx, cy - 85); ctx.lineTo(cx, cy + 85);
     ctx.stroke();
 
-    drawBoundingBox(px, py, 110, 50, modeData.title.toUpperCase(), '#FF7A45', '97.4', true, {
-      widthMm: modeData.dimensions.widthMm,
-      depthMm: modeData.dimensions.depthMm,
-      lengthMm: modeData.dimensions.lengthMm,
-      distanceM: modeData.dimensions.distanceM,
-      solution: modeData.solution
-    });
+    ctx.fillStyle = '#FF7A45';
+    ctx.font = 'bold 13px Space Grotesk, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('INITIALIZING ONBOARD BUS DASHCAM STREAM…', cx, cy + 105);
 
-    // Dynamic Traffic Vehicles
-    busInfo.cars.forEach(function(car, idx){
-      var cx = car.x + Math.sin(time * 0.001 + idx) * 15;
-      var cy = car.y;
-      
-      ctx.fillStyle = idx === 0 ? '#1f2e3d' : '#26384a';
-      ctx.fillRect(cx, cy, car.w, car.h);
-      ctx.fillStyle = '#34D399';
-      ctx.fillRect(cx + 6, cy + car.h - 10, 12, 6);
-      ctx.fillRect(cx + car.w - 18, cy + car.h - 10, 12, 6);
-
-      var color = idx === 0 ? '#4FA3D1' : '#34D399';
-      drawBoundingBox(cx - 6, cy - 8, car.w + 12, car.h + 16, car.type + ': ' + car.plate, color, (95.2 + idx).toFixed(1), false, {
-        widthMm: 1780,
-        depthMm: 0,
-        lengthMm: 4100,
-        distanceM: idx === 0 ? 14.8 : 24.5,
-        solution: { action: 'Safe Headway Maintained' }
-      });
-    });
-
-    // Pedestrian AI Box
-    var pedX = 640 + Math.sin(time * 0.0015) * 20;
-    var pedY = 240;
-    drawBoundingBox(pedX, pedY, 44, 90, 'PEDESTRIAN CROSSING', '#34D399', '98.6', false, {
-      widthMm: 500,
-      depthMm: 0,
-      lengthMm: 1720,
-      distanceM: 14.2,
-      solution: { action: 'Crosswalk speed advisory active' }
-    });
-  }
-
-  // Rear OCR Scanner Scene
-  function renderSimRear(time) {
-    var w = canvas.width;
-    var h = canvas.height;
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var modeData = (busInfo.modes && busInfo.modes.rear) || {
-      title: 'Tailgating Vehicle',
-      problem: 'Proximity violation',
-      plate: (busInfo.cars[0] ? busInfo.cars[0].plate : 'MH 02 EE 1984'),
-      dimensions: { widthMm: 1780, depthMm: 0, lengthMm: 4200, distanceM: 2.1 },
-      solution: { action: 'Citation generated' }
-    };
-
-    ctx.fillStyle = '#0b1118';
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.fillStyle = '#141c26';
-    ctx.fillRect(0, h * 0.4, w, h * 0.6);
-
-    // Approaching Tailgating Vehicle
-    var carX = 280 + Math.sin(time * 0.001) * 20;
-    var carY = 160;
-    var carW = 240;
-    var carH = 170;
-
-    ctx.fillStyle = '#1a2736';
-    ctx.fillRect(carX, carY, carW, carH);
-    ctx.fillStyle = '#0f1720';
-    ctx.fillRect(carX + 25, carY + 20, carW - 50, 60);
-
-    // Headlights
-    ctx.fillStyle = '#fff';
-    ctx.shadowColor = 'rgba(255,255,255,0.8)';
-    ctx.shadowBlur = 15;
-    ctx.fillRect(carX + 15, carY + 95, 34, 18);
-    ctx.fillRect(carX + carW - 49, carY + 95, 34, 18);
-    ctx.shadowBlur = 0;
-
-    // License Plate
-    var plateX = carX + 65;
-    var plateY = carY + 120;
-    var plateNumber = modeData.plate || (busInfo.cars[0] ? busInfo.cars[0].plate : 'MH 02 EE 1984');
-
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(plateX, plateY, 110, 30);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(plateX, plateY, 110, 30);
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 12px JetBrains Mono, monospace';
-    ctx.fillText(plateNumber, plateX + 6, plateY + 20);
-
-    drawBoundingBox(plateX - 8, plateY - 8, 126, 46, 'OCR PLATE: ' + plateNumber, '#FF5470', '98.9', true, {
-      widthMm: 520,
-      depthMm: 0,
-      distanceM: modeData.dimensions.distanceM,
-      solution: modeData.solution
-    });
-    drawBoundingBox(carX - 10, carY - 10, carW + 20, carH + 20, modeData.title.toUpperCase(), '#FF7A45', '96.2', true, {
-      widthMm: modeData.dimensions.widthMm,
-      depthMm: 0,
-      lengthMm: modeData.dimensions.lengthMm,
-      distanceM: modeData.dimensions.distanceM,
-      solution: modeData.solution
-    });
-  }
-
-  // Side Blindspot AI Scene
-  function renderSimSide(time) {
-    var w = canvas.width;
-    var h = canvas.height;
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var modeData = (busInfo.modes && busInfo.modes.side) || {
-      title: 'Two-Wheeler in Blindspot',
-      dimensions: { widthMm: 750, depthMm: 0, lengthMm: 1950, distanceM: 0.45 },
-      solution: { action: 'Blindspot buzzer active' }
-    };
-
-    ctx.fillStyle = '#080d14';
-    ctx.fillRect(0, 0, w, h);
-
-    // Side mirror boundary frame
-    ctx.strokeStyle = '#223040';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(10, 10, w - 20, h - 20);
-
-    // Asphalt & Road Lane
-    ctx.fillStyle = '#121a24';
-    ctx.fillRect(20, 20, w - 40, h - 40);
-
-    // Curb edge
-    ctx.strokeStyle = '#FF7A45';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(100, 20); ctx.lineTo(160, h - 20);
-    ctx.stroke();
-
-    // Passing Two-Wheeler / Cyclist in Blindspot
-    var bikeX = 220 + Math.sin(time * 0.0012) * 25;
-    var bikeY = 180;
-    var bikeW = 100;
-    var bikeH = 160;
-
-    ctx.fillStyle = '#1f3044';
-    ctx.fillRect(bikeX + 30, bikeY, 40, 110);
-    ctx.fillStyle = '#34D399';
-    ctx.fillRect(bikeX + 45, bikeY + 10, 12, 12);
-
-    drawBoundingBox(bikeX, bikeY - 10, bikeW, bikeH, modeData.title.toUpperCase(), '#FF5470', '97.8', true, {
-      widthMm: modeData.dimensions.widthMm,
-      depthMm: 0,
-      lengthMm: modeData.dimensions.lengthMm,
-      distanceM: modeData.dimensions.distanceM,
-      solution: modeData.solution
-    });
-    drawBoundingBox(30, 240, 110, 80, 'CURB CLEARANCE', '#4FA3D1', '99.1', false, {
-      widthMm: 450,
-      depthMm: 180,
-      distanceM: 0.45,
-      solution: { action: 'Curb clearance within safe tolerance' }
-    });
-  }
-
-  // Cabin Passenger Density Scene
-  function renderSimCabin(time) {
-    var w = canvas.width;
-    var h = canvas.height;
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var modeData = (busInfo.modes && busInfo.modes.cabin) || {
-      title: 'Cabin Density: 82%',
-      dimensions: { widthMm: 900, depthMm: 0, distanceM: 2.5 },
-      solution: { action: 'Normal operation' }
-    };
-
-    ctx.fillStyle = '#0d131a';
-    ctx.fillRect(0, 0, w, h);
-
-    // Bus Interior Aisle
-    ctx.fillStyle = '#151e2a';
-    ctx.beginPath();
-    ctx.moveTo(w * 0.4, 0); ctx.lineTo(w * 0.6, 0);
-    ctx.lineTo(w * 0.75, h); ctx.lineTo(w * 0.25, h);
-    ctx.fill();
-
-    // Seats & Passenger Bounding boxes
-    for (var i = 0; i < 6; i++) {
-      var leftX = 80 + i * 15;
-      var rightX = w - 180 - i * 15;
-      var rowY = 80 + i * 50;
-
-      drawBoundingBox(leftX, rowY, 70, 42, 'SEAT ' + (i*2+1) + ' · OCCUPIED', '#34D399', '99.1', false, {
-        widthMm: 480,
-        distanceM: +(2.5 + i * 0.8).toFixed(1)
-      });
-      if (i !== 3) {
-        drawBoundingBox(rightX, rowY, 70, 42, 'SEAT ' + (i*2+2) + ' · OCCUPIED', '#34D399', '98.4', false, {
-          widthMm: 480,
-          distanceM: +(2.5 + i * 0.8).toFixed(1)
-        });
-      } else {
-        drawBoundingBox(rightX, rowY, 70, 42, 'SEAT ' + (i*2+2) + ' · VACANT', '#4FA3D1', '94.0', false, {
-          widthMm: 480,
-          distanceM: +(2.5 + i * 0.8).toFixed(1)
-        });
-      }
-    }
-
-    // Cabin Occupancy HUD
-    ctx.fillStyle = 'rgba(10,14,19,0.85)';
-    ctx.fillRect(w - 240, 20, 220, 50);
-    ctx.strokeStyle = '#26384a';
-    ctx.strokeRect(w - 240, 20, 220, 50);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.fillText(modeData.title.toUpperCase(), w - 225, 42);
-    ctx.fillStyle = '#34D399';
+    ctx.fillStyle = '#94A3B8';
     ctx.font = '10px JetBrains Mono, monospace';
-    ctx.fillText('STATUS: AI MONITORING', w - 225, 58);
+    ctx.fillText('Click any "Live Road Feeds" button above or toggle camera mode to sync stream', cx, cy + 125);
+    ctx.textAlign = 'left';
   }
 
   // Laser Scan Line
@@ -2506,33 +2510,44 @@
   }
 
   // Main Canvas Render Loop
-  function mainLoop(time) {
+  var latestDetections = [];
+
+  async function mainLoop(time) {
     if (isBusLoaded) {
       frameCount++;
 
-      if (currentMode === 'webcam' && video && video.readyState === 4) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        var faceX = canvas.width * 0.38 + Math.sin(time * 0.001) * 20;
-        var faceY = canvas.height * 0.22 + Math.cos(time * 0.001) * 15;
-        drawBoundingBox(faceX, faceY, 180, 210, 'OPERATOR IDENTIFIED · VERIFIED', '#34D399', '99.4', false, {
-          widthMm: 220,
-          depthMm: 0,
-          distanceM: 0.8,
-          solution: { action: 'Biometric Authenticated Operator Session' }
-        });
-        drawBoundingBox(faceX - 30, faceY + 180, 240, 140, 'SAFETY HARNESS: DETECTED', '#4FA3D1', '96.2', false, {
-          widthMm: 450,
-          distanceM: 0.8,
-          solution: { action: 'Occupant Safety Compliance Verified' }
-        });
-      } else if (currentMode === 'rear') {
-        renderSimRear(time);
-      } else if (currentMode === 'side') {
-        renderSimSide(time);
-      } else if (currentMode === 'cabin') {
-        renderSimCabin(time);
+      // 1. Clear overlay canvas when video is actively streaming underneath
+      if (video && (video.srcObject || video.src) && video.readyState >= 2 && !video.paused) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       } else {
-        renderSimFront(time);
+        renderSensorStandbyHUD(time);
+      }
+
+      // 2. Real Edge-AI Neural & Computer Vision Detection Loop
+      if (window.ThrinethraRealtimeEngine && frameCount % 3 === 0) {
+        try {
+          var inputSource = (video && video.readyState >= 2) ? video : canvas;
+          var aiResult = await window.ThrinethraRealtimeEngine.processFrame(inputSource, ctx);
+          if (aiResult && aiResult.detections) {
+            latestDetections = aiResult.detections;
+          }
+        } catch (e) {
+          // Skip frame
+        }
+      }
+
+      // 3. Render dynamic bounding boxes over the real video frames
+      if (showBoundingBoxes && latestDetections.length > 0) {
+        latestDetections.forEach(function(det) {
+          var [bx, by, bw, bh] = det.bbox;
+          drawBoundingBox(bx, by, bw, bh, det.label, det.color || '#34D399', det.conf, det.isHazard, {
+            widthMm: det.widthMm,
+            depthMm: det.depthMm || 0,
+            lengthMm: det.lengthMm || 0,
+            distanceM: det.distanceM,
+            solution: { action: det.solution || det.category }
+          });
+        });
       }
 
       if (frameCount % 30 === 0) {
@@ -2546,8 +2561,8 @@
 
   requestAnimationFrame(mainLoop);
 
-  // Snapshot capture function with Bus ID, GPS, 3D Dimensions, Problem Diagnosis, and Real-Time Solution
-  function captureSnapshot(title, category, severity, plate) {
+  // Snapshot capture function with REAL dynamic measurements, live frame JPEG, GPS, and Neon DB recording
+  function captureSnapshot(explicitDet) {
     if (!isBusLoaded || !currentBusId) return;
 
     if (viewport) {
@@ -2559,33 +2574,61 @@
       }, 80);
     }
 
-    var busInfo = fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
-    var modeKey = currentMode === 'webcam' ? 'front' : currentMode;
-    var modeData = (busInfo.modes && busInfo.modes[modeKey]) || (busInfo.modes && busInfo.modes.front) || {
-      title: 'Inspected Road Anomaly',
-      problem: 'Road surface sub-base degradation',
-      category: 'Road Hazard',
-      severity: 3,
-      dimensions: { widthMm: 680, lengthMm: 920, depthMm: 54, distanceM: 12.4 },
-      solution: { action: 'Cold-mix asphalt patch (WO-RD-8841)', workOrder: 'WO-RD-8841', status: 'Work Order Dispatched' }
-    };
+    var busInfo = (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getBus(currentBusId) : null) || fleetMap[currentBusId] || fleetMap['KA-05-AB-1147'];
+    
+    // Composite video frame + overlay canvas tags into snapshot image
+    var snapCanvas = document.createElement('canvas');
+    snapCanvas.width = canvas.width || 800;
+    snapCanvas.height = canvas.height || 450;
+    var snapCtx = snapCanvas.getContext('2d');
+    if (video && video.readyState >= 2) {
+      snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+    }
+    snapCtx.drawImage(canvas, 0, 0);
 
-    var dataUrl = canvas.toDataURL('image/png');
+    var dataUrl = snapCanvas.toDataURL('image/jpeg', 0.88);
     var d = new Date();
     var timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
     var dateStr = d.toISOString().split('T')[0];
-    var snapId = 'SNAP-' + (currentBusId.replace(/[^A-Za-z0-9]/g,'') || 'BUS') + '-' + Math.floor(1000 + Math.random() * 9000);
+    var snapId = 'SNAP-' + (currentBusId.replace(/[^A-Za-z0-9]/g,'') || 'BUS') + '-' + Date.now().toString(36).toUpperCase();
 
-    var itemTitle = title || modeData.title;
-    var itemCat = category || modeData.category;
-    var itemSev = severity || modeData.severity || 3;
-    var itemPlate = plate || modeData.plate || (busInfo && busInfo.cars && busInfo.cars[0] ? busInfo.cars[0].plate : currentBusId);
-    var itemProb = modeData.problem;
-    var itemDim = modeData.dimensions;
-    var itemSol = modeData.solution;
-    var lat = busInfo.lat;
-    var lng = busInfo.lng;
-    var locationStr = busInfo.location + ' (GPS: ' + lat + '° N, ' + lng + '° E)';
+    // Check if there is an active live detection on the screen right now
+    var activeDet = explicitDet || (latestDetections.length > 0 ? latestDetections[0] : null);
+
+    var itemTitle, itemCat, itemSev, itemPlate, itemProb, itemDim, itemSol;
+
+    if (activeDet) {
+      itemTitle = activeDet.label || 'Active Road Anomaly';
+      itemCat = activeDet.category || 'Road Hazard';
+      itemSev = activeDet.severity || (activeDet.isHazard ? 3 : 1);
+      itemPlate = activeDet.plate || currentBusId;
+      itemProb = activeDet.problem || `Optical detection at distance ${activeDet.distanceM}m`;
+      itemDim = {
+        widthMm: activeDet.widthMm || 450,
+        lengthMm: activeDet.lengthMm || 900,
+        depthMm: activeDet.depthMm || 0,
+        distanceM: activeDet.distanceM || 10.5
+      };
+      itemSol = {
+        action: activeDet.solution || 'Automated maintenance crew dispatch',
+        workOrder: activeDet.workOrder || ('WO-' + Math.floor(1000 + Math.random() * 9000)),
+        status: 'Work Order Dispatched'
+      };
+    } else {
+      // Dynamic live roadway scan snapshot
+      var curSpeed = busInfo.speed || busInfo.baseSpeed || 38.5;
+      itemTitle = 'Live Transit Corridor Optical Scan';
+      itemCat = 'Inspection';
+      itemSev = 1;
+      itemPlate = currentBusId;
+      itemProb = `Optical surface inspection verified nominal road condition at ${curSpeed} km/h`;
+      itemDim = { widthMm: 3500, lengthMm: 8000, depthMm: 0, distanceM: 14.5 };
+      itemSol = { action: 'Corridor nominal status logged', workOrder: 'SCAN-' + Math.floor(1000 + Math.random() * 9000), status: 'Inspected' };
+    }
+
+    var lat = +(busInfo.lat || 12.9716).toFixed(5);
+    var lng = +(busInfo.lng || 77.5946).toFixed(5);
+    var locationStr = (busInfo.location || busInfo.routeName || 'Bengaluru Transit Corridor') + ' (' + lat + '° N, ' + lng + '° E)';
 
     var snapshotObj = {
       id: snapId,
@@ -2607,63 +2650,55 @@
     };
 
     snapshots.unshift(snapshotObj);
+    if (snapshots.length > 30) snapshots.pop();
     renderSnapshots();
 
-    // Dynamically inject into Realtime Data Engine & Tables
-    if (window.ThrinethraRealtimeEngine) {
-      window.ThrinethraRealtimeEngine.addDetection({
-        id: snapId,
-        time: timeStr,
-        type: itemCat === 'Incident' ? 'INCIDENT' : itemCat === 'Safety' ? 'SAFETY' : 'HAZARD',
-        category: itemCat,
-        title: itemTitle,
-        problem: itemProb,
-        dimensions: itemDim,
-        solution: itemSol,
-        location: busInfo.location,
-        lat: lat,
-        lng: lng,
-        severity: itemSev,
-        busId: currentBusId,
-        bus: currentBusId + ' (' + currentMode.toUpperCase() + ')',
-        plate: itemPlate,
-        conf: 97.5,
-        snapshot: dataUrl
-      });
+    // Persist to Neon DB via RealtimeEngine
+    if (window.ThrinethraRealtimeEngine && activeDet && activeDet.isHazard) {
+      window.ThrinethraRealtimeEngine._captureAndRecordHazard(activeDet, canvas, busInfo);
     }
 
     addCamDetectionLine(snapshotObj);
   }
 
+  if (btnCapture) {
+    btnCapture.addEventListener('click', function(){
+      captureSnapshot();
+    });
+  }
+
   function renderSnapshots() {
     if (!snapDeck) return;
-    if (snapCountLabel) snapCountLabel.textContent = snapshots.length + ' forensic snapshots captured';
+    var list = snapshots.length > 0 ? snapshots : (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().recentDetections : []);
+    if (snapCountLabel) snapCountLabel.textContent = list.length + ' forensic snapshots captured';
     
     var html = '';
-    snapshots.slice(0, 8).forEach(function(s, idx){
+    list.slice(0, 10).forEach(function(s, idx){
       var dim = s.dimensions || { widthMm: 680, depthMm: 54, distanceM: 12.4 };
       var sol = s.solution || { action: 'Work Order Dispatched', workOrder: 'WO-8841', status: 'Dispatched' };
-      var lat = s.lat || 12.9716;
-      var lng = s.lng || 77.5946;
+      var lat = parseFloat(s.lat) || 12.9716;
+      var lng = parseFloat(s.lng) || 77.5946;
+      var imgSrc = s.dataUrl || s.snapshot || 'logo.png';
+      var busLabel = s.busId || 'Fleet Unit';
 
       html += `
         <div class="snap-card">
-          <img src="${s.dataUrl}" class="snap-thumb" alt="${s.title}" onclick="window.openTelemetryModal(window._snapshots[${idx}])">
+          <img src="${imgSrc}" class="snap-thumb" alt="${s.title}" onclick="window.openTelemetryModal(window._snapshots[${idx}])">
           <div class="snap-meta">
             <div class="snap-title">${s.title}</div>
-            <div class="snap-sub">${s.busId} · ${s.time} · ${lat}° N, ${lng}° E</div>
+            <div class="snap-sub">${busLabel} · ${s.time || 'Live'} · ${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E</div>
             <div class="snap-dim">↔ W:${dim.widthMm}mm · ↕ D:${dim.depthMm}mm · 📏 ${dim.distanceM}m</div>
-            <div class="snap-solution">● ${sol.status}: ${sol.workOrder}</div>
+            <div class="snap-solution">● ${sol.status || 'Reported'}: ${sol.workOrder || 'WO-RD-8841'}</div>
           </div>
           <div class="snap-actions">
             <button class="snap-inspect-btn" onclick="window.openTelemetryModal(window._snapshots[${idx}])" type="button" style="color:var(--alert); font-weight:700;">🔍 Trinethra AI Telemetry</button>
             <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="snap-dl-btn" style="color:#4285F4;">Google Maps ↗</a>
-            <a href="${s.dataUrl}" download="Trinethra_${s.busId}_${s.id}_${s.time.replace(/:/g,'-')}.png" class="snap-dl-btn">PNG ↓</a>
+            <a href="${imgSrc}" download="Trinethra_${busLabel}_${s.id || 'SNAP'}.png" class="snap-dl-btn">PNG ↓</a>
           </div>
         </div>
       `;
     });
-    window._snapshots = snapshots;
+    window._snapshots = list;
     snapDeck.innerHTML = html;
   }
 
@@ -2671,32 +2706,22 @@
     if (!camLiveDetections) return;
     var line = document.createElement('div');
     line.className = 'log-line fresh';
-    var tagCls = item.category === 'Incident' ? 'tag-danger' : (item.category === 'Safety' ? 'tag-warn' : 'tag-hazard');
+    var cat = (item.category || item.type || 'HAZARD').toUpperCase();
+    var tagCls = cat.includes('INCIDENT') ? 'tag-danger' : (cat.includes('SAFETY') ? 'tag-live' : 'tag-hazard');
     var dim = item.dimensions ? `[W:${item.dimensions.widthMm}mm | D:${item.dimensions.depthMm}mm | Dist:${item.dimensions.distanceM}m]` : '';
     line.innerHTML = `
-      <span class="log-t mono">${item.time}</span>
-      <span class="log-tag ${tagCls}">${item.category.toUpperCase()}</span>
+      <span class="log-t mono">${item.time || new Date().toLocaleTimeString()}</span>
+      <span class="log-tag ${tagCls}">${cat}</span>
       <span class="log-desc">
-        <strong>${item.busId}</strong> · ${item.title}
+        <strong>${item.busId || 'Transit Bus'}</strong> · ${item.title}
         <span style="color:var(--alert); font-family:'JetBrains Mono',monospace; font-size:0.72rem;">${dim}</span>
-        <br><span style="font-size:0.7rem; color:var(--live);">Fix: ${(item.solution && item.solution.action) || 'Dispatched'}</span>
+        <br><span style="font-size:0.7rem; color:var(--live);">Fix: ${(item.solution && item.solution.action) || 'Work Order Dispatched'}</span>
       </span>
     `;
-    line.style.cursor = 'pointer';
-    line.onclick = function(){ window.openTelemetryModal(item); };
     camLiveDetections.insertBefore(line, camLiveDetections.firstChild);
-    if (camLiveDetections.children.length > 15) {
+    while (camLiveDetections.children.length > 25) {
       camLiveDetections.removeChild(camLiveDetections.lastChild);
     }
-    if (detectedCountEl) {
-      detectedCountEl.textContent = camLiveDetections.children.length;
-    }
-  }
-
-  if (btnCapture) {
-    btnCapture.addEventListener('click', function(){
-      captureSnapshot();
-    });
   }
 
   // Horizontal Scroll Left / Right One-by-One Buttons
@@ -2717,20 +2742,308 @@
     });
   }
 
-  // Automatic periodic detections & auto-capture
-  setInterval(function(){
-    if (!isBusLoaded || !currentBusId) return;
-    if (autoCapture && Math.random() > 0.4) {
-      var targetBusInfo = fleetMap[currentBusId];
-      if (targetBusInfo && targetBusInfo.modes) {
-        var modeKey = currentMode === 'webcam' ? 'front' : currentMode;
-        var modeData = targetBusInfo.modes[modeKey] || targetBusInfo.modes.front;
-        if (modeData) {
-          captureSnapshot(modeData.title, modeData.category, modeData.severity, modeData.plate);
+  // ----------------------------------------------------
+  // VIDEO FILE UPLOAD & HARDWARE WEBCAM HOOKUPS
+  // ----------------------------------------------------
+  var dashcamInput = document.getElementById('dashcamFileInput');
+  var btnTriggerUpload = document.getElementById('btnTriggerUploadVideo');
+
+  if (btnTriggerUpload && dashcamInput) {
+    btnTriggerUpload.addEventListener('click', function(){
+      dashcamInput.click();
+    });
+  }
+
+  if (dashcamInput) {
+    dashcamInput.addEventListener('change', function(e){
+      var file = e.target.files[0];
+      if (!file) return;
+      var fileUrl = URL.createObjectURL(file);
+      if (video) {
+        if (webcamStream) {
+          webcamStream.getTracks().forEach(t => t.stop());
+          webcamStream = null;
         }
+        video.srcObject = null;
+        video.src = fileUrl;
+        video.loop = true;
+        video.muted = true;
+        video.play().then(function(){
+          isBusLoaded = true;
+          currentMode = 'front';
+          updateCameraHud();
+          var sBadge = document.getElementById('camStreamStatusBadge');
+          if (sBadge) sBadge.innerHTML = '<i></i> DASHCAM STREAM ACTIVE';
+        }).catch(console.warn);
       }
+    });
+  }
+
+  // Auto-start active road video stream on page load
+  playRoadVideo(roadVideoFeeds.urban);
+  updateCameraHud();
+
+  // ----------------------------------------------------
+  // BUS UNIT REGISTRATION MODAL FORM
+  // ----------------------------------------------------
+  var formRegisterBus = document.getElementById('formRegisterBus');
+  var btnOpenRegModal = document.getElementById('btnOpenRegisterBusModal');
+  var regModal = document.getElementById('registerBusModal');
+
+  if (btnOpenRegModal && regModal) {
+    btnOpenRegModal.addEventListener('click', function(){
+      regModal.style.display = 'flex';
+    });
+  }
+
+  if (formRegisterBus) {
+    formRegisterBus.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var reg = document.getElementById('newBusReg').value.trim();
+      var model = document.getElementById('newBusModel').value.trim();
+      var depot = document.getElementById('newBusDepot').value.trim();
+      var route = document.getElementById('newBusRoute').value.trim();
+      var driver = document.getElementById('newBusDriver').value.trim();
+      var license = document.getElementById('newBusLicense').value.trim();
+      var lat = parseFloat(document.getElementById('newBusLat').value) || 12.9716;
+      var lng = parseFloat(document.getElementById('newBusLng').value) || 77.5946;
+      var notice = document.getElementById('newBusNotice');
+
+      try {
+        var submitBtn = document.getElementById('btnSubmitNewBus');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving to Neon DB…'; }
+
+        if (window.ThrinethraRealtimeEngine) {
+          await window.ThrinethraRealtimeEngine.registerNewBus({
+            id: reg,
+            registration_number: reg,
+            model: model,
+            depot: depot,
+            route_id: route.split(' ')[0] || 'Transit',
+            route_name: route,
+            driver_name: driver,
+            driver_license: license,
+            current_lat: lat,
+            current_lng: lng
+          });
+        }
+
+        if (notice) {
+          notice.style.display = 'block';
+          notice.style.color = '#34D399';
+          notice.textContent = '✅ Bus ' + reg + ' registered successfully in Neon DB!';
+        }
+
+        setTimeout(function(){
+          regModal.style.display = 'none';
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Register & Provision Bus'; }
+          var chipList = document.getElementById('busSelectorList');
+          if (chipList) {
+            var btn = document.createElement('button');
+            btn.className = 'bus-chip';
+            btn.type = 'button';
+            btn.setAttribute('data-bus', reg);
+            btn.textContent = '🚌 ' + reg;
+            btn.addEventListener('click', function(){ window.switchBusCamera(reg); });
+            chipList.insertBefore(btn, chipList.firstChild);
+          }
+          window.switchBusCamera(reg);
+        }, 800);
+      } catch (err) {
+        if (notice) {
+          notice.style.display = 'block';
+          notice.style.color = '#FF5470';
+          notice.textContent = '❌ Registration failed: ' + (err.message || 'Error');
+        }
+        var sBtn = document.getElementById('btnSubmitNewBus');
+        if (sBtn) { sBtn.disabled = false; sBtn.textContent = 'Register & Provision Bus'; }
+      }
+    });
+  }
+
+  // ----------------------------------------------------
+  // INTERACTIVE LEAFLET GIS COMMAND MAP
+  // ----------------------------------------------------
+  var gisMap = null;
+  var busMarkers = {};
+  var hazardMarkers = {};
+  var heatLayer = null;
+  var isHeatmapActive = false;
+
+  function initGisMap() {
+    var mapEl = document.getElementById('gisMap');
+    if (!mapEl || typeof L === 'undefined') return;
+    if (gisMap) {
+      gisMap.invalidateSize();
+      return;
     }
-  }, 12000);
+
+    gisMap = L.map('gisMap', {
+      center: [12.9716, 77.5946],
+      zoom: 12,
+      zoomControl: true
+    });
+
+    window.gisMap = gisMap;
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri, HERE, Garmin, &copy; OpenStreetMap',
+      maxZoom: 16
+    }).addTo(gisMap);
+
+    updateGisBusMarkers();
+    updateGisHazardMarkers();
+
+    // Heatmap button toggle
+    var btnHeat = document.getElementById('btnToggleHeatmap');
+    if (btnHeat) {
+      btnHeat.addEventListener('click', function(){
+        isHeatmapActive = !isHeatmapActive;
+        if (isHeatmapActive) {
+          btnHeat.classList.add('btn-solid');
+          btnHeat.classList.remove('btn-ghost');
+          var pts = [];
+          var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+          (state.fleetStatus || []).forEach(b => pts.push([b.lat, b.lng, 0.8]));
+          (state.recentDetections || []).forEach(h => pts.push([h.lat, h.lng, 0.9]));
+          if (typeof L.heatLayer !== 'undefined') {
+            if (heatLayer) gisMap.removeLayer(heatLayer);
+            heatLayer = L.heatLayer(pts, { radius: 25, blur: 15, maxZoom: 15 }).addTo(gisMap);
+          }
+        } else {
+          btnHeat.classList.remove('btn-solid');
+          btnHeat.classList.add('btn-ghost');
+          if (heatLayer) {
+            gisMap.removeLayer(heatLayer);
+            heatLayer = null;
+          }
+        }
+      });
+    }
+
+    var btnRecenter = document.getElementById('btnRecenterMap');
+    if (btnRecenter) {
+      btnRecenter.addEventListener('click', function(){
+        gisMap.setView([12.9716, 77.5946], 12);
+      });
+    }
+  }
+
+  function updateGisBusMarkers(fleet) {
+    if (!gisMap) return;
+    var buses = fleet || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().fleetStatus : []);
+    buses.forEach(function(bus) {
+      var lat = bus.lat || 12.9716;
+      var lng = bus.lng || 77.5946;
+      var routeName = bus.route || bus.id;
+
+      if (!busMarkers[bus.id]) {
+        var busIcon = L.divIcon({
+          className: 'custom-bus-icon',
+          html: '<div style="background:#34D399; color:#0A0E13; font-weight:800; font-family:\'Space Grotesk\',sans-serif; font-size:10px; padding:3px 7px; border-radius:12px; border:2px solid #fff; box-shadow:0 0 10px rgba(52,211,153,0.8); display:flex; align-items:center; gap:4px; white-space:nowrap;"><span>🚌</span><span>' + routeName + '</span></div>',
+          iconSize: [64, 24],
+          iconAnchor: [32, 12]
+        });
+        var marker = L.marker([lat, lng], { icon: busIcon }).addTo(gisMap);
+        marker.bindPopup(`
+          <div style="font-size:0.76rem; line-height:1.4;">
+            <div style="font-weight:700; color:#34D399; font-size:0.84rem;">🚌 ${bus.id} (${bus.model || 'EV Transit'})</div>
+            <div style="color:#9AA7B4; margin:3px 0;">${bus.routeName || bus.location || 'Active Transit Corridor'}</div>
+            <div style="font-size:0.7rem; color:#EAEFF3;">Speed: <strong>${bus.speed} km/h</strong> · Driver: <strong>${(bus.driver && bus.driver.name) || 'Active Operator'}</strong></div>
+            <div style="margin-top:6px;"><button class="btn btn-solid btn-sm" onclick="window.switchBusCamera('${bus.id}')" style="width:100%; justify-content:center;">View Live AI Camera</button></div>
+          </div>
+        `);
+        busMarkers[bus.id] = marker;
+      } else {
+        busMarkers[bus.id].setLatLng([lat, lng]);
+      }
+    });
+  }
+
+  function updateGisHazardMarkers(hazardsList) {
+    if (!gisMap) return;
+    var hazards = hazardsList || (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState().recentDetections : []);
+    hazards.forEach(function(h) {
+      addHazardMarkerToGis(h);
+    });
+  }
+
+  function addHazardMarkerToGis(h) {
+    if (!gisMap || !h || !h.lat || !h.lng) return;
+    if (hazardMarkers[h.id]) return;
+
+    var color = h.type === 'INCIDENT' ? '#FF5470' : (h.category && h.category.includes('Water')) ? '#4FA3D1' : '#FF7A45';
+    var emoji = (h.category && h.category.includes('Pothole')) ? '🕳️' : (h.category && h.category.includes('Water')) ? '🌊' : (h.category && h.category.includes('Pedestrian')) ? '🚸' : '⚠️';
+
+    var hazardIcon = L.divIcon({
+      className: 'custom-hazard-icon',
+      html: `<div style="background:${color}; color:#fff; font-size:12px; width:26px; height:26px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 10px ${color}; display:flex; align-items:center; justify-content:center;">${emoji}</div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13]
+    });
+
+    var marker = L.marker([h.lat, h.lng], { icon: hazardIcon }).addTo(gisMap);
+    var gmapsLink = h.googleMapsUrl || `https://www.google.com/maps?q=${h.lat},${h.lng}`;
+    var snapImgHtml = h.snapshot ? `<img src="${h.snapshot}" class="gis-popup-img" alt="Evidence Snapshot" />` : '';
+
+    marker.bindPopup(`
+      <div style="font-size:0.76rem; min-width:200px;">
+        <div class="gis-popup-head">
+          <span style="color:${color}; font-size:0.8rem;">${h.category || h.type}</span>
+          <span style="font-size:0.65rem; color:#9AA7B4;">Sev ${h.severity}/5</span>
+        </div>
+        <div style="font-weight:700; color:#fff; margin-bottom:3px;">${h.title}</div>
+        <div style="color:#9AA7B4; font-size:0.72rem; margin-bottom:5px;">${h.problem}</div>
+        ${snapImgHtml}
+        <div style="font-size:0.68rem; font-family:'JetBrains Mono',monospace; color:#4FA3D1; margin-bottom:6px;">
+          GPS: ${parseFloat(h.lat).toFixed(4)}° N, ${parseFloat(h.lng).toFixed(4)}° E
+          ${h.dimensions && h.dimensions.depthMm ? ` · Depth: ${h.dimensions.depthMm}mm` : ''}
+        </div>
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <a href="${gmapsLink}" target="_blank" class="btn btn-solid btn-sm" style="flex:1; justify-content:center; text-decoration:none;">
+            📍 Google Maps ↗
+          </a>
+          <button type="button" onclick="window.openTelemetryModalById('${h.id}')" class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;">
+            🔎 Dossier
+          </button>
+        </div>
+      </div>
+    `);
+
+    hazardMarkers[h.id] = marker;
+  }
+
+  // Initialize GIS Map and Live Road Camera Feed after DOM load
+  setTimeout(initGisMap, 300);
+  setTimeout(function(){
+    if (typeof window.switchBusCamera === 'function') {
+      window.switchBusCamera('KA-05-AB-1147');
+    }
+  }, 450);
+
+  // Subscribe to Real-Time Engine Events
+  if (window.ThrinethraRealtimeEngine) {
+    window.ThrinethraRealtimeEngine.on('detection:new', function(newDet) {
+      addCamDetectionLine(newDet);
+      addHazardMarkerToGis(newDet);
+      renderSnapshots();
+    });
+    window.ThrinethraRealtimeEngine.on('telemetry:1s_tick', function(fleet) {
+      updateGisBusMarkers(fleet);
+    });
+    window.ThrinethraRealtimeEngine.on('detections:list', function(list) {
+      renderSnapshots();
+      updateGisHazardMarkers(list);
+    });
+  }
+
+  window.openTelemetryModalById = function(id) {
+    var state = window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getState() : {};
+    var found = (state.recentDetections || []).find(d => d.id === id) || (window._snapshots || []).find(s => s.id === id);
+    if (found) {
+      window.openTelemetryModal(found);
+    }
+  };
 
   // Live Modal 1-Second GPS Tracking Loop & Radar Renderer
   var modalLiveInterval = null;
@@ -3151,6 +3464,76 @@
 
       </div>
     </div>
+  </div>
+</div>
+
+<!-- REGISTER BUS UNIT ACCOUNT MODAL -->
+<div id="registerBusModal" class="telemetry-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Register Transit Bus Unit">
+  <div class="telemetry-modal-card" style="max-width:560px;">
+    <div class="modal-head">
+      <div class="modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7A45" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="8" y2="21"/><line x1="16" y1="18" x2="16" y2="21"/></svg>
+        <span>Register New Transit Bus Account</span>
+        <span class="modal-title-ai-badge">NEON DB</span>
+      </div>
+      <button type="button" class="modal-close" onclick="document.getElementById('registerBusModal').style.display='none'">✕</button>
+    </div>
+    <form id="formRegisterBus" style="padding:16px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Vehicle Reg. Number *</label>
+          <input type="text" id="newBusReg" placeholder="e.g. KA-04-MM-9021" required style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-family:'JetBrains Mono',monospace; font-size:0.8rem;" />
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Bus Model / Make</label>
+          <input type="text" id="newBusModel" placeholder="e.g. Tata Starbus EV 12M" value="Tata Starbus EV Ultra 12M" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Assigned Depot</label>
+          <input type="text" id="newBusDepot" placeholder="e.g. Depot 04 (Majestic)" value="Depot 04 (Central Majestic)" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Route Number & Name</label>
+          <input type="text" id="newBusRoute" placeholder="e.g. 42B (MG Road → Indiranagar)" value="42B (MG Road → Indiranagar)" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Driver Name</label>
+          <input type="text" id="newBusDriver" placeholder="e.g. Ramesh Kumar" value="Ramesh Kumar" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Driver Badge / License</label>
+          <input type="text" id="newBusLicense" placeholder="e.g. DRV-4418" value="DRV-4418 · DL-04-2016-88214" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Initial GPS Latitude</label>
+          <input type="number" step="0.0001" id="newBusLat" value="12.9716" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:4px;">Initial GPS Longitude</label>
+          <input type="number" step="0.0001" id="newBusLng" value="77.5946" style="width:100%; padding:8px; background:var(--bg-800); border:1px solid var(--line); border-radius:5px; color:#fff; font-size:0.8rem;" />
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.72rem; color:var(--text-mid); display:block; margin-bottom:6px;">Attached Sensor Cameras:</label>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:0.74rem;">
+          <label><input type="checkbox" id="camChkFront" checked /> Front Optical 4K AI</label>
+          <label><input type="checkbox" id="camChkRear" checked /> Rear Radar Vision + OCR</label>
+          <label><input type="checkbox" id="camChkSide" checked /> Left Curb Blindspot IR</label>
+          <label><input type="checkbox" id="camChkCabin" checked /> Cabin Thermal Occupancy</label>
+        </div>
+      </div>
+      <div id="newBusNotice" style="font-size:0.72rem; margin-bottom:10px; display:none;"></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('registerBusModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-solid" id="btnSubmitNewBus">Register & Provision Bus</button>
+      </div>
+    </form>
   </div>
 </div>
 

@@ -57,22 +57,20 @@
     }
 
     _initDatabase() {
+      // Neon database is the single source of truth for user authentication
       try {
-        const stored = localStorage.getItem(STORAGE_KEYS.USERS_DB);
-        if (!stored) {
-          localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(DEFAULT_USERS));
-        }
+        localStorage.removeItem(STORAGE_KEYS.USERS_DB);
       } catch (e) {
-        console.warn('Storage unavailable:', e);
+        console.warn('Storage init warning:', e);
       }
     }
 
     _getUsers() {
       try {
         const raw = localStorage.getItem(STORAGE_KEYS.USERS_DB);
-        return raw ? JSON.parse(raw) : DEFAULT_USERS;
+        return raw ? JSON.parse(raw) : [];
       } catch (e) {
-        return DEFAULT_USERS;
+        return [];
       }
     }
 
@@ -147,8 +145,10 @@
 
     /**
      * Dynamic Email/Password Login
-     * STRICT ENFORCEMENT: Queries Neon database. If the user has not registered,
-     * the login attempt is rejected.
+     * STRICT NEON DATABASE ENFORCEMENT:
+     * Queries Neon PostgreSQL database directly.
+     * ONLY registered users stored in Neon DB are accepted.
+     * All others are strictly rejected.
      */
     async loginWithEmail(email, password, remember = true) {
       const cleanEmail = (email || '').trim().toLowerCase();
@@ -160,41 +160,36 @@
         throw new Error('Please enter your password.');
       }
 
-      let existing = null;
-      let usedNeon = false;
-
-      // Primary check: Neon PostgreSQL Cloud Database
-      if (global.NeonDB) {
-        try {
-          existing = await global.NeonDB.findUserByEmail(cleanEmail);
-          usedNeon = true;
-        } catch (neonErr) {
-          console.warn('Neon query failed, checking local cache:', neonErr);
-        }
+      if (!global.NeonDB) {
+        throw new Error('Neon database client is not loaded. Cannot authenticate.');
       }
 
-      // Fallback to local storage if Neon connection is unavailable
-      if (!usedNeon) {
-        const localUsers = this._getUsers();
-        existing = localUsers.find(u => u.email.toLowerCase() === cleanEmail);
+      // 1. Strictly query Neon PostgreSQL Cloud Database
+      let existingInNeon = null;
+      try {
+        existingInNeon = await global.NeonDB.findUserByEmail(cleanEmail);
+      } catch (neonErr) {
+        console.error('Neon database query error during login:', neonErr);
+        throw new Error('Neon database connection error: ' + (neonErr.message || 'Please check connection'));
       }
 
-      // STRICT RULE: User must be registered in the database
-      if (!existing) {
-        throw new Error('No registered account found for ' + cleanEmail + '. You must create an account first on the Registration page.');
+      // STRICT RULE: If not registered in Neon database, REJECT LOGIN
+      if (!existingInNeon) {
+        throw new Error('Access denied: No account registered in the Neon database for ' + cleanEmail + '. You must create an account first on the Registration page.');
       }
 
-      // Verify password
-      if (existing.passwordHash && existing.passwordHash !== password) {
-        throw new Error('Incorrect password. Please verify your credentials or reset your password.');
+      // 2. Strictly verify password against Neon DB record
+      if (!existingInNeon.passwordHash || existingInNeon.passwordHash !== password) {
+        throw new Error('Access denied: Incorrect password for registered user ' + cleanEmail + '. Please check your credentials or reset your password.');
       }
 
-      // Update last_login timestamp in Neon
-      if (global.NeonDB && existing.id) {
-        global.NeonDB.updateLastLogin(existing.id).catch(() => {});
+      // 3. Update last_login timestamp in Neon database
+      if (existingInNeon.id) {
+        global.NeonDB.updateLastLogin(existingInNeon.id).catch(() => {});
       }
 
-      return this._setSession(existing, remember);
+      // 4. Accept login and initialize session
+      return this._setSession(existingInNeon, remember);
     }
 
     _loadGoogleGsiScript() {
@@ -225,59 +220,38 @@
       const name = (profile.name || email.split('@')[0]).trim();
       const pic = profile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=1A73E8&textColor=ffffff`;
 
-      let existing = null;
-      if (global.NeonDB) {
-        existing = await global.NeonDB.findUserByEmail(email);
-      } else {
-        const users = this._getUsers();
-        existing = users.find(u => u.email.toLowerCase() === email);
+      if (!global.NeonDB) {
+        throw new Error('Neon database client is not loaded. Cannot authenticate.');
       }
 
+      const existing = await global.NeonDB.findUserByEmail(email);
+
       if (isRegister) {
-        // REGISTER FLOW:
+        // REGISTER FLOW: Save new Google user directly into Neon DB
         if (existing) {
-          if (global.NeonDB && existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
+          if (existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
           return this._setSession(existing, true);
         }
 
-        // Create new user in Neon PostgreSQL
-        let created;
-        if (global.NeonDB) {
-          created = await global.NeonDB.createUser({
-            firstName: profile.given_name || name.split(' ')[0],
-            lastName: profile.family_name || (name.split(' ').slice(1).join(' ') || 'Officer'),
-            name: name,
-            email: email,
-            org: 'Transport Authority Command',
-            role: 'Urban Mobility Specialist',
-            avatar: pic,
-            provider: 'google'
-          });
-        } else {
-          created = {
-            id: 'usr_g_' + Date.now().toString(36),
-            firstName: profile.given_name || name.split(' ')[0],
-            lastName: profile.family_name || (name.split(' ').slice(1).join(' ') || 'Officer'),
-            name: name,
-            email: email,
-            org: 'Transport Authority Command',
-            role: 'Urban Mobility Specialist',
-            avatar: pic,
-            provider: 'google'
-          };
-          const users = this._getUsers();
-          users.push(created);
-          this._saveUsers(users);
-        }
+        const created = await global.NeonDB.createUser({
+          firstName: profile.given_name || name.split(' ')[0],
+          lastName: profile.family_name || (name.split(' ').slice(1).join(' ') || 'Officer'),
+          name: name,
+          email: email,
+          org: 'Transport Authority Command',
+          role: 'Urban Mobility Specialist',
+          avatar: pic,
+          provider: 'google'
+        });
 
         return this._setSession(created, true);
       } else {
-        // LOGIN FLOW: STRICT CHECK
+        // LOGIN FLOW: STRICT CHECK against Neon DB
         if (!existing) {
-          throw new Error('This Google account (' + email + ') is not registered with Thrinethra. Please create an account on the Registration page first.');
+          throw new Error('Access denied: Google account (' + email + ') is not registered in the Neon database. Please create an account first on the Registration page.');
         }
 
-        if (global.NeonDB && existing.id) {
+        if (existing.id) {
           global.NeonDB.updateLastLogin(existing.id).catch(() => {});
         }
 
@@ -427,55 +401,40 @@
           }
 
           try {
-            let existing = null;
-            if (global.NeonDB) {
-              existing = await global.NeonDB.findUserByEmail(email);
-            } else {
-              const users = this._getUsers();
-              existing = users.find(u => u.email.toLowerCase() === email);
+            if (!global.NeonDB) {
+              showAppleErr('Neon database client is not available.');
+              return;
             }
+
+            const existing = await global.NeonDB.findUserByEmail(email);
 
             if (isRegister) {
               if (existing) {
-                if (global.NeonDB && existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
+                if (existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
                 cleanup();
                 resolve(this._setSession(existing, true));
                 return;
               }
 
-              let created;
-              if (global.NeonDB) {
-                created = await global.NeonDB.createUser({
-                  firstName: 'Apple',
-                  lastName: 'Officer',
-                  name: 'Apple Verified Officer',
-                  email: email,
-                  org: 'Autonomous Transit Control',
-                  role: 'Senior Mobility Commander',
-                  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=140&q=80',
-                  provider: 'apple'
-                });
-              } else {
-                created = {
-                  id: 'usr_apple_' + Date.now().toString(36),
-                  firstName: 'Apple',
-                  lastName: 'Officer',
-                  name: 'Apple Verified Officer',
-                  email: email,
-                  org: 'Autonomous Transit Control',
-                  role: 'Senior Mobility Commander',
-                  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=140&q=80',
-                  provider: 'apple'
-                };
-              }
+              const created = await global.NeonDB.createUser({
+                firstName: 'Apple',
+                lastName: 'Officer',
+                name: 'Apple Verified Officer',
+                email: email,
+                org: 'Autonomous Transit Control',
+                role: 'Senior Mobility Commander',
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=140&q=80',
+                provider: 'apple'
+              });
+
               cleanup();
               resolve(this._setSession(created, true));
             } else {
               if (!existing) {
-                showAppleErr('This Apple ID (' + email + ') is not registered. Please register first on the Create Account page.');
+                showAppleErr('Access denied: Apple ID (' + email + ') is not registered in the Neon database. Please register first on the Create Account page.');
                 return;
               }
-              if (global.NeonDB && existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
+              if (existing.id) global.NeonDB.updateLastLogin(existing.id).catch(() => {});
               cleanup();
               resolve(this._setSession(existing, true));
             }
@@ -506,25 +465,28 @@
       if (!email || !email.includes('@')) throw new Error('A valid work email is required.');
       if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
 
-      // Check if user already exists in Neon database
-      if (global.NeonDB) {
-        const existingInNeon = await global.NeonDB.findUserByEmail(email);
-        if (existingInNeon) {
-          throw new Error('An account with this email already exists. Please log in.');
-        }
+      if (!global.NeonDB) {
+        throw new Error('Neon database client is not loaded. Cannot register user.');
       }
 
-      // Check local fallback
-      const localUsers = this._getUsers();
-      if (localUsers.some(u => u.email.toLowerCase() === email)) {
-        throw new Error('An account with this email already exists. Please log in.');
+      // 1. Check if user already exists in Neon database
+      let existingInNeon = null;
+      try {
+        existingInNeon = await global.NeonDB.findUserByEmail(email);
+      } catch (neonFindErr) {
+        console.error('Neon DB findUserByEmail error during registration:', neonFindErr);
+        throw new Error('Database error while checking email availability: ' + neonFindErr.message);
+      }
+
+      if (existingInNeon) {
+        throw new Error('An account with email ' + email + ' is already registered in the Neon database. Please log in.');
       }
 
       const fullName = `${firstName} ${lastName}`.trim();
-      let newUser;
 
-      // Write to Neon database
-      if (global.NeonDB) {
+      // 2. Strictly write user to Neon PostgreSQL database
+      let newUser = null;
+      try {
         newUser = await global.NeonDB.createUser({
           firstName: firstName,
           lastName: lastName,
@@ -536,25 +498,14 @@
           provider: 'email',
           passwordHash: password
         });
-      } else {
-        newUser = {
-          id: 'usr_' + Date.now().toString(36),
-          firstName: firstName,
-          lastName: lastName,
-          name: fullName,
-          email: email,
-          org: org || 'City Transport Department',
-          role: 'Command Center Operator',
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}&backgroundColor=1B2129&textColor=FF7A45`,
-          provider: 'email',
-          passwordHash: password,
-          createdAt: new Date().toISOString()
-        };
+      } catch (neonErr) {
+        console.error('Neon DB createUser error:', neonErr);
+        throw new Error('Failed to save account into Neon database: ' + neonErr.message);
       }
 
-      // Sync local cache
-      localUsers.push(newUser);
-      this._saveUsers(localUsers);
+      if (!newUser) {
+        throw new Error('Registration failed: user could not be saved to the Neon database.');
+      }
 
       return this._setSession(newUser, true);
     }

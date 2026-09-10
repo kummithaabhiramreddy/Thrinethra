@@ -239,7 +239,8 @@
       span.textContent = text;
       notice.appendChild(span);
 
-      if (showLoginLink || text.toLowerCase().includes('already') || text.toLowerCase().includes('log in')) {
+      var isAlready = text.toLowerCase().includes('already') || text.toLowerCase().includes('log in') || text.toLowerCase().includes('exists');
+      if (isAlready || showLoginLink === true && isAlready) {
         var a = document.createElement('a');
         a.href = 'login.html';
         a.textContent = ' Log in here →';
