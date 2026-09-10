@@ -79,98 +79,62 @@
 
       try {
         let response = null;
-        const proxy = await this._getProxyEndpoint();
 
-        // 1. If running on local server (port 3000), use proxy
-        if (proxy) {
-          try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 3000);
-            const res = await fetch(proxy, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body),
-              signal: controller.signal
-            });
-            clearTimeout(timer);
-            // If proxy is not supporting POST or endpoint is missing (404/405), don't treat as valid response
-            if (res.ok) {
-              response = res;
-            }
-          } catch (e) {
-            response = null;
+        // Strategy 1: Direct Neon Serverless HTTP API over HTTPS
+        // Note: Do NOT include 'Content-Type: application/json' because Neon's CORS
+        // Access-Control-Allow-Headers explicitly permits Neon-*, but omitting Content-Type
+        // ensures browser CORS preflight passes cleanly.
+        try {
+          const directRes = await fetch(this.endpoint, {
+            method: 'POST',
+            headers: {
+              'Neon-Connection-String': this.connectionString,
+              'Neon-Raw-Text-Output': 'true',
+              'Neon-Array-Mode': 'true'
+            },
+            body: JSON.stringify(body)
+          });
+          if (directRes.ok) {
+            response = directRes;
+          }
+        } catch (directErr) {
+          console.warn('Direct Neon connection warning:', directErr.message);
+        }
+
+        // Strategy 2: If direct Neon was blocked (e.g. strict firewall), use local server proxy
+        if (!response) {
+          const proxy = await this._getProxyEndpoint();
+          if (proxy) {
+            try {
+              const res = await fetch(proxy, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+              });
+              if (res.ok) {
+                response = res;
+              }
+            } catch (e) {}
           }
         }
 
-        // 2. If on file:// or another port (like Live Server 5500), try http://localhost:3000/api/neon-sql if running
+        // Strategy 3: Try explicit localhost:3000 Node server proxy
         if (!response && typeof window !== 'undefined' && window.location.port !== '3000') {
           try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 1500);
             const localRes = await fetch('http://localhost:3000/api/neon-sql', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body),
-              signal: controller.signal
+              body: JSON.stringify(body)
             });
-            clearTimeout(timer);
             if (localRes.ok) {
               response = localRes;
             }
-          } catch (localErr) {
-            // port 3000 not running, continue to direct Neon endpoint
-          }
-        }
-
-        // 3. Fallback to direct Neon SQL endpoint over HTTPS (CORS supported)
-        if (!response) {
-          try {
-            response = await fetch(this.endpoint, {
-              method: 'POST',
-              headers: {
-                'Neon-Connection-String': this.connectionString,
-                'Neon-Raw-Text-Output': 'true',
-                'Neon-Array-Mode': 'true',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(body)
-            });
-          } catch (netErr) {
-            console.warn('Direct Neon SQL connection attempt failed:', netErr);
-            response = null;
-          }
-        }
-
-        if (!response) {
-          return [];
-        }
-
-        if (!response.ok) {
-          // If response is 404 or 405 from a static server, try direct Neon as final emergency fallback
-          if (response.status === 404 || response.status === 405) {
-            try {
-              const directRes = await fetch(this.endpoint, {
-                method: 'POST',
-                headers: {
-                  'Neon-Connection-String': this.connectionString,
-                  'Neon-Raw-Text-Output': 'true',
-                  'Neon-Array-Mode': 'true',
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-              });
-              if (directRes.ok) {
-                response = directRes;
-              }
-            } catch (err2) {
-              // ignore
-            }
-          }
+          } catch (localErr) {}
         }
 
         if (!response || !response.ok) {
-          const errData = response ? await response.json().catch(() => ({ message: response.statusText })) : { message: 'Database connection failed' };
-          throw new Error(errData.message || `Neon SQL error (status ${response ? response.status : 'unknown'})`);
+          const errData = response ? await response.json().catch(() => ({ message: response.statusText })) : { message: 'Could not connect to Neon database' };
+          throw new Error(errData.message || `Neon SQL error (status ${response ? response.status : 'offline'})`);
         }
 
         const data = await response.json();

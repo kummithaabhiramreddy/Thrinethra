@@ -52,7 +52,8 @@ const server = http.createServer(async (req, res) => {
           headers: {
             'Neon-Connection-String': NEON_CONNECTION_STRING,
             'Neon-Raw-Text-Output': 'true',
-            'Neon-Array-Mode': 'true'
+            'Neon-Array-Mode': 'true',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             query: payload.query,
