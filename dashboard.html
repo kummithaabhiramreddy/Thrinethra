@@ -4781,13 +4781,31 @@
         gisMap = L.map('gisMap', {
           center: [startLat, startLng],
           zoom: 16,
-          maxZoom: 20,
+          minZoom: 3,
+          maxZoom: 21,
           layers: [googleRoads],
-          zoomControl: true
+          zoomControl: true,
+          zoomAnimation: true,
+          fadeAnimation: true,
+          markerZoomAnimation: true,
+          touchZoom: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          boxZoom: true,
+          dragging: true,
+          tapHold: true,
+          bounceAtZoomLimits: false,
+          wheelPxPerZoomLevel: 60
         });
 
         window.gisMapInstance = gisMap;
         window.leafletMapInstance = gisMap;
+        window._userInteractingWithMap = false;
+
+        // Track when user touches, pans, or zooms so background processes don't reset their view
+        gisMap.on('movestart zoomstart dragstart touchstart', function (e) {
+          window._userInteractingWithMap = true;
+        });
 
         // Add Layer Controls
         L.control.layers(baseMaps, null, { position: 'topleft' }).addTo(gisMap);
@@ -4892,6 +4910,7 @@
         var btnRecenter = document.getElementById('btnRecenterMap');
         if (btnRecenter) {
           btnRecenter.addEventListener('click', function () {
+            window._userInteractingWithMap = false;
             var curLoc = (window.ThrinethraRealtimeEngine && window.ThrinethraRealtimeEngine.deviceLocation) ? window.ThrinethraRealtimeEngine.deviceLocation : null;
             if (curLoc && !isNaN(parseFloat(curLoc.lat)) && !isNaN(parseFloat(curLoc.lng))) {
               gisMap.flyTo([parseFloat(curLoc.lat), parseFloat(curLoc.lng)], 17, { duration: 1.2 });
@@ -5255,8 +5274,10 @@
             var label = loc.village || loc.city || 'GPS';
             btnRecenter.textContent = '🎯 ' + label + ' Focus';
           }
-          if (gisMap && loc && loc.lat && loc.lng) {
-            gisMap.flyTo([loc.lat, loc.lng], 16, { duration: 1.5 });
+          // Only perform an initial flyTo ONCE when map first loads if user has not already moved/zoomed the map
+          if (!window._userInteractingWithMap && !window._mapFirstCentred && gisMap && loc && loc.lat && loc.lng) {
+            window._mapFirstCentred = true;
+            gisMap.setView([parseFloat(loc.lat), parseFloat(loc.lng)], gisMap.getZoom(), { animate: false });
           }
         });
         window.ThrinethraRealtimeEngine.on('detections:list', function (list) {
