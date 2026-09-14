@@ -875,6 +875,115 @@
       animation: pulse 1.2s infinite;
     }
 
+    /* Mobile Sensing & Active Telemetry Dossier Bar */
+    .bus-dossier-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1200px) {
+      .bus-dossier-bar {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .bus-dossier-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .bus-dossier-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dossier-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      background: rgba(14, 20, 29, 0.7);
+      border: 1px solid var(--line-soft);
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .dossier-item:hover {
+      border-color: rgba(255, 122, 69, 0.45);
+      background: rgba(255, 122, 69, 0.05);
+    }
+
+    .dossier-lbl {
+      font-size: 0.60rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-low);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dossier-lbl::after {
+      content: '▾';
+      font-size: 0.55rem;
+      color: var(--text-low);
+      margin-left: 4px;
+      opacity: 0.6;
+    }
+
+    .dossier-val {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-hi);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      line-height: 1.3;
+    }
+
+    /* Interactive Expandable State - Click to show entire words */
+    .dossier-item.expanded {
+      grid-column: 1 / -1 !important;
+      background: #0D131C;
+      border-color: var(--alert);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 122, 69, 0.3);
+      z-index: 5;
+    }
+
+    .dossier-item.expanded .dossier-lbl::after {
+      content: '▴ (Click to collapse)';
+      color: var(--alert);
+      opacity: 1;
+      font-weight: 600;
+      text-transform: none;
+    }
+
+    .dossier-item.expanded .dossier-val {
+      white-space: normal;
+      word-break: break-word;
+      overflow: visible;
+      color: #fff;
+    }
+
     .cam-ctrls {
       display: flex;
       gap: 5px;
@@ -3608,6 +3717,20 @@
       var dossierLocation = document.getElementById('dossierLocation');
       var dossierSpeed = document.getElementById('dossierSpeed');
 
+      // Click to expand / compress dossier telemetry items cleanly
+      document.querySelectorAll('.dossier-item').forEach(function (item) {
+        item.setAttribute('title', 'Click to expand / view full details');
+        item.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var wasExpanded = this.classList.contains('expanded');
+          // Close other open ones
+          document.querySelectorAll('.dossier-item.expanded').forEach(function (el) {
+            if (el !== item) el.classList.remove('expanded');
+          });
+          this.classList.toggle('expanded', !wasExpanded);
+        });
+      });
+
       // Camera Controls
       var btnFront = document.getElementById('btnModeFront');
       var btnRear = document.getElementById('btnModeRear');
@@ -3756,11 +3879,35 @@
           var devProfile = (window.ThrinethraRealtimeEngine && window.ThrinethraRealtimeEngine.getDeviceAndBrowserProfile) ? window.ThrinethraRealtimeEngine.getDeviceAndBrowserProfile() : { deviceModel: 'Mobile / PC Device', browser: 'Google Chrome', operatorName: 'Officer Ramesh Kumar', operatorEmail: 'sensor.ops@trinethra.gov.in', operatorPhone: '+91 94808 22100' };
           var devPlace = (devLoc && devLoc.hierarchy && devLoc.hierarchy.formatted) ? devLoc.hierarchy.formatted : ((devLoc && devLoc.location && !devLoc.location.includes('Locating')) ? devLoc.location : 'Live Shooting Place GPS');
           
-          if (dossierBusId) dossierBusId.textContent = devProfile.deviceModel + ' · ' + devProfile.browser;
-          if (dossierRoute) dossierRoute.textContent = 'Active Optical Lens (1080p @ 30 FPS)';
-          if (dossierDriver) dossierDriver.textContent = devProfile.operatorName + ' (' + devProfile.operatorEmail + ')';
-          if (dossierLocation) dossierLocation.textContent = devPlace;
-          if (dossierSpeed) dossierSpeed.textContent = 'REALTIME SCAN · GPU ACTIVE';
+          if (dossierBusId) {
+            var valBus = devProfile.deviceModel + ' · ' + devProfile.browser;
+            dossierBusId.textContent = valBus;
+            dossierBusId.title = valBus;
+            if (dossierBusId.parentElement) dossierBusId.parentElement.title = 'Click to expand / collapse: ' + valBus;
+          }
+          if (dossierRoute) {
+            var valRoute = 'Active Optical Lens (1080p @ 30 FPS)';
+            dossierRoute.textContent = valRoute;
+            dossierRoute.title = valRoute;
+            if (dossierRoute.parentElement) dossierRoute.parentElement.title = 'Click to expand / collapse: ' + valRoute;
+          }
+          if (dossierDriver) {
+            var valDriver = devProfile.operatorName + ' (' + devProfile.operatorEmail + ')';
+            dossierDriver.textContent = valDriver;
+            dossierDriver.title = valDriver;
+            if (dossierDriver.parentElement) dossierDriver.parentElement.title = 'Click to expand / collapse: ' + valDriver;
+          }
+          if (dossierLocation) {
+            dossierLocation.textContent = devPlace;
+            dossierLocation.title = devPlace;
+            if (dossierLocation.parentElement) dossierLocation.parentElement.title = 'Click to expand / collapse: ' + devPlace;
+          }
+          if (dossierSpeed) {
+            var valSpeed = 'REALTIME SCAN · GPU ACTIVE';
+            dossierSpeed.textContent = valSpeed;
+            dossierSpeed.title = valSpeed;
+            if (dossierSpeed.parentElement) dossierSpeed.parentElement.title = 'Click to expand / collapse: ' + valSpeed;
+          }
           if (camStreamStatusBadge) camStreamStatusBadge.innerHTML = '<i></i> 📹 ' + devProfile.deviceModel.toUpperCase() + ' · ' + devProfile.browser.toUpperCase();
         } else {
           var busInfo = (window.ThrinethraRealtimeEngine ? window.ThrinethraRealtimeEngine.getBus(targetKey) : null) || fleetMap[targetKey];
@@ -3870,10 +4017,28 @@
           if (camSourceBadge) camSourceBadge.textContent = 'DEVICE: ' + devProfile.deviceModel.toUpperCase() + ' · ' + devProfile.browser.toUpperCase();
           if (camGpsBadge) camGpsBadge.textContent = 'GPS: ' + (h.village ? h.village + ', ' : '') + (h.city ? h.city + ', ' : '') + (h.district ? h.district + ' · ' : '') + devLat + '° N, ' + devLng + '° E';
           if (camSpeedBadge) camSpeedBadge.textContent = 'STATUS: ' + activeCamName + ' · 30 FPS';
-          if (dossierLocation) dossierLocation.textContent = devPlace;
-          if (dossierBusId) dossierBusId.textContent = devProfile.deviceModel + ' · ' + devProfile.browser;
-          if (dossierRoute) dossierRoute.textContent = activeCamName;
-          if (dossierDriver) dossierDriver.textContent = devProfile.operatorName + ' (' + devProfile.operatorEmail + ')';
+          if (dossierLocation) {
+            dossierLocation.textContent = devPlace;
+            dossierLocation.title = devPlace;
+            if (dossierLocation.parentElement) dossierLocation.parentElement.title = 'Click to expand / collapse: ' + devPlace;
+          }
+          if (dossierBusId) {
+            var valBus = devProfile.deviceModel + ' · ' + devProfile.browser;
+            dossierBusId.textContent = valBus;
+            dossierBusId.title = valBus;
+            if (dossierBusId.parentElement) dossierBusId.parentElement.title = 'Click to expand / collapse: ' + valBus;
+          }
+          if (dossierRoute) {
+            dossierRoute.textContent = activeCamName;
+            dossierRoute.title = activeCamName;
+            if (dossierRoute.parentElement) dossierRoute.parentElement.title = 'Click to expand / collapse: ' + activeCamName;
+          }
+          if (dossierDriver) {
+            var valDriver = devProfile.operatorName + ' (' + devProfile.operatorEmail + ')';
+            dossierDriver.textContent = valDriver;
+            dossierDriver.title = valDriver;
+            if (dossierDriver.parentElement) dossierDriver.parentElement.title = 'Click to expand / collapse: ' + valDriver;
+          }
           return;
         }
 
