@@ -127,8 +127,16 @@
         }
 
         if (!response || !response.ok) {
-          const errData = response ? await response.json().catch(() => ({ message: response.statusText })) : { message: 'Could not connect to Neon database' };
-          throw new Error(errData.message || `Neon SQL error (status ${response ? response.status : 'offline'})`);
+          let errorDetail = 'Could not reach database proxy endpoint';
+          if (response) {
+            try {
+              const errJson = await response.json();
+              if (errJson && errJson.message) errorDetail = errJson.message;
+            } catch (jsonErr) {
+              errorDetail = response.statusText ? `HTTP ${response.status} (${response.statusText})` : `HTTP ${response.status}`;
+            }
+          }
+          throw new Error(errorDetail);
         }
 
         const data = await response.json();

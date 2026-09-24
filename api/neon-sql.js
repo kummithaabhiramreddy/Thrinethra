@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
     if (!connectionString) {
       return res.status(500).json({
-        message: 'NEON_CONNECTION_STRING is not set in Vercel Environment Variables.',
+        message: 'NEON_CONNECTION_STRING is missing in Vercel Environment Variables. Please add it under Vercel Settings > Environment Variables.',
         error: true
       });
     }
@@ -42,12 +42,18 @@ module.exports = async (req, res) => {
 
     if (!neonEndpoint) {
       return res.status(500).json({
-        message: 'NEON_ENDPOINT is not configured in Vercel Environment Variables.',
+        message: 'NEON_ENDPOINT could not be resolved. Please set NEON_ENDPOINT in Vercel Environment Variables.',
         error: true
       });
     }
 
-    const payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    let payload = req.body;
+    if (Buffer.isBuffer(payload)) {
+      payload = JSON.parse(payload.toString('utf8') || '{}');
+    } else if (typeof payload === 'string') {
+      payload = JSON.parse(payload || '{}');
+    }
+    payload = payload || {};
 
     if (!payload.query) {
       return res.status(400).json({ message: 'Missing SQL query parameter' });
