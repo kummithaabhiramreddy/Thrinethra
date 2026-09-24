@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Thrinethra - Autonomous City Transport Intelligence & Command Center",
   "scripts": {
-    "build": "echo 'Deploying static frontend and serverless API functions'",
     "start": "node server.js"
   },
   "keywords": [
