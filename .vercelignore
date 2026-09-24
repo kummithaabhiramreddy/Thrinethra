@@ -1,0 +1,9 @@
+.git
+.vscode
+.agents
+.gemini
+start-server.bat
+test-neon.js
+*.log
+.DS_Store
+Thumbs.db

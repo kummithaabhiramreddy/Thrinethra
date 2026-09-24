@@ -49,12 +49,9 @@
     }
 
     async _getProxyEndpoint() {
-      if (typeof window !== 'undefined') {
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        // Only use relative /api/neon-sql if we are actually on port 3000 (server.js)
-        if (isLocalhost && (window.location.port === '3000' || !window.location.port)) {
-          return '/api/neon-sql';
-        }
+      if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
+        // Return relative endpoint /api/neon-sql which works seamlessly on both local server and Vercel serverless
+        return '/api/neon-sql';
       }
       return null;
     }
