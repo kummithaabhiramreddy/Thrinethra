@@ -9,7 +9,7 @@
 
   const NEON_CONFIG = {
     connectionString: '', // Credentials secured via Vercel / server environment variables
-    sqlEndpoint: 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql'
+    sqlEndpoint: ''       // Queries securely proxied via /api/neon-sql
   };
 
   // Default seed accounts for transport command center authority

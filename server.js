@@ -33,7 +33,16 @@ function loadEnv() {
 loadEnv();
 
 const NEON_CONNECTION_STRING = process.env.NEON_CONNECTION_STRING || '';
-const NEON_ENDPOINT = process.env.NEON_ENDPOINT || 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
+let NEON_ENDPOINT = process.env.NEON_ENDPOINT || '';
+if (!NEON_ENDPOINT && NEON_CONNECTION_STRING) {
+  try {
+    const match = NEON_CONNECTION_STRING.match(/@([^/:]+)/);
+    if (match && match[1]) {
+      const host = match[1].replace('-pooler', '');
+      NEON_ENDPOINT = `https://${host}/sql`;
+    }
+  } catch (e) {}
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',

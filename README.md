@@ -45,10 +45,10 @@ You can deploy Thrinethra directly to [Vercel](https://vercel.com) in seconds us
 
 You can configure these in your **Vercel Project Settings > Environment Variables**:
 
-| Variable | Description | Default |
+| Variable | Description | Example |
 | :--- | :--- | :--- |
-| `NEON_CONNECTION_STRING` | PostgreSQL connection URI for Neon DB | Embedded default connection |
-| `NEON_ENDPOINT` | Serverless HTTP SQL endpoint | `https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql` |
+| `NEON_CONNECTION_STRING` | PostgreSQL connection URI for Neon DB | `postgresql://user:pass@ep-your-project.us-east-2.aws.neon.tech/neondb?sslmode=require` |
+| `NEON_ENDPOINT` | Serverless HTTP SQL endpoint | `https://ep-your-project.us-east-2.aws.neon.tech/sql` |
 
 ---
 

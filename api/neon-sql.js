@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless Function: Neon PostgreSQL SQL Proxy
- * Securely executes SQL queries on Neon without exposing credentials to the client/GitHub.
+ * Securely executes SQL queries on Neon without exposing credentials or endpoints to GitHub/client.
  * Reads NEON_CONNECTION_STRING and NEON_ENDPOINT from Vercel Environment Variables.
  */
 
@@ -20,11 +20,29 @@ module.exports = async (req, res) => {
 
   try {
     const connectionString = process.env.NEON_CONNECTION_STRING;
-    const neonEndpoint = process.env.NEON_ENDPOINT || 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
+    let neonEndpoint = process.env.NEON_ENDPOINT;
 
     if (!connectionString) {
       return res.status(500).json({
-        message: 'NEON_CONNECTION_STRING is not set. Please add it to your Vercel Project Settings > Environment Variables.',
+        message: 'NEON_CONNECTION_STRING is not set in Vercel Environment Variables.',
+        error: true
+      });
+    }
+
+    // If NEON_ENDPOINT is not explicitly configured, derive endpoint host from connection string
+    if (!neonEndpoint) {
+      try {
+        const match = connectionString.match(/@([^/:]+)/);
+        if (match && match[1]) {
+          const host = match[1].replace('-pooler', '');
+          neonEndpoint = `https://${host}/sql`;
+        }
+      } catch (e) {}
+    }
+
+    if (!neonEndpoint) {
+      return res.status(500).json({
+        message: 'NEON_ENDPOINT is not configured in Vercel Environment Variables.',
         error: true
       });
     }
