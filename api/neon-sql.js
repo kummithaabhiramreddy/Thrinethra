@@ -1,5 +1,8 @@
-const DEFAULT_NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_kCrMU0l9LViJ@ep-rapid-sunset-a54uayxa-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-const DEFAULT_NEON_ENDPOINT = 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
+/**
+ * Vercel Serverless Function: Neon PostgreSQL SQL Proxy
+ * Securely executes SQL queries on Neon without exposing credentials to the client/GitHub.
+ * Reads NEON_CONNECTION_STRING and NEON_ENDPOINT from Vercel Environment Variables.
+ */
 
 module.exports = async (req, res) => {
   // CORS Headers
@@ -16,9 +19,17 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const connectionString = process.env.NEON_CONNECTION_STRING;
+    const neonEndpoint = process.env.NEON_ENDPOINT || 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
+
+    if (!connectionString) {
+      return res.status(500).json({
+        message: 'NEON_CONNECTION_STRING is not set. Please add it to your Vercel Project Settings > Environment Variables.',
+        error: true
+      });
+    }
+
     const payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const connectionString = process.env.NEON_CONNECTION_STRING || DEFAULT_NEON_CONNECTION_STRING;
-    const neonEndpoint = process.env.NEON_ENDPOINT || DEFAULT_NEON_ENDPOINT;
 
     if (!payload.query) {
       return res.status(400).json({ message: 'Missing SQL query parameter' });

@@ -9,8 +9,31 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_kCrMU0l9LViJ@ep-rapid-sunset-a54uayxa-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-const NEON_ENDPOINT = 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
+
+// Load local .env if present (zero external dependencies)
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    try {
+      const content = fs.readFileSync(envPath, 'utf8');
+      content.split(/\r?\n/).forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const match = trimmed.match(/^([^=]+)=(.*)$/);
+          if (match) {
+            const key = match[1].trim();
+            let val = match[2].trim().replace(/^["'](.*)["']$/, '$1');
+            if (!process.env[key]) process.env[key] = val;
+          }
+        }
+      });
+    } catch (e) {}
+  }
+}
+loadEnv();
+
+const NEON_CONNECTION_STRING = process.env.NEON_CONNECTION_STRING || '';
+const NEON_ENDPOINT = process.env.NEON_ENDPOINT || 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',

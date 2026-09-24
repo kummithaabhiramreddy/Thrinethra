@@ -8,7 +8,7 @@
   'use strict';
 
   const NEON_CONFIG = {
-    connectionString: 'postgresql://neondb_owner:npg_kCrMU0l9LViJ@ep-rapid-sunset-a54uayxa-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+    connectionString: '', // Credentials secured via Vercel / server environment variables
     sqlEndpoint: 'https://ep-rapid-sunset-a54uayxa.us-east-2.aws.neon.tech/sql'
   };
 
@@ -77,45 +77,42 @@
       try {
         let response = null;
 
-        // Strategy 1: Direct Neon Serverless HTTP API over HTTPS
-        // Note: Do NOT include 'Content-Type: application/json' because Neon's CORS
-        // Access-Control-Allow-Headers explicitly permits Neon-*, but omitting Content-Type
-        // ensures browser CORS preflight passes cleanly.
-        try {
-          const directRes = await fetch(this.endpoint, {
-            method: 'POST',
-            headers: {
-              'Neon-Connection-String': this.connectionString,
-              'Neon-Raw-Text-Output': 'true',
-              'Neon-Array-Mode': 'true'
-            },
-            body: JSON.stringify(body)
-          });
-          if (directRes.ok) {
-            response = directRes;
-          }
-        } catch (directErr) {
-          console.warn('Direct Neon connection warning:', directErr.message);
+        // Strategy 1: Secure Serverless Proxy (/api/neon-sql on Vercel / local server)
+        const proxy = await this._getProxyEndpoint();
+        if (proxy) {
+          try {
+            const res = await fetch(proxy, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+            if (res.ok) {
+              response = res;
+            }
+          } catch (e) {}
         }
 
-        // Strategy 2: If direct Neon was blocked (e.g. strict firewall), use local server proxy
-        if (!response) {
-          const proxy = await this._getProxyEndpoint();
-          if (proxy) {
-            try {
-              const res = await fetch(proxy, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-              });
-              if (res.ok) {
-                response = res;
-              }
-            } catch (e) {}
+        // Strategy 2: Direct Neon connection if explicit connectionString is configured
+        if (!response && this.connectionString) {
+          try {
+            const directRes = await fetch(this.endpoint, {
+              method: 'POST',
+              headers: {
+                'Neon-Connection-String': this.connectionString,
+                'Neon-Raw-Text-Output': 'true',
+                'Neon-Array-Mode': 'true'
+              },
+              body: JSON.stringify(body)
+            });
+            if (directRes.ok) {
+              response = directRes;
+            }
+          } catch (directErr) {
+            console.warn('Direct Neon connection warning:', directErr.message);
           }
         }
 
-        // Strategy 3: Try explicit localhost:3000 Node server proxy
+        // Strategy 3: Try explicit localhost:3000 Node server proxy for local file:// testing
         if (!response && typeof window !== 'undefined' && window.location.port !== '3000') {
           try {
             const localRes = await fetch('http://localhost:3000/api/neon-sql', {
