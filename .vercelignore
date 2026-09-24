@@ -2,6 +2,7 @@
 .vscode
 .agents
 .gemini
+server.js
 start-server.bat
 test-neon.js
 *.log

@@ -115,7 +115,7 @@ const server = http.createServer(async (req, res) => {
   // Static File Serving
   let reqPath = req.url.split('?')[0];
   if (reqPath === '/' || reqPath === '') {
-    reqPath = '/login.html';
+    reqPath = '/index.html';
   }
 
   const safePath = path.normalize(path.join(__dirname, reqPath));
